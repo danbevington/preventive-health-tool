@@ -1,12 +1,14 @@
 import { useMemo, useState } from "react";
+import { calcPreventAscvd, riskCat } from "./lib/prevent";
+import { buildStatinPathway } from "./lib/statinPathway";
 
-const APP_VERSION = "v2.0.0";
+const APP_VERSION = "v2.1.0";
 const APP_LAST_REVIEWED = "2026-03-22";
 const RISK_ENGINE_LABEL = "PREVENT-ASCVD 10-Year Base Model";
 
 const INITIAL_FORM = {
   age: "",
-  sex: "", // male | female
+  sex: "",
   sbp: "",
   dbp: "",
   bmi: "",
@@ -50,59 +52,6 @@ const COLORS = {
   success: "#166534",
   successSoft: "#f0fdf4",
   purpleSoft: "#faf5ff",
-};
-
-const PREVENT = {
-  female: {
-    age: 0.719883,
-    nonHdlC: 0.1176967,
-    hdlC: -0.151185,
-    sbpLt110: -0.0835358,
-    sbpGte110: 0.3592852,
-    dm: 0.8348585,
-    smoking: 0.4831078,
-    bmiLt30: 0.0,
-    bmiGte30: 0.0,
-    egfrLt60: 0.4864619,
-    egfrGte60: 0.0397779,
-    bpTx: 0.2265309,
-    statin: -0.0592374,
-    bpTxSbpGte110: -0.0395762,
-    statinNonHdlC: 0.0844423,
-    ageNonHdlC: -0.0567839,
-    ageHdlC: 0.0325692,
-    ageSbpGte110: -0.1035985,
-    ageDm: -0.2417542,
-    ageSmoking: -0.0791142,
-    ageBmiGte30: 0.0,
-    ageEgfrLt60: -0.1671492,
-    constant: -3.819975,
-  },
-  male: {
-    age: 0.7099847,
-    nonHdlC: 0.1658663,
-    hdlC: -0.1144285,
-    sbpLt110: -0.2837212,
-    sbpGte110: 0.3239977,
-    dm: 0.7189597,
-    smoking: 0.3956973,
-    bmiLt30: 0.0,
-    bmiGte30: 0.0,
-    egfrLt60: 0.3690075,
-    egfrGte60: 0.0203619,
-    bpTx: 0.2036522,
-    statin: -0.0865581,
-    bpTxSbpGte110: -0.0322916,
-    statinNonHdlC: 0.114563,
-    ageNonHdlC: -0.0300005,
-    ageHdlC: 0.0232747,
-    ageSbpGte110: -0.0927024,
-    ageDm: -0.2018525,
-    ageSmoking: -0.0970527,
-    ageBmiGte30: 0.0,
-    ageEgfrLt60: -0.1217081,
-    constant: -3.500655,
-  },
 };
 
 function parseNum(value) {
@@ -161,7 +110,6 @@ function buttonStyle(kind = "default") {
       fontWeight: 700,
     };
   }
-
   if (kind === "accent") {
     return {
       padding: "10px 14px",
@@ -173,7 +121,6 @@ function buttonStyle(kind = "default") {
       fontWeight: 700,
     };
   }
-
   return {
     padding: "10px 14px",
     borderRadius: "8px",
@@ -226,7 +173,6 @@ function getRiskBadgeStyle(label) {
 
 function validateScreeningInputs(form) {
   const errors = {};
-
   const age = parseNum(form.age);
   const sbp = parseNum(form.sbp);
   const dbp = parseNum(form.dbp);
@@ -273,67 +219,6 @@ function validateScreeningInputs(form) {
   return errors;
 }
 
-function validatePreventInputs(form) {
-  const errors = {};
-
-  const age = parseNum(form.age);
-  const sbp = parseNum(form.sbp);
-  const bmi = parseNum(form.bmi);
-  const egfr = parseNum(form.egfr);
-  const totalChol = parseNum(form.totalChol);
-  const hdl = parseNum(form.hdl);
-
-  if (!Number.isFinite(age) || age < 30 || age > 79) {
-    errors.age = "Age must be 30–79 for PREVENT-ASCVD.";
-  }
-
-  if (!["male", "female"].includes(form.sex)) {
-    errors.sex = "Sex is required for PREVENT-ASCVD.";
-  }
-
-  if (!Number.isFinite(sbp) || sbp < 70 || sbp > 250) {
-    errors.sbp = "Systolic BP is required for PREVENT-ASCVD.";
-  }
-
-  if (!Number.isFinite(bmi) || bmi < 10 || bmi > 80) {
-    errors.bmi = "BMI is required for PREVENT-ASCVD.";
-  }
-
-  if (!Number.isFinite(egfr) || egfr < 15 || egfr > 140) {
-    errors.egfr = "eGFR is required for PREVENT-ASCVD.";
-  }
-
-  if (!["Y", "N"].includes(form.smoking)) {
-    errors.smoking = "Smoking is required for PREVENT-ASCVD.";
-  }
-
-  if (!["Y", "N"].includes(form.diabetes)) {
-    errors.diabetes = "Diabetes is required for PREVENT-ASCVD.";
-  }
-
-  if (!["Y", "N"].includes(form.bpTreated)) {
-    errors.bpTreated = "BP treatment is required for PREVENT-ASCVD.";
-  }
-
-  if (!["Y", "N"].includes(form.lipidLowering)) {
-    errors.lipidLowering = "Lipid-lowering therapy is required for PREVENT-ASCVD.";
-  }
-
-  if (!Number.isFinite(totalChol) || totalChol < 80 || totalChol > 400) {
-    errors.totalChol = "Total cholesterol is required for PREVENT-ASCVD.";
-  }
-
-  if (!Number.isFinite(hdl) || hdl < 10 || hdl > 120) {
-    errors.hdl = "HDL is required for PREVENT-ASCVD.";
-  }
-
-  if (Number.isFinite(totalChol) && Number.isFinite(hdl) && hdl >= totalChol) {
-    errors.hdl = "HDL should be lower than total cholesterol.";
-  }
-
-  return errors;
-}
-
 function validateAdditionalInputs(form) {
   const errors = {};
   const ldl = parseNum(form.ldl);
@@ -367,95 +252,43 @@ function validateAdditionalInputs(form) {
     errors.cac = "CAC must be 0–5000.";
   }
 
-  if (form.knownAscvd !== "" && !["Y", "N"].includes(form.knownAscvd)) {
-    errors.knownAscvd = "Known ASCVD must be Y or N.";
-  }
-
-  if (form.veryHighRiskAscvd !== "" && !["Y", "N"].includes(form.veryHighRiskAscvd)) {
-    errors.veryHighRiskAscvd = "Very-high-risk ASCVD must be Y or N.";
-  }
-
   return errors;
 }
 
-function calcPreventAscvd({
-  age,
-  sex,
-  sbp,
-  bpTx,
-  totalC,
-  hdlC,
-  statin,
-  dm,
-  smoking,
-  egfr,
-  bmi,
-}) {
-  if (
-    !age ||
-    !sbp ||
-    !totalC ||
-    !hdlC ||
-    !egfr ||
-    !bmi ||
-    !["female", "male"].includes(sex)
-  ) {
-    return null;
-  }
+function hasCompletePreventInputs(form) {
+  const age = parseNum(form.age);
+  const sbp = parseNum(form.sbp);
+  const bmi = parseNum(form.bmi);
+  const egfr = parseNum(form.egfr);
+  const totalChol = parseNum(form.totalChol);
+  const hdl = parseNum(form.hdl);
 
-  const c = PREVENT[sex];
-  const toMmol = (mg) => mg / 38.67;
-
-  const a = (age - 55) / 10;
-  const nh = toMmol(totalC - hdlC) - 3.5;
-  const hd = (toMmol(hdlC) - 1.3) / 0.3;
-  const sl = (Math.min(sbp, 110) - 110) / 20;
-  const sh = (Math.max(sbp, 110) - 130) / 20;
-
-  const d = dm ? 1 : 0;
-  const sm = smoking ? 1 : 0;
-  const bp = bpTx ? 1 : 0;
-  const st = statin ? 1 : 0;
-
-  const bl = (Math.min(bmi, 30) - 25) / 5;
-  const bh = (Math.max(bmi, 30) - 30) / 5;
-  const el = (Math.min(egfr, 60) - 60) / -15;
-  const eh = (Math.max(egfr, 60) - 90) / -15;
-
-  const x =
-    c.age * a +
-    c.nonHdlC * nh +
-    c.hdlC * hd +
-    c.sbpLt110 * sl +
-    c.sbpGte110 * sh +
-    c.dm * d +
-    c.smoking * sm +
-    c.bmiLt30 * bl +
-    c.bmiGte30 * bh +
-    c.egfrLt60 * el +
-    c.egfrGte60 * eh +
-    c.bpTx * bp +
-    c.statin * st +
-    c.bpTxSbpGte110 * (bp * sh) +
-    c.statinNonHdlC * (st * nh) +
-    c.ageNonHdlC * (a * nh) +
-    c.ageHdlC * (a * hd) +
-    c.ageSbpGte110 * (a * sh) +
-    c.ageDm * (a * d) +
-    c.ageSmoking * (a * sm) +
-    c.ageBmiGte30 * (a * bh) +
-    c.ageEgfrLt60 * (a * el) +
-    c.constant;
-
-  return Math.round((Math.exp(x) / (1 + Math.exp(x))) * 1000) / 10;
-}
-
-function riskCat(r) {
-  if (r == null) return { label: "Not calculated", range: "" };
-  if (r < 3) return { label: "Low", range: "<3%" };
-  if (r < 5) return { label: "Borderline", range: "3–<5%" };
-  if (r < 10) return { label: "Intermediate", range: "5–<10%" };
-  return { label: "High", range: "≥10%" };
+  return (
+    Number.isFinite(age) &&
+    age >= 30 &&
+    age <= 79 &&
+    ["male", "female"].includes(form.sex) &&
+    Number.isFinite(sbp) &&
+    sbp >= 70 &&
+    sbp <= 250 &&
+    Number.isFinite(bmi) &&
+    bmi >= 10 &&
+    bmi <= 80 &&
+    Number.isFinite(egfr) &&
+    egfr >= 15 &&
+    egfr <= 140 &&
+    ["Y", "N"].includes(form.smoking) &&
+    ["Y", "N"].includes(form.diabetes) &&
+    ["Y", "N"].includes(form.bpTreated) &&
+    ["Y", "N"].includes(form.lipidLowering) &&
+    Number.isFinite(totalChol) &&
+    totalChol >= 80 &&
+    totalChol <= 400 &&
+    Number.isFinite(hdl) &&
+    hdl >= 10 &&
+    hdl <= 120 &&
+    hdl < totalChol
+  );
 }
 
 export default function App() {
@@ -463,7 +296,6 @@ export default function App() {
   const [copyStatus, setCopyStatus] = useState("");
 
   const screeningErrors = useMemo(() => validateScreeningInputs(form), [form]);
-  const preventErrors = useMemo(() => validatePreventInputs(form), [form]);
   const additionalErrors = useMemo(() => validateAdditionalInputs(form), [form]);
 
   const handleChange = (e) => {
@@ -479,8 +311,10 @@ export default function App() {
 
   const handlePrint = () => window.print();
 
+  const canCalculatePrevent = useMemo(() => hasCompletePreventInputs(form), [form]);
+
   const preventRisk = useMemo(() => {
-    if (Object.keys(preventErrors).length > 0) return null;
+    if (!canCalculatePrevent) return null;
 
     return calcPreventAscvd({
       age: Number(form.age),
@@ -495,9 +329,10 @@ export default function App() {
       egfr: Number(form.egfr),
       bmi: Number(form.bmi),
     });
-  }, [form, preventErrors]);
+  }, [form, canCalculatePrevent]);
 
   const preventCategory = riskCat(preventRisk);
+  const statinPlan = useMemo(() => buildStatinPathway(form, preventRisk), [form, preventRisk]);
 
   const derived = useMemo(() => {
     const age = parseNum(form.age) ?? 0;
@@ -505,19 +340,12 @@ export default function App() {
     const dbp = parseNum(form.dbp);
     const bmi = parseNum(form.bmi);
     const packYears = parseNum(form.packYears);
-    const ldl = parseNum(form.ldl);
-    const nonHdl = parseNum(form.nonHdl);
-    const tg = parseNum(form.triglycerides);
-    const apob = parseNum(form.apob);
-    const lpa = parseNum(form.lpa);
-    const cac = parseNum(form.cac);
 
     const screenings = [];
     const vaccines = [];
     const counseling = [];
     const careGaps = [];
     const orders = [];
-    const notes = [];
 
     if (Object.keys(screeningErrors).length > 0) {
       return {
@@ -526,7 +354,6 @@ export default function App() {
         counseling,
         careGaps: ["Resolve the basic input errors to generate preventive screening recommendations."],
         orders,
-        notes,
       };
     }
 
@@ -602,20 +429,11 @@ export default function App() {
       careGaps.push(`10-year PREVENT-ASCVD risk: ${preventRisk}% (${preventCategory.label})`);
     } else {
       careGaps.push(
-        "PREVENT-ASCVD risk not calculated: additional inputs required (BMI, eGFR, lipids, diabetes, smoking, BP treatment, lipid therapy)."
+        "Screening recommendations can be shown with partial inputs. Complete PREVENT fields are needed to calculate 10-year risk."
       );
     }
 
-    if (Number.isFinite(ldl)) notes.push(`LDL-C: ${ldl} mg/dL`);
-    if (Number.isFinite(nonHdl)) notes.push(`Non-HDL-C: ${nonHdl} mg/dL`);
-    if (Number.isFinite(tg)) notes.push(`Triglycerides: ${tg} mg/dL`);
-    if (Number.isFinite(apob)) notes.push(`ApoB: ${apob} mg/dL`);
-    if (Number.isFinite(lpa)) notes.push(`Lp(a): ${lpa}`);
-    if (Number.isFinite(cac)) notes.push(`CAC: ${cac}`);
-    if (form.knownAscvd === "Y") notes.push("Known ASCVD reported");
-    if (form.veryHighRiskAscvd === "Y") notes.push("Very-high-risk ASCVD reported");
-
-    return { screenings, vaccines, counseling, careGaps, orders, notes };
+    return { screenings, vaccines, counseling, careGaps, orders };
   }, [form, screeningErrors, preventRisk, preventCategory.label]);
 
   const patientSummary = useMemo(() => {
@@ -637,6 +455,9 @@ export default function App() {
     if (derived.counseling.length > 0) {
       steps.push(`Lifestyle support topics to discuss: ${derived.counseling.join(", ")}.`);
     }
+    if (statinPlan?.recommendation) {
+      steps.push(`Cholesterol treatment direction: ${statinPlan.recommendation}.`);
+    }
 
     const intro =
       preventRisk != null
@@ -644,7 +465,7 @@ export default function App() {
         : "PREVENT-ASCVD risk is not calculated yet because more data is needed.";
 
     return { intro, steps };
-  }, [screeningErrors, derived, preventRisk, preventCategory.label]);
+  }, [screeningErrors, derived, statinPlan, preventRisk, preventCategory.label]);
 
   const copyText = useMemo(() => {
     const lines = [];
@@ -660,7 +481,22 @@ export default function App() {
         preventRisk != null ? `${preventRisk}% (${preventCategory.label})` : "Not calculated"
       }`
     );
+    lines.push(`- Statin Pathway: ${statinPlan.pathway}`);
+    lines.push(`- Recommendation: ${statinPlan.recommendation}`);
+    lines.push(`- Goal: ${statinPlan.goal}`);
     lines.push("");
+
+    if (statinPlan.enhancers.length > 0) {
+      lines.push("Risk Enhancers");
+      statinPlan.enhancers.forEach((item) => lines.push(`- ${item}`));
+      lines.push("");
+    }
+
+    if (statinPlan.notes.length > 0) {
+      lines.push("Statin Notes");
+      statinPlan.notes.forEach((item) => lines.push(`- ${item}`));
+      lines.push("");
+    }
 
     if (derived.screenings.length > 0) {
       lines.push("Screenings");
@@ -692,18 +528,12 @@ export default function App() {
       lines.push("");
     }
 
-    if (derived.notes.length > 0) {
-      lines.push("Additional Data");
-      derived.notes.forEach((item) => lines.push(`- ${item}`));
-      lines.push("");
-    }
-
     lines.push("Patient-Friendly Summary");
     lines.push(patientSummary.intro);
     patientSummary.steps.forEach((item) => lines.push(`- ${item}`));
 
     return lines.join("\n");
-  }, [preventRisk, preventCategory.label, derived, patientSummary]);
+  }, [preventRisk, preventCategory.label, statinPlan, derived, patientSummary]);
 
   const handleCopy = async () => {
     try {
@@ -715,9 +545,7 @@ export default function App() {
     }
   };
 
-  const mergedError = (name) =>
-    screeningErrors[name] || preventErrors[name] || additionalErrors[name];
-
+  const basicError = (name) => screeningErrors[name] || additionalErrors[name];
   const riskBadge = getRiskBadgeStyle(preventCategory.label);
 
   return (
@@ -854,9 +682,9 @@ export default function App() {
                     name={name}
                     value={form[name]}
                     onChange={handleChange}
-                    style={fieldStyle(!!mergedError(name))}
+                    style={fieldStyle(!!basicError(name))}
                   />
-                  {mergedError(name) && <div style={errorStyle()}>{mergedError(name)}</div>}
+                  {basicError(name) && <div style={errorStyle()}>{basicError(name)}</div>}
                 </div>
               ))}
 
@@ -866,13 +694,13 @@ export default function App() {
                   name="sex"
                   value={form.sex}
                   onChange={handleChange}
-                  style={fieldStyle(!!mergedError("sex"))}
+                  style={fieldStyle(!!basicError("sex"))}
                 >
                   <option value="">Select</option>
                   <option value="male">Male</option>
                   <option value="female">Female</option>
                 </select>
-                {mergedError("sex") && <div style={errorStyle()}>{mergedError("sex")}</div>}
+                {basicError("sex") && <div style={errorStyle()}>{basicError("sex")}</div>}
               </div>
 
               <div>
@@ -881,13 +709,13 @@ export default function App() {
                   name="smoking"
                   value={form.smoking}
                   onChange={handleChange}
-                  style={fieldStyle(!!mergedError("smoking"))}
+                  style={fieldStyle(!!basicError("smoking"))}
                 >
-                  <option value="">Select</option>
+                  <option value="">Optional unless calculating PREVENT</option>
                   <option value="Y">Yes</option>
                   <option value="N">No</option>
                 </select>
-                {mergedError("smoking") && <div style={errorStyle()}>{mergedError("smoking")}</div>}
+                {basicError("smoking") && <div style={errorStyle()}>{basicError("smoking")}</div>}
               </div>
 
               <div>
@@ -899,35 +727,82 @@ export default function App() {
                   onChange={handleChange}
                   disabled={form.smoking !== "Y"}
                   style={{
-                    ...fieldStyle(!!mergedError("packYears")),
+                    ...fieldStyle(!!basicError("packYears")),
                     background: form.smoking !== "Y" ? "#f2f5f8" : "#fff",
                   }}
                 />
-                {mergedError("packYears") && <div style={errorStyle()}>{mergedError("packYears")}</div>}
+                {basicError("packYears") && <div style={errorStyle()}>{basicError("packYears")}</div>}
               </div>
 
-              {[
-                ["diabetes", "Diabetes"],
-                ["bpTreated", "BP treatment"],
-                ["lipidLowering", "Lipid-lowering therapy"],
-                ["knownAscvd", "Known ASCVD"],
-                ["veryHighRiskAscvd", "Very-high-risk ASCVD"],
-              ].map(([name, label]) => (
-                <div key={name}>
-                  <label style={labelStyle()}>{label}</label>
-                  <select
-                    name={name}
-                    value={form[name]}
-                    onChange={handleChange}
-                    style={fieldStyle(!!mergedError(name))}
-                  >
-                    <option value="">Select</option>
-                    <option value="Y">Yes</option>
-                    <option value="N">No</option>
-                  </select>
-                  {mergedError(name) && <div style={errorStyle()}>{mergedError(name)}</div>}
-                </div>
-              ))}
+              <div>
+                <label style={labelStyle()}>Diabetes</label>
+                <select
+                  name="diabetes"
+                  value={form.diabetes}
+                  onChange={handleChange}
+                  style={fieldStyle(false)}
+                >
+                  <option value="">Optional unless calculating PREVENT</option>
+                  <option value="Y">Yes</option>
+                  <option value="N">No</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={labelStyle()}>BP treatment</label>
+                <select
+                  name="bpTreated"
+                  value={form.bpTreated}
+                  onChange={handleChange}
+                  style={fieldStyle(false)}
+                >
+                  <option value="">Optional unless calculating PREVENT</option>
+                  <option value="Y">Yes</option>
+                  <option value="N">No</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={labelStyle()}>Lipid-lowering therapy</label>
+                <select
+                  name="lipidLowering"
+                  value={form.lipidLowering}
+                  onChange={handleChange}
+                  style={fieldStyle(false)}
+                >
+                  <option value="">Optional unless calculating PREVENT</option>
+                  <option value="Y">Yes</option>
+                  <option value="N">No</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={labelStyle()}>Known ASCVD</label>
+                <select
+                  name="knownAscvd"
+                  value={form.knownAscvd}
+                  onChange={handleChange}
+                  style={fieldStyle(false)}
+                >
+                  <option value="">Optional</option>
+                  <option value="Y">Yes</option>
+                  <option value="N">No</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={labelStyle()}>Very-high-risk ASCVD</label>
+                <select
+                  name="veryHighRiskAscvd"
+                  value={form.veryHighRiskAscvd}
+                  onChange={handleChange}
+                  style={fieldStyle(false)}
+                >
+                  <option value="">Optional</option>
+                  <option value="Y">Yes</option>
+                  <option value="N">No</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -976,7 +851,36 @@ export default function App() {
               <div style={{ marginTop: "8px", fontSize: "13px", color: COLORS.textSoft }}>
                 {preventRisk != null
                   ? `${preventCategory.label} risk (${preventCategory.range})`
-                  : "Additional PREVENT inputs are needed for risk calculation."}
+                  : "Screening recommendations can be shown with partial inputs. Complete PREVENT fields are needed to calculate 10-year risk."}
+              </div>
+            </div>
+
+            <div className="print-card" style={cardStyle(COLORS.primarySoft)}>
+              <div
+                style={{
+                  fontSize: "18px",
+                  fontWeight: 800,
+                  color: COLORS.heading,
+                  marginBottom: "10px",
+                }}
+              >
+                Statin Pathway
+              </div>
+              <div style={{ marginBottom: "8px" }}>
+                <strong>Pathway:</strong> {statinPlan.pathway}
+              </div>
+              <div style={{ marginBottom: "8px" }}>
+                <strong>Recommendation:</strong> {statinPlan.recommendation}
+              </div>
+              <div style={{ marginBottom: "8px" }}>
+                <strong>Goal:</strong> {statinPlan.goal}
+              </div>
+              <div style={{ marginBottom: "8px" }}>
+                <strong>Risk enhancers:</strong>{" "}
+                {statinPlan.enhancers.length ? statinPlan.enhancers.join(", ") : "None noted"}
+              </div>
+              <div>
+                <strong>Notes:</strong> {statinPlan.notes.length ? statinPlan.notes.join(", ") : "None"}
               </div>
             </div>
 
@@ -1050,7 +954,6 @@ export default function App() {
               { title: "Vaccines", items: derived.vaccines, bg: COLORS.successSoft },
               { title: "Counseling", items: derived.counseling, bg: COLORS.purpleSoft },
               { title: "Care Gaps", items: derived.careGaps, bg: COLORS.warningSoft },
-              { title: "Additional Data", items: derived.notes, bg: COLORS.cardSoft },
             ].map((section) => (
               <div
                 key={section.title}
@@ -1159,7 +1062,7 @@ export default function App() {
           </ul>
 
           <div style={{ marginTop: "10px", fontSize: "11px", color: "#9fb3c8" }}>
-            Version {APP_VERSION} | Last reviewed: {APP_LAST_REVIEWED}
+            © {new Date().getFullYear()} Daniel Bevington. All rights reserved. Version {APP_VERSION} | Last reviewed: {APP_LAST_REVIEWED}
           </div>
         </div>
 
