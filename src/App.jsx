@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 
-const APP_VERSION = "v1.9.0";
+const APP_VERSION = "v2.0.0";
 const APP_LAST_REVIEWED = "2026-03-22";
 const RISK_ENGINE_LABEL = "PREVENT-ASCVD 10-Year Base Model";
 
@@ -17,6 +17,14 @@ const INITIAL_FORM = {
   lipidLowering: "",
   totalChol: "",
   hdl: "",
+  ldl: "",
+  nonHdl: "",
+  triglycerides: "",
+  knownAscvd: "",
+  veryHighRiskAscvd: "",
+  apob: "",
+  lpa: "",
+  cac: "",
   packYears: "",
 };
 
@@ -153,6 +161,7 @@ function buttonStyle(kind = "default") {
       fontWeight: 700,
     };
   }
+
   if (kind === "accent") {
     return {
       padding: "10px 14px",
@@ -164,6 +173,7 @@ function buttonStyle(kind = "default") {
       fontWeight: 700,
     };
   }
+
   return {
     padding: "10px 14px",
     borderRadius: "8px",
@@ -324,6 +334,50 @@ function validatePreventInputs(form) {
   return errors;
 }
 
+function validateAdditionalInputs(form) {
+  const errors = {};
+  const ldl = parseNum(form.ldl);
+  const nonHdl = parseNum(form.nonHdl);
+  const tg = parseNum(form.triglycerides);
+  const apob = parseNum(form.apob);
+  const lpa = parseNum(form.lpa);
+  const cac = parseNum(form.cac);
+
+  if (form.ldl !== "" && (!Number.isFinite(ldl) || ldl < 20 || ldl > 400)) {
+    errors.ldl = "LDL-C must be 20–400.";
+  }
+
+  if (form.nonHdl !== "" && (!Number.isFinite(nonHdl) || nonHdl < 30 || nonHdl > 500)) {
+    errors.nonHdl = "Non-HDL-C must be 30–500.";
+  }
+
+  if (form.triglycerides !== "" && (!Number.isFinite(tg) || tg < 20 || tg > 2000)) {
+    errors.triglycerides = "Triglycerides must be 20–2000.";
+  }
+
+  if (form.apob !== "" && (!Number.isFinite(apob) || apob < 20 || apob > 300)) {
+    errors.apob = "ApoB must be 20–300.";
+  }
+
+  if (form.lpa !== "" && (!Number.isFinite(lpa) || lpa < 0 || lpa > 500)) {
+    errors.lpa = "Lp(a) must be 0–500.";
+  }
+
+  if (form.cac !== "" && (!Number.isFinite(cac) || cac < 0 || cac > 5000)) {
+    errors.cac = "CAC must be 0–5000.";
+  }
+
+  if (form.knownAscvd !== "" && !["Y", "N"].includes(form.knownAscvd)) {
+    errors.knownAscvd = "Known ASCVD must be Y or N.";
+  }
+
+  if (form.veryHighRiskAscvd !== "" && !["Y", "N"].includes(form.veryHighRiskAscvd)) {
+    errors.veryHighRiskAscvd = "Very-high-risk ASCVD must be Y or N.";
+  }
+
+  return errors;
+}
+
 function calcPreventAscvd({
   age,
   sex,
@@ -410,6 +464,7 @@ export default function App() {
 
   const screeningErrors = useMemo(() => validateScreeningInputs(form), [form]);
   const preventErrors = useMemo(() => validatePreventInputs(form), [form]);
+  const additionalErrors = useMemo(() => validateAdditionalInputs(form), [form]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -450,12 +505,19 @@ export default function App() {
     const dbp = parseNum(form.dbp);
     const bmi = parseNum(form.bmi);
     const packYears = parseNum(form.packYears);
+    const ldl = parseNum(form.ldl);
+    const nonHdl = parseNum(form.nonHdl);
+    const tg = parseNum(form.triglycerides);
+    const apob = parseNum(form.apob);
+    const lpa = parseNum(form.lpa);
+    const cac = parseNum(form.cac);
 
     const screenings = [];
     const vaccines = [];
     const counseling = [];
     const careGaps = [];
     const orders = [];
+    const notes = [];
 
     if (Object.keys(screeningErrors).length > 0) {
       return {
@@ -464,6 +526,7 @@ export default function App() {
         counseling,
         careGaps: ["Resolve the basic input errors to generate preventive screening recommendations."],
         orders,
+        notes,
       };
     }
 
@@ -543,7 +606,16 @@ export default function App() {
       );
     }
 
-    return { screenings, vaccines, counseling, careGaps, orders };
+    if (Number.isFinite(ldl)) notes.push(`LDL-C: ${ldl} mg/dL`);
+    if (Number.isFinite(nonHdl)) notes.push(`Non-HDL-C: ${nonHdl} mg/dL`);
+    if (Number.isFinite(tg)) notes.push(`Triglycerides: ${tg} mg/dL`);
+    if (Number.isFinite(apob)) notes.push(`ApoB: ${apob} mg/dL`);
+    if (Number.isFinite(lpa)) notes.push(`Lp(a): ${lpa}`);
+    if (Number.isFinite(cac)) notes.push(`CAC: ${cac}`);
+    if (form.knownAscvd === "Y") notes.push("Known ASCVD reported");
+    if (form.veryHighRiskAscvd === "Y") notes.push("Very-high-risk ASCVD reported");
+
+    return { screenings, vaccines, counseling, careGaps, orders, notes };
   }, [form, screeningErrors, preventRisk, preventCategory.label]);
 
   const patientSummary = useMemo(() => {
@@ -620,6 +692,12 @@ export default function App() {
       lines.push("");
     }
 
+    if (derived.notes.length > 0) {
+      lines.push("Additional Data");
+      derived.notes.forEach((item) => lines.push(`- ${item}`));
+      lines.push("");
+    }
+
     lines.push("Patient-Friendly Summary");
     lines.push(patientSummary.intro);
     patientSummary.steps.forEach((item) => lines.push(`- ${item}`));
@@ -637,7 +715,10 @@ export default function App() {
     }
   };
 
-  const mergedError = (name) => screeningErrors[name] || preventErrors[name];
+  const mergedError = (name) =>
+    screeningErrors[name] || preventErrors[name] || additionalErrors[name];
+
+  const riskBadge = getRiskBadgeStyle(preventCategory.label);
 
   return (
     <div
@@ -645,7 +726,8 @@ export default function App() {
         minHeight: "100vh",
         background: `linear-gradient(180deg, ${COLORS.pageBg} 0%, #f7fafc 100%)`,
         padding: "24px 16px 40px",
-        fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+        fontFamily:
+          'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
         color: COLORS.text,
       }}
     >
@@ -657,7 +739,7 @@ export default function App() {
         }
       `}</style>
 
-      <div style={{ maxWidth: "1240px", margin: "0 auto" }}>
+      <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
         <div
           style={{
             background: `linear-gradient(135deg, ${COLORS.shell} 0%, ${COLORS.shell2} 100%)`,
@@ -668,14 +750,21 @@ export default function App() {
             boxShadow: "0 12px 32px rgba(15,23,42,0.22)",
           }}
         >
-          <div style={{ fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.12em", opacity: 0.72 }}>
+          <div
+            style={{
+              fontSize: "12px",
+              textTransform: "uppercase",
+              letterSpacing: "0.12em",
+              opacity: 0.72,
+            }}
+          >
             Clinical Decision Support
           </div>
           <div style={{ fontSize: "28px", fontWeight: 800, marginTop: "6px" }}>
             Preventive Health Decision Tool
           </div>
           <div style={{ marginTop: "8px", fontSize: "14px", opacity: 0.86 }}>
-            Minimal inputs can generate preventive screenings; complete inputs generate PREVENT-ASCVD risk.
+            Partial inputs support preventive screening output; complete inputs generate PREVENT-ASCVD risk.
           </div>
         </div>
 
@@ -695,33 +784,90 @@ export default function App() {
           </div>
         </div>
 
-        <div className="no-print" style={{ display: "flex", gap: "10px", marginBottom: "16px", flexWrap: "wrap" }}>
-          <button type="button" onClick={handleReset} style={buttonStyle("default")}>Reset Form</button>
-          <button type="button" onClick={handlePrint} style={buttonStyle("primary")}>Print / Export Summary</button>
-          <button type="button" onClick={handleCopy} style={buttonStyle("accent")}>Copy Results</button>
+        <div
+          className="no-print"
+          style={{ display: "flex", gap: "10px", marginBottom: "16px", flexWrap: "wrap" }}
+        >
+          <button type="button" onClick={handleReset} style={buttonStyle("default")}>
+            Reset Form
+          </button>
+          <button type="button" onClick={handlePrint} style={buttonStyle("primary")}>
+            Print / Export Summary
+          </button>
+          <button type="button" onClick={handleCopy} style={buttonStyle("accent")}>
+            Copy Results
+          </button>
           {copyStatus && (
-            <span style={{ alignSelf: "center", fontSize: "13px", color: COLORS.primary, fontWeight: 700 }}>
+            <span
+              style={{
+                alignSelf: "center",
+                fontSize: "13px",
+                color: COLORS.primary,
+                fontWeight: 700,
+              }}
+            >
               {copyStatus}
             </span>
           )}
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1.15fr 0.85fr", gap: "18px", alignItems: "start" }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1.2fr 0.8fr",
+            gap: "18px",
+            alignItems: "start",
+          }}
+        >
           <div className="no-print" style={cardStyle()}>
-            <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "16px" }}>
+            <div
+              style={{
+                fontSize: "18px",
+                fontWeight: 800,
+                color: COLORS.heading,
+                marginBottom: "16px",
+              }}
+            >
               Patient Inputs
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-              <div>
-                <label style={labelStyle()}>Age</label>
-                <input type="number" name="age" value={form.age} onChange={handleChange} style={fieldStyle(!!mergedError("age"))} />
-                {mergedError("age") && <div style={errorStyle()}>{mergedError("age")}</div>}
-              </div>
+              {[
+                ["age", "Age"],
+                ["sbp", "Systolic BP"],
+                ["dbp", "Diastolic BP"],
+                ["bmi", "BMI"],
+                ["egfr", "eGFR"],
+                ["totalChol", "Total cholesterol"],
+                ["hdl", "HDL cholesterol"],
+                ["ldl", "LDL-C"],
+                ["nonHdl", "Non-HDL-C"],
+                ["triglycerides", "Triglycerides"],
+                ["apob", "ApoB"],
+                ["lpa", "Lp(a)"],
+                ["cac", "CAC"],
+              ].map(([name, label]) => (
+                <div key={name}>
+                  <label style={labelStyle()}>{label}</label>
+                  <input
+                    type="number"
+                    name={name}
+                    value={form[name]}
+                    onChange={handleChange}
+                    style={fieldStyle(!!mergedError(name))}
+                  />
+                  {mergedError(name) && <div style={errorStyle()}>{mergedError(name)}</div>}
+                </div>
+              ))}
 
               <div>
                 <label style={labelStyle()}>Sex</label>
-                <select name="sex" value={form.sex} onChange={handleChange} style={fieldStyle(!!mergedError("sex"))}>
+                <select
+                  name="sex"
+                  value={form.sex}
+                  onChange={handleChange}
+                  style={fieldStyle(!!mergedError("sex"))}
+                >
                   <option value="">Select</option>
                   <option value="male">Male</option>
                   <option value="female">Female</option>
@@ -730,32 +876,13 @@ export default function App() {
               </div>
 
               <div>
-                <label style={labelStyle()}>Systolic BP</label>
-                <input type="number" name="sbp" value={form.sbp} onChange={handleChange} style={fieldStyle(!!mergedError("sbp"))} />
-                {mergedError("sbp") && <div style={errorStyle()}>{mergedError("sbp")}</div>}
-              </div>
-
-              <div>
-                <label style={labelStyle()}>Diastolic BP</label>
-                <input type="number" name="dbp" value={form.dbp} onChange={handleChange} style={fieldStyle(!!mergedError("dbp"))} />
-                {mergedError("dbp") && <div style={errorStyle()}>{mergedError("dbp")}</div>}
-              </div>
-
-              <div>
-                <label style={labelStyle()}>BMI</label>
-                <input type="number" name="bmi" value={form.bmi} onChange={handleChange} style={fieldStyle(!!preventErrors.bmi)} />
-                {preventErrors.bmi && <div style={errorStyle()}>{preventErrors.bmi}</div>}
-              </div>
-
-              <div>
-                <label style={labelStyle()}>eGFR</label>
-                <input type="number" name="egfr" value={form.egfr} onChange={handleChange} style={fieldStyle(!!preventErrors.egfr)} />
-                {preventErrors.egfr && <div style={errorStyle()}>{preventErrors.egfr}</div>}
-              </div>
-
-              <div>
                 <label style={labelStyle()}>Smoking</label>
-                <select name="smoking" value={form.smoking} onChange={handleChange} style={fieldStyle(!!mergedError("smoking"))}>
+                <select
+                  name="smoking"
+                  value={form.smoking}
+                  onChange={handleChange}
+                  style={fieldStyle(!!mergedError("smoking"))}
+                >
                   <option value="">Select</option>
                   <option value="Y">Yes</option>
                   <option value="N">No</option>
@@ -772,66 +899,55 @@ export default function App() {
                   onChange={handleChange}
                   disabled={form.smoking !== "Y"}
                   style={{
-                    ...fieldStyle(!!screeningErrors.packYears),
+                    ...fieldStyle(!!mergedError("packYears")),
                     background: form.smoking !== "Y" ? "#f2f5f8" : "#fff",
                   }}
                 />
-                {screeningErrors.packYears && <div style={errorStyle()}>{screeningErrors.packYears}</div>}
+                {mergedError("packYears") && <div style={errorStyle()}>{mergedError("packYears")}</div>}
               </div>
 
-              <div>
-                <label style={labelStyle()}>Diabetes</label>
-                <select name="diabetes" value={form.diabetes} onChange={handleChange} style={fieldStyle(!!preventErrors.diabetes)}>
-                  <option value="">Select</option>
-                  <option value="Y">Yes</option>
-                  <option value="N">No</option>
-                </select>
-                {preventErrors.diabetes && <div style={errorStyle()}>{preventErrors.diabetes}</div>}
-              </div>
-
-              <div>
-                <label style={labelStyle()}>BP treatment</label>
-                <select name="bpTreated" value={form.bpTreated} onChange={handleChange} style={fieldStyle(!!preventErrors.bpTreated)}>
-                  <option value="">Select</option>
-                  <option value="Y">Yes</option>
-                  <option value="N">No</option>
-                </select>
-                {preventErrors.bpTreated && <div style={errorStyle()}>{preventErrors.bpTreated}</div>}
-              </div>
-
-              <div>
-                <label style={labelStyle()}>Lipid-lowering therapy</label>
-                <select name="lipidLowering" value={form.lipidLowering} onChange={handleChange} style={fieldStyle(!!preventErrors.lipidLowering)}>
-                  <option value="">Select</option>
-                  <option value="Y">Yes</option>
-                  <option value="N">No</option>
-                </select>
-                {preventErrors.lipidLowering && <div style={errorStyle()}>{preventErrors.lipidLowering}</div>}
-              </div>
-
-              <div>
-                <label style={labelStyle()}>Total cholesterol</label>
-                <input type="number" name="totalChol" value={form.totalChol} onChange={handleChange} style={fieldStyle(!!preventErrors.totalChol)} />
-                {preventErrors.totalChol && <div style={errorStyle()}>{preventErrors.totalChol}</div>}
-              </div>
-
-              <div>
-                <label style={labelStyle()}>HDL cholesterol</label>
-                <input type="number" name="hdl" value={form.hdl} onChange={handleChange} style={fieldStyle(!!preventErrors.hdl)} />
-                {preventErrors.hdl && <div style={errorStyle()}>{preventErrors.hdl}</div>}
-              </div>
+              {[
+                ["diabetes", "Diabetes"],
+                ["bpTreated", "BP treatment"],
+                ["lipidLowering", "Lipid-lowering therapy"],
+                ["knownAscvd", "Known ASCVD"],
+                ["veryHighRiskAscvd", "Very-high-risk ASCVD"],
+              ].map(([name, label]) => (
+                <div key={name}>
+                  <label style={labelStyle()}>{label}</label>
+                  <select
+                    name={name}
+                    value={form[name]}
+                    onChange={handleChange}
+                    style={fieldStyle(!!mergedError(name))}
+                  >
+                    <option value="">Select</option>
+                    <option value="Y">Yes</option>
+                    <option value="N">No</option>
+                  </select>
+                  {mergedError(name) && <div style={errorStyle()}>{mergedError(name)}</div>}
+                </div>
+              ))}
             </div>
           </div>
 
           <div style={{ display: "grid", gap: "18px" }}>
             <div className="print-card" style={cardStyle(COLORS.cardSoft)}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: "10px",
+                  marginBottom: "10px",
+                }}
+              >
                 <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading }}>
                   Risk Overview
                 </div>
                 <span
                   style={{
-                    ...getRiskBadgeStyle(preventCategory.label),
+                    ...riskBadge,
                     borderRadius: "999px",
                     padding: "7px 12px",
                     fontSize: "12px",
@@ -842,7 +958,14 @@ export default function App() {
                 </span>
               </div>
 
-              <div style={{ fontSize: "32px", fontWeight: 800, color: COLORS.primaryDark, lineHeight: 1 }}>
+              <div
+                style={{
+                  fontSize: "32px",
+                  fontWeight: 800,
+                  color: COLORS.primaryDark,
+                  lineHeight: 1,
+                }}
+              >
                 {preventRisk != null ? `${preventRisk}%` : "—"}
               </div>
 
@@ -858,19 +981,35 @@ export default function App() {
             </div>
 
             <div className="print-card" style={cardStyle(COLORS.accentSoft)}>
-              <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.accent, marginBottom: "10px" }}>
+              <div
+                style={{
+                  fontSize: "18px",
+                  fontWeight: 800,
+                  color: COLORS.accent,
+                  marginBottom: "10px",
+                }}
+              >
                 Patient-Friendly Summary
               </div>
               <p style={{ marginTop: 0, color: COLORS.text }}>{patientSummary.intro}</p>
               <ul style={{ paddingLeft: "20px", marginBottom: 0 }}>
                 {patientSummary.steps.map((item, i) => (
-                  <li key={i} style={{ marginBottom: "6px" }}>{item}</li>
+                  <li key={i} style={{ marginBottom: "6px" }}>
+                    {item}
+                  </li>
                 ))}
               </ul>
             </div>
 
             <div className="no-print" style={cardStyle()}>
-              <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "10px" }}>
+              <div
+                style={{
+                  fontSize: "18px",
+                  fontWeight: 800,
+                  color: COLORS.heading,
+                  marginBottom: "10px",
+                }}
+              >
                 Copy / Paste Text
               </div>
               <textarea
@@ -894,7 +1033,14 @@ export default function App() {
         </div>
 
         <div className="print-card" style={{ ...cardStyle(), marginTop: "18px" }}>
-          <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "14px" }}>
+          <div
+            style={{
+              fontSize: "18px",
+              fontWeight: 800,
+              color: COLORS.heading,
+              marginBottom: "14px",
+            }}
+          >
             Clinical Output
           </div>
 
@@ -904,6 +1050,7 @@ export default function App() {
               { title: "Vaccines", items: derived.vaccines, bg: COLORS.successSoft },
               { title: "Counseling", items: derived.counseling, bg: COLORS.purpleSoft },
               { title: "Care Gaps", items: derived.careGaps, bg: COLORS.warningSoft },
+              { title: "Additional Data", items: derived.notes, bg: COLORS.cardSoft },
             ].map((section) => (
               <div
                 key={section.title}
@@ -914,7 +1061,14 @@ export default function App() {
                   padding: "16px",
                 }}
               >
-                <div style={{ fontSize: "15px", fontWeight: 800, color: COLORS.heading, marginBottom: "8px" }}>
+                <div
+                  style={{
+                    fontSize: "15px",
+                    fontWeight: 800,
+                    color: COLORS.heading,
+                    marginBottom: "8px",
+                  }}
+                >
                   {section.title}
                 </div>
                 <ul style={{ paddingLeft: "20px", marginBottom: 0 }}>
@@ -938,7 +1092,14 @@ export default function App() {
                 padding: "16px",
               }}
             >
-              <div style={{ fontSize: "15px", fontWeight: 800, color: COLORS.heading, marginBottom: "8px" }}>
+              <div
+                style={{
+                  fontSize: "15px",
+                  fontWeight: 800,
+                  color: COLORS.heading,
+                  marginBottom: "8px",
+                }}
+              >
                 Suggested Orders / Actions
               </div>
               <ul style={{ paddingLeft: "20px", marginBottom: 0 }}>
@@ -983,6 +1144,10 @@ export default function App() {
             No patient-specific medical decisions should be made solely based on this tool.
           </div>
 
+          <div style={{ marginTop: "6px" }}>
+            Recommendations reflect guideline logic last reviewed on {APP_LAST_REVIEWED} and may change as USPSTF, CDC, and AHA/ACC guidance is updated.
+          </div>
+
           <div style={{ marginTop: "12px", fontWeight: "600", color: "#7dd3fc" }}>
             Guideline Sources
           </div>
@@ -994,11 +1159,18 @@ export default function App() {
           </ul>
 
           <div style={{ marginTop: "10px", fontSize: "11px", color: "#9fb3c8" }}>
-            Version 1.0 | Last updated: {new Date().toLocaleDateString()}
+            Version {APP_VERSION} | Last reviewed: {APP_LAST_REVIEWED}
           </div>
         </div>
 
-        <div style={{ textAlign: "center", fontSize: "12px", color: COLORS.textSoft, marginTop: "16px" }}>
+        <div
+          style={{
+            textAlign: "center",
+            fontSize: "12px",
+            color: COLORS.textSoft,
+            marginTop: "16px",
+          }}
+        >
           Clinical decision support only. Partial inputs support screening output; full PREVENT inputs are needed for risk calculation.
         </div>
       </div>
