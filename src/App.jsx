@@ -187,15 +187,31 @@ function cardStyle(background = COLORS.card) {
 
 function getRiskBadgeStyle(label) {
   if (label === "High") {
-    return { background: COLORS.dangerSoft, color: COLORS.danger, border: "1px solid #f5c2c7" };
+    return {
+      background: COLORS.dangerSoft,
+      color: COLORS.danger,
+      border: "1px solid #f5c2c7",
+    };
   }
   if (label === "Intermediate" || label === "Borderline") {
-    return { background: COLORS.warningSoft, color: COLORS.warning, border: "1px solid #fcd9a5" };
+    return {
+      background: COLORS.warningSoft,
+      color: COLORS.warning,
+      border: "1px solid #fcd9a5",
+    };
   }
   if (label === "Low") {
-    return { background: COLORS.successSoft, color: COLORS.success, border: "1px solid #b7ebc6" };
+    return {
+      background: COLORS.successSoft,
+      color: COLORS.success,
+      border: "1px solid #b7ebc6",
+    };
   }
-  return { background: COLORS.primarySoft, color: COLORS.primaryDark, border: "1px solid #bfd7ef" };
+  return {
+    background: COLORS.primarySoft,
+    color: COLORS.primaryDark,
+    border: "1px solid #bfd7ef",
+  };
 }
 
 function validateScreeningInputs(form) {
@@ -301,11 +317,7 @@ function validatePreventInputs(form) {
     errors.hdl = "HDL is required for PREVENT-ASCVD.";
   }
 
-  if (
-    Number.isFinite(totalChol) &&
-    Number.isFinite(hdl) &&
-    hdl >= totalChol
-  ) {
+  if (Number.isFinite(totalChol) && Number.isFinite(hdl) && hdl >= totalChol) {
     errors.hdl = "HDL should be lower than total cholesterol.";
   }
 
@@ -625,8 +637,6 @@ export default function App() {
     }
   };
 
-  const riskBadge = getRiskBadgeStyle(preventCategory.label);
-
   const mergedError = (name) => screeningErrors[name] || preventErrors[name];
 
   return (
@@ -670,7 +680,15 @@ export default function App() {
         </div>
 
         <div className="print-card" style={{ ...cardStyle(), marginBottom: "18px" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "8px 14px", fontSize: "13px", color: COLORS.textSoft }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              gap: "8px 14px",
+              fontSize: "13px",
+              color: COLORS.textSoft,
+            }}
+          >
             <div><strong style={{ color: COLORS.heading }}>Version:</strong> {APP_VERSION}</div>
             <div><strong style={{ color: COLORS.heading }}>Reviewed:</strong> {APP_LAST_REVIEWED}</div>
             <div><strong style={{ color: COLORS.heading }}>Risk engine:</strong> {RISK_ENGINE_LABEL}</div>
@@ -681,7 +699,11 @@ export default function App() {
           <button type="button" onClick={handleReset} style={buttonStyle("default")}>Reset Form</button>
           <button type="button" onClick={handlePrint} style={buttonStyle("primary")}>Print / Export Summary</button>
           <button type="button" onClick={handleCopy} style={buttonStyle("accent")}>Copy Results</button>
-          {copyStatus && <span style={{ alignSelf: "center", fontSize: "13px", color: COLORS.primary, fontWeight: 700 }}>{copyStatus}</span>}
+          {copyStatus && (
+            <span style={{ alignSelf: "center", fontSize: "13px", color: COLORS.primary, fontWeight: 700 }}>
+              {copyStatus}
+            </span>
+          )}
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1.15fr 0.85fr", gap: "18px", alignItems: "start" }}>
@@ -756,50 +778,7 @@ export default function App() {
                 />
                 {screeningErrors.packYears && <div style={errorStyle()}>{screeningErrors.packYears}</div>}
               </div>
-                  {/* ================= DISCLAIMER + GUIDELINES ================= */}
-<div
-  style={{
-    marginTop: "32px",
-    padding: "18px",
-    backgroundColor: "#0b1f3a", // deep VA-style navy
-    color: "#e6edf3",
-    borderRadius: "10px",
-    border: "1px solid #1e3a5f",
-    fontSize: "13px",
-    lineHeight: "1.5",
-  }}
->
-  <div style={{ fontWeight: "600", marginBottom: "8px", color: "#7dd3fc" }}>
-    Clinical Disclaimer
-  </div>
 
-  <div>
-    This tool is intended for <strong>educational and informational purposes only</strong> and does not replace
-    clinical judgment, professional medical advice, diagnosis, or treatment.
-  </div>
-
-  <div style={{ marginTop: "6px" }}>
-    Clinicians should independently verify all recommendations and consult official guidelines prior to making patient care decisions.
-  </div>
-
-  <div style={{ marginTop: "6px" }}>
-    No patient-specific medical decisions should be made solely based on this tool.
-  </div>
-
-  <div style={{ marginTop: "12px", fontWeight: "600", color: "#7dd3fc" }}>
-    Guideline Sources
-  </div>
-
-  <ul style={{ paddingLeft: "18px", marginTop: "6px" }}>
-    <li>USPSTF Preventive Services Task Force (current recommendations)</li>
-    <li>CDC Adult Immunization Schedule</li>
-    <li>AHA/ACC PREVENT Risk Equations</li>
-  </ul>
-
-  <div style={{ marginTop: "10px", fontSize: "11px", color: "#9fb3c8" }}>
-    Version 1.0 | Last updated: {new Date().toLocaleDateString()}
-  </div>
-</div>
               <div>
                 <label style={labelStyle()}>Diabetes</label>
                 <select name="diabetes" value={form.diabetes} onChange={handleChange} style={fieldStyle(!!preventErrors.diabetes)}>
@@ -940,7 +919,11 @@ export default function App() {
                 </div>
                 <ul style={{ paddingLeft: "20px", marginBottom: 0 }}>
                   {section.items.length
-                    ? section.items.map((item, i) => <li key={i} style={{ marginBottom: "6px" }}>{item}</li>)
+                    ? section.items.map((item, i) => (
+                        <li key={i} style={{ marginBottom: "6px" }}>
+                          {item}
+                        </li>
+                      ))
                     : <li>None yet.</li>}
                 </ul>
               </div>
@@ -960,24 +943,61 @@ export default function App() {
               </div>
               <ul style={{ paddingLeft: "20px", marginBottom: 0 }}>
                 {derived.orders.length
-                  ? derived.orders.map((item, i) => <li key={i} style={{ marginBottom: "6px" }}>{item}</li>)
+                  ? derived.orders.map((item, i) => (
+                      <li key={i} style={{ marginBottom: "6px" }}>
+                        {item}
+                      </li>
+                    ))
                   : <li>No actions yet.</li>}
               </ul>
             </div>
           </div>
         </div>
-              </ul>
-            </div>
+
+        <div
+          style={{
+            marginTop: "32px",
+            padding: "18px",
+            backgroundColor: "#0b1f3a",
+            color: "#e6edf3",
+            borderRadius: "10px",
+            border: "1px solid #1e3a5f",
+            fontSize: "13px",
+            lineHeight: "1.5",
+          }}
+        >
+          <div style={{ fontWeight: "600", marginBottom: "8px", color: "#7dd3fc" }}>
+            Clinical Disclaimer
+          </div>
+
+          <div>
+            This tool is intended for <strong>educational and informational purposes only</strong> and does not replace
+            clinical judgment, professional medical advice, diagnosis, or treatment.
+          </div>
+
+          <div style={{ marginTop: "6px" }}>
+            Clinicians should independently verify all recommendations and consult official guidelines prior to making patient care decisions.
+          </div>
+
+          <div style={{ marginTop: "6px" }}>
+            No patient-specific medical decisions should be made solely based on this tool.
+          </div>
+
+          <div style={{ marginTop: "12px", fontWeight: "600", color: "#7dd3fc" }}>
+            Guideline Sources
+          </div>
+
+          <ul style={{ paddingLeft: "18px", marginTop: "6px", marginBottom: 0 }}>
+            <li>USPSTF Preventive Services Task Force (current recommendations)</li>
+            <li>CDC Adult Immunization Schedule</li>
+            <li>AHA/ACC PREVENT Risk Equations</li>
+          </ul>
+
+          <div style={{ marginTop: "10px", fontSize: "11px", color: "#9fb3c8" }}>
+            Version 1.0 | Last updated: {new Date().toLocaleDateString()}
           </div>
         </div>
 
-        <div style={{ textAlign: "center", fontSize: "12px", color: COLORS.textSoft, marginTop: "16px" }}>
-          Clinical decision support only. Partial inputs support screening output; full PREVENT inputs are needed for risk calculation.
-        </div>
-      </div>
-    </div>
-  );
-}
         <div style={{ textAlign: "center", fontSize: "12px", color: COLORS.textSoft, marginTop: "16px" }}>
           Clinical decision support only. Partial inputs support screening output; full PREVENT inputs are needed for risk calculation.
         </div>
