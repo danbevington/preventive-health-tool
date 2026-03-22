@@ -927,7 +927,50 @@ export default function App() {
             </div>
           </div>
         </div>
+{/* ================= DISCLAIMER + GUIDELINES ================= */}
+<div
+  style={{
+    marginTop: "32px",
+    padding: "18px",
+    backgroundColor: "#0b1f3a", // deep VA-style navy
+    color: "#e6edf3",
+    borderRadius: "10px",
+    border: "1px solid #1e3a5f",
+    fontSize: "13px",
+    lineHeight: "1.5",
+  }}
+>
+  <div style={{ fontWeight: "600", marginBottom: "8px", color: "#7dd3fc" }}>
+    Clinical Disclaimer
+  </div>
 
+  <div>
+    This tool is intended for <strong>educational and informational purposes only</strong> and does not replace
+    clinical judgment, professional medical advice, diagnosis, or treatment.
+  </div>
+
+  <div style={{ marginTop: "6px" }}>
+    Clinicians should independently verify all recommendations and consult official guidelines prior to making patient care decisions.
+  </div>
+
+  <div style={{ marginTop: "6px" }}>
+    No patient-specific medical decisions should be made solely based on this tool.
+  </div>
+
+  <div style={{ marginTop: "12px", fontWeight: "600", color: "#7dd3fc" }}>
+    Guideline Sources
+  </div>
+
+  <ul style={{ paddingLeft: "18px", marginTop: "6px" }}>
+    <li>USPSTF Preventive Services Task Force (current recommendations)</li>
+    <li>CDC Adult Immunization Schedule</li>
+    <li>AHA/ACC PREVENT Risk Equations</li>
+  </ul>
+
+  <div style={{ marginTop: "10px", fontSize: "11px", color: "#9fb3c8" }}>
+    Version 1.0 | Last updated: {new Date().toLocaleDateString()}
+  </div>
+</div>
         <div style={{ textAlign: "center", fontSize: "12px", color: COLORS.textSoft, marginTop: "16px" }}>
           Clinical decision support only. Partial inputs support screening output; full PREVENT inputs are needed for risk calculation.
         </div>
