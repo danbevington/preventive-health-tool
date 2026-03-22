@@ -923,7 +923,18 @@ export default function App() {
             </div>
           </div>
         </div>
+              </ul>
+            </div>
+          </div>
+        </div>
 
+        <div style={{ textAlign: "center", fontSize: "12px", color: COLORS.textSoft, marginTop: "16px" }}>
+          Clinical decision support only. Partial inputs support screening output; full PREVENT inputs are needed for risk calculation.
+        </div>
+      </div>
+    </div>
+  );
+}
         <div style={{ textAlign: "center", fontSize: "12px", color: COLORS.textSoft, marginTop: "16px" }}>
           Clinical decision support only. Partial inputs support screening output; full PREVENT inputs are needed for risk calculation.
         </div>
