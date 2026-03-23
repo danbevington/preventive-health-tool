@@ -45,11 +45,13 @@ export function buildStatinPathway(form, preventRisk) {
     }
   }
 
+  if (ldl >= 160) enhancers.push("LDL-C ≥160 mg/dL");
   if (tg >= 175) enhancers.push("Triglycerides ≥175 mg/dL");
   if (apob >= 130) enhancers.push("ApoB ≥130 mg/dL");
   if (lpa >= 50) enhancers.push("Lp(a) elevated");
   if (cac > 0) enhancers.push(`CAC present (${cac})`);
 
+  if (cac === 0) notes.push("CAC = 0 may support deferring statin in selected primary prevention cases.");
   if (cac >= 100) notes.push("CAC supports stronger statin consideration.");
   if (tg >= 500) notes.push("Evaluate severe hypertriglyceridemia management.");
 

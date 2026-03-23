@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { calcPreventAscvd, riskCat } from "./lib/prevent";
 import { buildStatinPathway } from "./lib/statinPathway";
 
-const APP_VERSION = "v2.1.0";
+const APP_VERSION = "v2.2.0";
 const APP_LAST_REVIEWED = "2026-03-22";
 const RISK_ENGINE_LABEL = "PREVENT-ASCVD 10-Year Base Model";
 
@@ -594,6 +594,9 @@ export default function App() {
           <div style={{ marginTop: "8px", fontSize: "14px", opacity: 0.86 }}>
             Partial inputs support preventive screening output; complete inputs generate PREVENT-ASCVD risk.
           </div>
+          <div style={{ marginTop: "6px", fontSize: "12px", opacity: 0.8 }}>
+            Version {APP_VERSION} • Production Build
+          </div>
         </div>
 
         <div className="print-card" style={{ ...cardStyle(), marginBottom: "18px" }}>
@@ -866,21 +869,25 @@ export default function App() {
               >
                 Statin Pathway
               </div>
+
               <div style={{ marginBottom: "8px" }}>
-                <strong>Pathway:</strong> {statinPlan.pathway}
+                <strong>Pathway:</strong> {statinPlan?.pathway || "Insufficient data"}
               </div>
               <div style={{ marginBottom: "8px" }}>
-                <strong>Recommendation:</strong> {statinPlan.recommendation}
+                <strong>Recommendation:</strong> {statinPlan?.recommendation || "Insufficient data"}
               </div>
               <div style={{ marginBottom: "8px" }}>
-                <strong>Goal:</strong> {statinPlan.goal}
+                <strong>Goal:</strong> {statinPlan?.goal || "Insufficient data"}
               </div>
               <div style={{ marginBottom: "8px" }}>
                 <strong>Risk enhancers:</strong>{" "}
-                {statinPlan.enhancers.length ? statinPlan.enhancers.join(", ") : "None noted"}
+                {statinPlan?.enhancers?.length ? statinPlan.enhancers.join(", ") : "None noted"}
               </div>
               <div>
-                <strong>Notes:</strong> {statinPlan.notes.length ? statinPlan.notes.join(", ") : "None"}
+                <strong>Notes:</strong> {statinPlan?.notes?.length ? statinPlan.notes.join(", ") : "None"}
+              </div>
+              <div style={{ marginTop: "8px", fontSize: "12px", color: COLORS.textSoft }}>
+                Based on ACC/AHA guideline framework with individualized risk modifiers.
               </div>
             </div>
 
@@ -1048,7 +1055,15 @@ export default function App() {
           </div>
 
           <div style={{ marginTop: "6px" }}>
-            Recommendations reflect guideline logic last reviewed on {APP_LAST_REVIEWED} and may change as USPSTF, CDC, and AHA/ACC guidance is updated.
+            Recommendations reflect guideline logic last reviewed on {APP_LAST_REVIEWED} and may change as USPSTF, CDC, and AHA/ACC guidance is updated. Clinicians should verify recommendations against current primary sources.
+          </div>
+
+          <div style={{ marginTop: "6px" }}>
+            This application does not store, transmit, or retain any patient data. All inputs are processed locally within the browser session.
+          </div>
+
+          <div style={{ marginTop: "6px" }}>
+            This tool is intended for adult primary care decision support and does not apply to pediatric populations, pregnancy, or specialized cardiology management.
           </div>
 
           <div style={{ marginTop: "12px", fontWeight: "600", color: "#7dd3fc" }}>
