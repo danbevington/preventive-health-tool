@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { calcPreventAscvd, riskCat } from "./lib/prevent";
 import { buildStatinPathway } from "./lib/statinPathway";
 
-const APP_VERSION = "v2.4.0";
+const APP_VERSION = "v2.5.0";
 const APP_LAST_REVIEWED = "2026-03-23";
 const RISK_ENGINE_LABEL = "Official AHA PREVENT 10-Year ASCVD Base Model";
 
@@ -29,7 +29,8 @@ const INITIAL_FORM = {
   cac: "",
   packYears: "",
 
-  // Vaccine engine options
+  vaccineMode: "cumulative",
+
   priorVaccineHistoryKnown: "",
   evidenceOfImmunityMMR: "",
   evidenceOfImmunityVaricella: "",
@@ -349,6 +350,10 @@ function hasCompletePreventInputs(form) {
   );
 }
 
+function addUnique(list, text) {
+  if (!list.includes(text)) list.push(text);
+}
+
 function getCumulativeVaccinesByAgeAndRisk(form) {
   const age = Number(form.age || 0);
   const sex = form.sex;
@@ -373,96 +378,77 @@ function getCumulativeVaccinesByAgeAndRisk(form) {
   const evidenceOfImmunityVaricella = form.evidenceOfImmunityVaricella === "Y";
 
   const vaccines = [];
-  const add = (text) => {
-    if (!vaccines.includes(text)) vaccines.push(text);
-  };
-
   if (!Number.isFinite(age) || age < 0) return vaccines;
 
-  if (age >= 0) add("Hepatitis B series");
-
+  if (age >= 0) addUnique(vaccines, "Hepatitis B series");
   if (age >= 2 / 12) {
-    add("Rotavirus series");
-    add("DTaP series");
-    add("Hib series");
-    add("Pneumococcal conjugate (PCV) series");
-    add("Inactivated poliovirus (IPV) series");
+    addUnique(vaccines, "Rotavirus series");
+    addUnique(vaccines, "DTaP series");
+    addUnique(vaccines, "Hib series");
+    addUnique(vaccines, "Pneumococcal conjugate (PCV) series");
+    addUnique(vaccines, "Inactivated poliovirus (IPV) series");
   }
-
   if (age >= 6 / 12) {
-    add("Influenza annually");
-    add("COVID-19 per current CDC age-based schedule");
+    addUnique(vaccines, "Influenza annually");
+    addUnique(vaccines, "COVID-19 per current CDC age-based schedule");
   }
-
   if (age >= 1) {
-    add("MMR series");
-    add("Varicella series");
-    add("Hepatitis A series");
+    addUnique(vaccines, "MMR series");
+    addUnique(vaccines, "Varicella series");
+    addUnique(vaccines, "Hepatitis A series");
   }
-
   if (age >= 4) {
-    add("DTaP booster at 4–6 years");
-    add("IPV booster at 4–6 years");
-    add("MMR second dose");
-    add("Varicella second dose");
+    addUnique(vaccines, "DTaP booster at 4–6 years");
+    addUnique(vaccines, "IPV booster at 4–6 years");
+    addUnique(vaccines, "MMR second dose");
+    addUnique(vaccines, "Varicella second dose");
   }
-
-  if (age >= 9) add("HPV series");
-
+  if (age >= 9) addUnique(vaccines, "HPV series");
   if (age >= 11) {
-    add("Tdap adolescent dose");
-    add("MenACWY first dose");
+    addUnique(vaccines, "Tdap adolescent dose");
+    addUnique(vaccines, "MenACWY first dose");
   }
-
-  if (age >= 16) add("MenACWY booster");
+  if (age >= 16) addUnique(vaccines, "MenACWY booster");
 
   if (age >= 19) {
-    add("COVID-19 per current adult CDC schedule");
-    add("Td or Tdap booster every 10 years after Tdap");
+    addUnique(vaccines, "COVID-19 per current adult CDC schedule");
+    addUnique(vaccines, "Td or Tdap booster every 10 years after Tdap");
   }
-
   if (age >= 19 && age <= 26) {
-    add("HPV catch-up if not previously completed");
-    add("Hepatitis B if not previously completed");
-    add("Hepatitis A if catch-up or indicated");
+    addUnique(vaccines, "HPV catch-up if not previously completed");
+    addUnique(vaccines, "Hepatitis B if not previously completed");
+    addUnique(vaccines, "Hepatitis A if catch-up or indicated");
   }
-
   if (age >= 27 && age <= 45) {
-    add("HPV based on shared clinical decision-making if not adequately vaccinated");
+    addUnique(vaccines, "HPV based on shared clinical decision-making if not adequately vaccinated");
   }
-
   if (age >= 50 || immunocompromised) {
-    add("Recombinant zoster (RZV) 2-dose series");
+    addUnique(vaccines, "Recombinant zoster (RZV) 2-dose series");
   }
-
   if (age >= 60 && age < 75) {
-    add("RSV vaccine if indicated / shared clinical decision-making");
+    addUnique(vaccines, "RSV vaccine if indicated / shared clinical decision-making");
   }
-
   if (age >= 75) {
-    add("RSV vaccine");
+    addUnique(vaccines, "RSV vaccine");
   }
-
   if (age >= 65) {
-    add("Pneumococcal vaccine per current CDC adult age/risk schedule");
-    add("Influenza annually (higher-dose/adjuvanted product may be preferred)");
+    addUnique(vaccines, "Pneumococcal vaccine per current CDC adult age/risk schedule");
+    addUnique(vaccines, "Influenza annually (higher-dose/adjuvanted product may be preferred)");
   }
 
   if (sex === "female" && pregnant) {
-    add("Tdap during each pregnancy");
-    add("RSV vaccine during pregnancy when seasonally indicated");
+    addUnique(vaccines, "Tdap during each pregnancy");
+    addUnique(vaccines, "RSV vaccine during pregnancy when seasonally indicated");
   }
 
   if (!evidenceOfImmunityMMR && age >= 19) {
-    add("MMR if lacking evidence of immunity");
+    addUnique(vaccines, "MMR if lacking evidence of immunity");
   }
-
   if (!evidenceOfImmunityVaricella && age >= 19) {
-    add("Varicella if lacking evidence of immunity");
+    addUnique(vaccines, "Varicella if lacking evidence of immunity");
   }
-
   if (!priorVaccineHistoryKnown && age >= 19) {
-    add("Review prior vaccine history / registry and assess catch-up needs");
+    addUnique(vaccines, "Review prior vaccine history / registry and assess catch-up needs");
   }
 
   if (
@@ -474,36 +460,133 @@ function getCumulativeVaccinesByAgeAndRisk(form) {
     chronicLungDisease ||
     chronicKidneyDisease
   ) {
-    add("Pneumococcal vaccine based on risk condition");
+    addUnique(vaccines, "Pneumococcal vaccine based on risk condition");
   }
 
   if (asplenia) {
-    add("Meningococcal vaccines based on asplenia risk");
-    add("Hib if indicated");
+    addUnique(vaccines, "Meningococcal vaccines based on asplenia risk");
+    addUnique(vaccines, "Hib if indicated");
   }
 
   if (chronicLiverDisease) {
-    add("Hepatitis A vaccine");
-    add("Hepatitis B vaccine");
+    addUnique(vaccines, "Hepatitis A vaccine");
+    addUnique(vaccines, "Hepatitis B vaccine");
   }
 
   if (healthcareWorker) {
-    add("Hepatitis B if not immune");
-    add("MMR if lacking evidence of immunity");
-    add("Varicella if lacking evidence of immunity");
-    add("Annual influenza");
+    addUnique(vaccines, "Hepatitis B if not immune");
+    addUnique(vaccines, "MMR if lacking evidence of immunity");
+    addUnique(vaccines, "Varicella if lacking evidence of immunity");
+    addUnique(vaccines, "Annual influenza");
   }
 
   if (collegeDormResident || military) {
-    add("Meningococcal vaccination if indicated");
+    addUnique(vaccines, "Meningococcal vaccination if indicated");
   }
 
   if (travelRisk || residenceRisk) {
-    add("Travel/residence-based vaccines as indicated");
-    add("Meningococcal / Hepatitis A / other destination-specific vaccines if indicated");
+    addUnique(vaccines, "Travel/residence-based vaccines as indicated");
+    addUnique(vaccines, "Meningococcal / Hepatitis A / other destination-specific vaccines if indicated");
   }
 
   return vaccines;
+}
+
+function getCurrentAgeVaccinesNeeded(form) {
+  const age = Number(form.age || 0);
+  const sex = form.sex;
+
+  const pregnant = form.pregnant === "Y";
+  const immunocompromised = form.immunocompromised === "Y";
+  const chronicLiverDisease = form.chronicLiverDisease === "Y";
+  const chronicKidneyDisease = form.chronicKidneyDisease === "Y";
+  const chronicHeartDisease = form.chronicHeartDisease === "Y";
+  const chronicLungDisease = form.chronicLungDisease === "Y";
+  const asplenia = form.asplenia === "Y";
+  const cochlearImplant = form.cochlearImplant === "Y";
+  const csfLeak = form.csfLeak === "Y";
+  const healthcareWorker = form.healthcareWorker === "Y";
+  const collegeDormResident = form.collegeDormResident === "Y";
+  const military = form.military === "Y";
+  const travelRisk = form.travelRisk === "Y";
+  const residenceRisk = form.residenceRisk === "Y";
+
+  const priorVaccineHistoryKnown = form.priorVaccineHistoryKnown === "Y";
+  const evidenceOfImmunityMMR = form.evidenceOfImmunityMMR === "Y";
+  const evidenceOfImmunityVaricella = form.evidenceOfImmunityVaricella === "Y";
+
+  const vaccines = [];
+  if (!Number.isFinite(age) || age < 0) return vaccines;
+
+  if (age >= 6 / 12) addUnique(vaccines, "Influenza annually");
+  if (age >= 19) addUnique(vaccines, "COVID-19 per current CDC adult schedule");
+  if (age >= 19) addUnique(vaccines, "Td or Tdap booster if due (every 10 years after prior Tdap)");
+  if (age >= 50 || immunocompromised) addUnique(vaccines, "Recombinant zoster (RZV) if not completed");
+  if (age >= 60 && age < 75) addUnique(vaccines, "RSV vaccine if indicated / shared clinical decision-making");
+  if (age >= 75) addUnique(vaccines, "RSV vaccine");
+  if (age >= 65) addUnique(vaccines, "Pneumococcal vaccine per current adult age/risk schedule");
+
+  if (!priorVaccineHistoryKnown && age >= 19) {
+    addUnique(vaccines, "Review vaccine registry/history to determine catch-up needs");
+  }
+  if (age >= 19 && age <= 26) {
+    addUnique(vaccines, "HPV catch-up if series incomplete");
+    addUnique(vaccines, "Hepatitis B catch-up if series incomplete");
+  }
+  if (age >= 27 && age <= 45) {
+    addUnique(vaccines, "HPV may be considered by shared decision-making if not fully vaccinated");
+  }
+  if (!evidenceOfImmunityMMR && age >= 19) {
+    addUnique(vaccines, "MMR if lacking evidence of immunity");
+  }
+  if (!evidenceOfImmunityVaricella && age >= 19) {
+    addUnique(vaccines, "Varicella if lacking evidence of immunity");
+  }
+
+  if (sex === "female" && pregnant) {
+    addUnique(vaccines, "Tdap during current pregnancy");
+    addUnique(vaccines, "RSV vaccine during pregnancy when seasonally indicated");
+  }
+
+  if (
+    immunocompromised ||
+    asplenia ||
+    cochlearImplant ||
+    csfLeak ||
+    chronicHeartDisease ||
+    chronicLungDisease ||
+    chronicKidneyDisease
+  ) {
+    addUnique(vaccines, "Pneumococcal vaccine based on risk condition");
+  }
+  if (asplenia) {
+    addUnique(vaccines, "Meningococcal vaccines based on asplenia risk");
+    addUnique(vaccines, "Hib if indicated");
+  }
+  if (chronicLiverDisease) {
+    addUnique(vaccines, "Hepatitis A vaccine");
+    addUnique(vaccines, "Hepatitis B vaccine");
+  }
+  if (healthcareWorker) {
+    addUnique(vaccines, "Hepatitis B if not immune");
+    addUnique(vaccines, "MMR if lacking evidence of immunity");
+    addUnique(vaccines, "Varicella if lacking evidence of immunity");
+    addUnique(vaccines, "Annual influenza");
+  }
+  if (collegeDormResident || military) {
+    addUnique(vaccines, "Meningococcal vaccination if indicated");
+  }
+  if (travelRisk || residenceRisk) {
+    addUnique(vaccines, "Travel/residence-based vaccines as indicated");
+  }
+
+  return vaccines;
+}
+
+function getVaccinesForDisplay(form) {
+  return form.vaccineMode === "current"
+    ? getCurrentAgeVaccinesNeeded(form)
+    : getCumulativeVaccinesByAgeAndRisk(form);
 }
 
 export default function App() {
@@ -558,7 +641,7 @@ export default function App() {
     const packYears = parseNum(form.packYears);
 
     const screenings = [];
-    const vaccines = getCumulativeVaccinesByAgeAndRisk(form);
+    const vaccines = getVaccinesForDisplay(form);
     const counseling = [];
     const careGaps = [];
     const orders = [];
@@ -660,7 +743,11 @@ export default function App() {
       steps.push(`Recommended screening tests: ${derived.screenings.join(", ")}.`);
     }
     if (derived.vaccines.length > 0) {
-      steps.push(`Vaccines to review by age/history/risk: ${derived.vaccines.join(", ")}.`);
+      steps.push(
+        form.vaccineMode === "current"
+          ? `Vaccines to review now based on current age/history/risk: ${derived.vaccines.join(", ")}.`
+          : `Vaccines to review by age/history/risk, including childhood series: ${derived.vaccines.join(", ")}.`
+      );
     }
     if (derived.counseling.length > 0) {
       steps.push(`Lifestyle support topics to discuss: ${derived.counseling.join(", ")}.`);
@@ -675,7 +762,7 @@ export default function App() {
         : "PREVENT-ASCVD risk is not calculated yet because more data is needed or one or more values are outside official validated ranges.";
 
     return { intro, steps };
-  }, [screeningErrors, derived, statinPlan, preventRisk, preventCategory.label]);
+  }, [screeningErrors, derived, statinPlan, preventRisk, preventCategory.label, form.vaccineMode]);
 
   const copyText = useMemo(() => {
     const lines = [];
@@ -694,6 +781,7 @@ export default function App() {
     lines.push(`- Statin Pathway: ${statinPlan?.pathway || "Insufficient data"}`);
     lines.push(`- Recommendation: ${statinPlan?.recommendation || "Insufficient data"}`);
     lines.push(`- Goal: ${statinPlan?.goal || "Insufficient data"}`);
+    lines.push(`- Vaccine View: ${form.vaccineMode === "current" ? "Minus childhood vaccines" : "Include childhood vaccines"}`);
     lines.push("");
 
     if (statinPlan?.enhancers?.length > 0) {
@@ -743,7 +831,7 @@ export default function App() {
     patientSummary.steps.forEach((item) => lines.push(`- ${item}`));
 
     return lines.join("\n");
-  }, [preventRisk, preventCategory.label, statinPlan, derived, patientSummary]);
+  }, [preventRisk, preventCategory.label, statinPlan, derived, patientSummary, form.vaccineMode]);
 
   const handleCopy = async () => {
     try {
@@ -1021,6 +1109,19 @@ export default function App() {
                   <option value="">Optional</option>
                   <option value="Y">Yes</option>
                   <option value="N">No</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={labelStyle()}>Vaccine view</label>
+                <select
+                  name="vaccineMode"
+                  value={form.vaccineMode}
+                  onChange={handleChange}
+                  style={fieldStyle(false)}
+                >
+                  <option value="cumulative">Include childhood vaccines</option>
+                  <option value="current">Minus childhood vaccines</option>
                 </select>
               </div>
 
