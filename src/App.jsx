@@ -2,9 +2,9 @@ import { useMemo, useState } from "react";
 import { calcPreventAscvd, riskCat } from "./lib/prevent";
 import { buildStatinPathway } from "./lib/statinPathway";
 
-const APP_VERSION = "v2.2.0";
-const APP_LAST_REVIEWED = "2026-03-22";
-const RISK_ENGINE_LABEL = "PREVENT-ASCVD 10-Year Base Model";
+const APP_VERSION = "v2.3.0";
+const APP_LAST_REVIEWED = "2026-03-23";
+const RISK_ENGINE_LABEL = "Official AHA PREVENT 10-Year ASCVD Base Model";
 
 const INITIAL_FORM = {
   age: "",
@@ -255,6 +255,46 @@ function validateAdditionalInputs(form) {
   return errors;
 }
 
+function validatePreventInputs(form) {
+  const errors = {};
+  const age = parseNum(form.age);
+  const sbp = parseNum(form.sbp);
+  const bmi = parseNum(form.bmi);
+  const egfr = parseNum(form.egfr);
+  const totalChol = parseNum(form.totalChol);
+  const hdl = parseNum(form.hdl);
+
+  if (form.age !== "" && (!Number.isFinite(age) || age < 30 || age > 79)) {
+    errors.age = "For official PREVENT, age must be 30–79.";
+  }
+
+  if (form.sbp !== "" && (!Number.isFinite(sbp) || sbp < 90 || sbp > 200)) {
+    errors.sbp = "For official PREVENT, SBP must be 90–200.";
+  }
+
+  if (form.bmi !== "" && (!Number.isFinite(bmi) || bmi < 18.5 || bmi > 39.9)) {
+    errors.bmi = "For official PREVENT, BMI must be 18.5–39.9.";
+  }
+
+  if (form.egfr !== "" && (!Number.isFinite(egfr) || egfr <= 0)) {
+    errors.egfr = "eGFR must be >0.";
+  }
+
+  if (form.totalChol !== "" && (!Number.isFinite(totalChol) || totalChol < 130 || totalChol > 320)) {
+    errors.totalChol = "For official PREVENT, total cholesterol must be 130–320.";
+  }
+
+  if (form.hdl !== "" && (!Number.isFinite(hdl) || hdl < 20 || hdl > 100)) {
+    errors.hdl = "For official PREVENT, HDL must be 20–100.";
+  }
+
+  if (Number.isFinite(totalChol) && Number.isFinite(hdl) && hdl >= totalChol) {
+    errors.hdl = "HDL must be lower than total cholesterol.";
+  }
+
+  return errors;
+}
+
 function hasCompletePreventInputs(form) {
   const age = parseNum(form.age);
   const sbp = parseNum(form.sbp);
@@ -269,24 +309,23 @@ function hasCompletePreventInputs(form) {
     age <= 79 &&
     ["male", "female"].includes(form.sex) &&
     Number.isFinite(sbp) &&
-    sbp >= 70 &&
-    sbp <= 250 &&
+    sbp >= 90 &&
+    sbp <= 200 &&
     Number.isFinite(bmi) &&
-    bmi >= 10 &&
-    bmi <= 80 &&
+    bmi >= 18.5 &&
+    bmi <= 39.9 &&
     Number.isFinite(egfr) &&
-    egfr >= 15 &&
-    egfr <= 140 &&
+    egfr > 0 &&
     ["Y", "N"].includes(form.smoking) &&
     ["Y", "N"].includes(form.diabetes) &&
     ["Y", "N"].includes(form.bpTreated) &&
     ["Y", "N"].includes(form.lipidLowering) &&
     Number.isFinite(totalChol) &&
-    totalChol >= 80 &&
-    totalChol <= 400 &&
+    totalChol >= 130 &&
+    totalChol <= 320 &&
     Number.isFinite(hdl) &&
-    hdl >= 10 &&
-    hdl <= 120 &&
+    hdl >= 20 &&
+    hdl <= 100 &&
     hdl < totalChol
   );
 }
@@ -297,6 +336,7 @@ export default function App() {
 
   const screeningErrors = useMemo(() => validateScreeningInputs(form), [form]);
   const additionalErrors = useMemo(() => validateAdditionalInputs(form), [form]);
+  const preventRangeErrors = useMemo(() => validatePreventInputs(form), [form]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -429,7 +469,7 @@ export default function App() {
       careGaps.push(`10-year PREVENT-ASCVD risk: ${preventRisk}% (${preventCategory.label})`);
     } else {
       careGaps.push(
-        "Screening recommendations can be shown with partial inputs. Complete PREVENT fields are needed to calculate 10-year risk."
+        "Screening recommendations can be shown with partial inputs. Official AHA PREVENT risk requires complete base-model inputs within validated ranges."
       );
     }
 
@@ -462,7 +502,7 @@ export default function App() {
     const intro =
       preventRisk != null
         ? `Estimated 10-year PREVENT-ASCVD risk: ${preventRisk}% (${preventCategory.label}).`
-        : "PREVENT-ASCVD risk is not calculated yet because more data is needed.";
+        : "PREVENT-ASCVD risk is not calculated yet because more data is needed or one or more values are outside official validated ranges.";
 
     return { intro, steps };
   }, [screeningErrors, derived, statinPlan, preventRisk, preventCategory.label]);
@@ -481,18 +521,18 @@ export default function App() {
         preventRisk != null ? `${preventRisk}% (${preventCategory.label})` : "Not calculated"
       }`
     );
-    lines.push(`- Statin Pathway: ${statinPlan.pathway}`);
-    lines.push(`- Recommendation: ${statinPlan.recommendation}`);
-    lines.push(`- Goal: ${statinPlan.goal}`);
+    lines.push(`- Statin Pathway: ${statinPlan?.pathway || "Insufficient data"}`);
+    lines.push(`- Recommendation: ${statinPlan?.recommendation || "Insufficient data"}`);
+    lines.push(`- Goal: ${statinPlan?.goal || "Insufficient data"}`);
     lines.push("");
 
-    if (statinPlan.enhancers.length > 0) {
+    if (statinPlan?.enhancers?.length > 0) {
       lines.push("Risk Enhancers");
       statinPlan.enhancers.forEach((item) => lines.push(`- ${item}`));
       lines.push("");
     }
 
-    if (statinPlan.notes.length > 0) {
+    if (statinPlan?.notes?.length > 0) {
       lines.push("Statin Notes");
       statinPlan.notes.forEach((item) => lines.push(`- ${item}`));
       lines.push("");
@@ -545,7 +585,9 @@ export default function App() {
     }
   };
 
-  const basicError = (name) => screeningErrors[name] || additionalErrors[name];
+  const basicError = (name) =>
+    screeningErrors[name] || additionalErrors[name] || preventRangeErrors[name];
+
   const riskBadge = getRiskBadgeStyle(preventCategory.label);
 
   return (
@@ -592,7 +634,7 @@ export default function App() {
             Preventive Health Decision Tool
           </div>
           <div style={{ marginTop: "8px", fontSize: "14px", opacity: 0.86 }}>
-            Partial inputs support preventive screening output; complete inputs generate PREVENT-ASCVD risk.
+            Partial inputs support preventive screening output; complete inputs generate official AHA PREVENT-ASCVD base-model risk.
           </div>
           <div style={{ marginTop: "6px", fontSize: "12px", opacity: 0.8 }}>
             Version {APP_VERSION} • Production Build
@@ -848,13 +890,13 @@ export default function App() {
               </div>
 
               <div style={{ marginTop: "8px", fontWeight: 700, color: COLORS.heading }}>
-                PREVENT-ASCVD 10-Year Risk
+                Official AHA PREVENT-ASCVD 10-Year Risk
               </div>
 
               <div style={{ marginTop: "8px", fontSize: "13px", color: COLORS.textSoft }}>
                 {preventRisk != null
                   ? `${preventCategory.label} risk (${preventCategory.range})`
-                  : "Screening recommendations can be shown with partial inputs. Complete PREVENT fields are needed to calculate 10-year risk."}
+                  : "Complete official base-model inputs within validated ranges are required to calculate PREVENT risk."}
               </div>
             </div>
 
@@ -1073,7 +1115,8 @@ export default function App() {
           <ul style={{ paddingLeft: "18px", marginTop: "6px", marginBottom: 0 }}>
             <li>USPSTF Preventive Services Task Force (current recommendations)</li>
             <li>CDC Adult Immunization Schedule</li>
-            <li>AHA/ACC PREVENT Risk Equations</li>
+            <li>AHA PREVENT official base-model equations</li>
+            <li>ACC/AHA lipid management framework for statin decision support</li>
           </ul>
 
           <div style={{ marginTop: "10px", fontSize: "11px", color: "#9fb3c8" }}>
@@ -1089,7 +1132,7 @@ export default function App() {
             marginTop: "16px",
           }}
         >
-          Clinical decision support only. Partial inputs support screening output; full PREVENT inputs are needed for risk calculation.
+          Clinical decision support only. Partial inputs support screening output; full official AHA PREVENT base-model inputs are needed for risk calculation.
         </div>
       </div>
     </div>
