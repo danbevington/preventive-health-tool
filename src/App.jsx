@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { calcPreventAscvd, riskCat } from "./lib/prevent";
 import { buildStatinPathway } from "./lib/statinPathway";
 
-const APP_VERSION = "v2.3.0";
+const APP_VERSION = "v2.4.0";
 const APP_LAST_REVIEWED = "2026-03-23";
 const RISK_ENGINE_LABEL = "Official AHA PREVENT 10-Year ASCVD Base Model";
 
@@ -28,6 +28,25 @@ const INITIAL_FORM = {
   lpa: "",
   cac: "",
   packYears: "",
+
+  // Vaccine engine options
+  priorVaccineHistoryKnown: "",
+  evidenceOfImmunityMMR: "",
+  evidenceOfImmunityVaricella: "",
+  pregnant: "",
+  immunocompromised: "",
+  chronicLiverDisease: "",
+  chronicKidneyDisease: "",
+  chronicHeartDisease: "",
+  chronicLungDisease: "",
+  asplenia: "",
+  cochlearImplant: "",
+  csfLeak: "",
+  healthcareWorker: "",
+  collegeDormResident: "",
+  military: "",
+  travelRisk: "",
+  residenceRisk: "",
 };
 
 const COLORS = {
@@ -178,8 +197,8 @@ function validateScreeningInputs(form) {
   const dbp = parseNum(form.dbp);
   const packYears = parseNum(form.packYears);
 
-  if (!Number.isFinite(age) || age < 18 || age > 100) {
-    errors.age = "Age must be 18–100.";
+  if (!Number.isFinite(age) || age < 0 || age > 100) {
+    errors.age = "Age must be 0–100.";
   }
 
   if (form.sex !== "" && !["male", "female"].includes(form.sex)) {
@@ -330,6 +349,163 @@ function hasCompletePreventInputs(form) {
   );
 }
 
+function getCumulativeVaccinesByAgeAndRisk(form) {
+  const age = Number(form.age || 0);
+  const sex = form.sex;
+
+  const pregnant = form.pregnant === "Y";
+  const immunocompromised = form.immunocompromised === "Y";
+  const chronicLiverDisease = form.chronicLiverDisease === "Y";
+  const chronicKidneyDisease = form.chronicKidneyDisease === "Y";
+  const chronicHeartDisease = form.chronicHeartDisease === "Y";
+  const chronicLungDisease = form.chronicLungDisease === "Y";
+  const asplenia = form.asplenia === "Y";
+  const cochlearImplant = form.cochlearImplant === "Y";
+  const csfLeak = form.csfLeak === "Y";
+  const healthcareWorker = form.healthcareWorker === "Y";
+  const collegeDormResident = form.collegeDormResident === "Y";
+  const military = form.military === "Y";
+  const travelRisk = form.travelRisk === "Y";
+  const residenceRisk = form.residenceRisk === "Y";
+
+  const priorVaccineHistoryKnown = form.priorVaccineHistoryKnown === "Y";
+  const evidenceOfImmunityMMR = form.evidenceOfImmunityMMR === "Y";
+  const evidenceOfImmunityVaricella = form.evidenceOfImmunityVaricella === "Y";
+
+  const vaccines = [];
+  const add = (text) => {
+    if (!vaccines.includes(text)) vaccines.push(text);
+  };
+
+  if (!Number.isFinite(age) || age < 0) return vaccines;
+
+  if (age >= 0) add("Hepatitis B series");
+
+  if (age >= 2 / 12) {
+    add("Rotavirus series");
+    add("DTaP series");
+    add("Hib series");
+    add("Pneumococcal conjugate (PCV) series");
+    add("Inactivated poliovirus (IPV) series");
+  }
+
+  if (age >= 6 / 12) {
+    add("Influenza annually");
+    add("COVID-19 per current CDC age-based schedule");
+  }
+
+  if (age >= 1) {
+    add("MMR series");
+    add("Varicella series");
+    add("Hepatitis A series");
+  }
+
+  if (age >= 4) {
+    add("DTaP booster at 4–6 years");
+    add("IPV booster at 4–6 years");
+    add("MMR second dose");
+    add("Varicella second dose");
+  }
+
+  if (age >= 9) add("HPV series");
+
+  if (age >= 11) {
+    add("Tdap adolescent dose");
+    add("MenACWY first dose");
+  }
+
+  if (age >= 16) add("MenACWY booster");
+
+  if (age >= 19) {
+    add("COVID-19 per current adult CDC schedule");
+    add("Td or Tdap booster every 10 years after Tdap");
+  }
+
+  if (age >= 19 && age <= 26) {
+    add("HPV catch-up if not previously completed");
+    add("Hepatitis B if not previously completed");
+    add("Hepatitis A if catch-up or indicated");
+  }
+
+  if (age >= 27 && age <= 45) {
+    add("HPV based on shared clinical decision-making if not adequately vaccinated");
+  }
+
+  if (age >= 50 || immunocompromised) {
+    add("Recombinant zoster (RZV) 2-dose series");
+  }
+
+  if (age >= 60 && age < 75) {
+    add("RSV vaccine if indicated / shared clinical decision-making");
+  }
+
+  if (age >= 75) {
+    add("RSV vaccine");
+  }
+
+  if (age >= 65) {
+    add("Pneumococcal vaccine per current CDC adult age/risk schedule");
+    add("Influenza annually (higher-dose/adjuvanted product may be preferred)");
+  }
+
+  if (sex === "female" && pregnant) {
+    add("Tdap during each pregnancy");
+    add("RSV vaccine during pregnancy when seasonally indicated");
+  }
+
+  if (!evidenceOfImmunityMMR && age >= 19) {
+    add("MMR if lacking evidence of immunity");
+  }
+
+  if (!evidenceOfImmunityVaricella && age >= 19) {
+    add("Varicella if lacking evidence of immunity");
+  }
+
+  if (!priorVaccineHistoryKnown && age >= 19) {
+    add("Review prior vaccine history / registry and assess catch-up needs");
+  }
+
+  if (
+    immunocompromised ||
+    asplenia ||
+    cochlearImplant ||
+    csfLeak ||
+    chronicHeartDisease ||
+    chronicLungDisease ||
+    chronicKidneyDisease
+  ) {
+    add("Pneumococcal vaccine based on risk condition");
+  }
+
+  if (asplenia) {
+    add("Meningococcal vaccines based on asplenia risk");
+    add("Hib if indicated");
+  }
+
+  if (chronicLiverDisease) {
+    add("Hepatitis A vaccine");
+    add("Hepatitis B vaccine");
+  }
+
+  if (healthcareWorker) {
+    add("Hepatitis B if not immune");
+    add("MMR if lacking evidence of immunity");
+    add("Varicella if lacking evidence of immunity");
+    add("Annual influenza");
+  }
+
+  if (collegeDormResident || military) {
+    add("Meningococcal vaccination if indicated");
+  }
+
+  if (travelRisk || residenceRisk) {
+    add("Travel/residence-based vaccines as indicated");
+    add("Meningococcal / Hepatitis A / other destination-specific vaccines if indicated");
+  }
+
+  return vaccines;
+}
+
 export default function App() {
   const [form, setForm] = useState(INITIAL_FORM);
   const [copyStatus, setCopyStatus] = useState("");
@@ -382,7 +558,7 @@ export default function App() {
     const packYears = parseNum(form.packYears);
 
     const screenings = [];
-    const vaccines = [];
+    const vaccines = getCumulativeVaccinesByAgeAndRisk(form);
     const counseling = [];
     const careGaps = [];
     const orders = [];
@@ -459,12 +635,6 @@ export default function App() {
       counseling.push("Smoking cessation counseling");
     }
 
-    vaccines.push("Influenza annually");
-    vaccines.push("COVID-19 per CDC guidance");
-    vaccines.push("Tdap every 10 years");
-    if (age >= 50) vaccines.push("Shingles vaccine");
-    if (age >= 65) vaccines.push("Pneumococcal vaccine");
-
     if (preventRisk != null) {
       careGaps.push(`10-year PREVENT-ASCVD risk: ${preventRisk}% (${preventCategory.label})`);
     } else {
@@ -490,7 +660,7 @@ export default function App() {
       steps.push(`Recommended screening tests: ${derived.screenings.join(", ")}.`);
     }
     if (derived.vaccines.length > 0) {
-      steps.push(`Recommended vaccines: ${derived.vaccines.join(", ")}.`);
+      steps.push(`Vaccines to review by age/history/risk: ${derived.vaccines.join(", ")}.`);
     }
     if (derived.counseling.length > 0) {
       steps.push(`Lifestyle support topics to discuss: ${derived.counseling.join(", ")}.`);
@@ -589,6 +759,26 @@ export default function App() {
     screeningErrors[name] || additionalErrors[name] || preventRangeErrors[name];
 
   const riskBadge = getRiskBadgeStyle(preventCategory.label);
+
+  const vaccineOptionFields = [
+    ["priorVaccineHistoryKnown", "Prior vaccine history known"],
+    ["evidenceOfImmunityMMR", "Evidence of immunity: MMR"],
+    ["evidenceOfImmunityVaricella", "Evidence of immunity: Varicella"],
+    ["pregnant", "Pregnant"],
+    ["immunocompromised", "Immunocompromised"],
+    ["chronicLiverDisease", "Chronic liver disease"],
+    ["chronicKidneyDisease", "Chronic kidney disease"],
+    ["chronicHeartDisease", "Chronic heart disease"],
+    ["chronicLungDisease", "Chronic lung disease"],
+    ["asplenia", "Asplenia"],
+    ["cochlearImplant", "Cochlear implant"],
+    ["csfLeak", "CSF leak"],
+    ["healthcareWorker", "Healthcare worker"],
+    ["collegeDormResident", "College dorm resident"],
+    ["military", "Military"],
+    ["travelRisk", "Travel risk"],
+    ["residenceRisk", "Residence risk"],
+  ];
 
   return (
     <div
@@ -781,12 +971,7 @@ export default function App() {
 
               <div>
                 <label style={labelStyle()}>Diabetes</label>
-                <select
-                  name="diabetes"
-                  value={form.diabetes}
-                  onChange={handleChange}
-                  style={fieldStyle(false)}
-                >
+                <select name="diabetes" value={form.diabetes} onChange={handleChange} style={fieldStyle(false)}>
                   <option value="">Optional unless calculating PREVENT</option>
                   <option value="Y">Yes</option>
                   <option value="N">No</option>
@@ -795,12 +980,7 @@ export default function App() {
 
               <div>
                 <label style={labelStyle()}>BP treatment</label>
-                <select
-                  name="bpTreated"
-                  value={form.bpTreated}
-                  onChange={handleChange}
-                  style={fieldStyle(false)}
-                >
+                <select name="bpTreated" value={form.bpTreated} onChange={handleChange} style={fieldStyle(false)}>
                   <option value="">Optional unless calculating PREVENT</option>
                   <option value="Y">Yes</option>
                   <option value="N">No</option>
@@ -823,12 +1003,7 @@ export default function App() {
 
               <div>
                 <label style={labelStyle()}>Known ASCVD</label>
-                <select
-                  name="knownAscvd"
-                  value={form.knownAscvd}
-                  onChange={handleChange}
-                  style={fieldStyle(false)}
-                >
+                <select name="knownAscvd" value={form.knownAscvd} onChange={handleChange} style={fieldStyle(false)}>
                   <option value="">Optional</option>
                   <option value="Y">Yes</option>
                   <option value="N">No</option>
@@ -848,6 +1023,17 @@ export default function App() {
                   <option value="N">No</option>
                 </select>
               </div>
+
+              {vaccineOptionFields.map(([name, label]) => (
+                <div key={name}>
+                  <label style={labelStyle()}>{label}</label>
+                  <select name={name} value={form[name]} onChange={handleChange} style={fieldStyle(false)}>
+                    <option value="">Optional</option>
+                    <option value="Y">Yes</option>
+                    <option value="N">No</option>
+                  </select>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -1114,7 +1300,7 @@ export default function App() {
 
           <ul style={{ paddingLeft: "18px", marginTop: "6px", marginBottom: 0 }}>
             <li>USPSTF Preventive Services Task Force (current recommendations)</li>
-            <li>CDC Adult Immunization Schedule</li>
+            <li>CDC age-based and risk-based immunization schedules</li>
             <li>AHA PREVENT official base-model equations</li>
             <li>ACC/AHA lipid management framework for statin decision support</li>
           </ul>
