@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { calcPreventAscvd, riskCat } from "./lib/prevent";
 import { buildStatinPathway } from "./lib/statinPathway";
 
-const APP_VERSION = "v2.5.0";
+const APP_VERSION = "v2.6.0";
 const APP_LAST_REVIEWED = "2026-03-23";
 const RISK_ENGINE_LABEL = "Official AHA PREVENT 10-Year ASCVD Base Model";
 
@@ -159,6 +159,33 @@ function cardStyle(background = COLORS.card) {
     borderRadius: "12px",
     padding: "18px",
     boxShadow: "0 4px 18px rgba(15,23,42,0.06)",
+  };
+}
+
+function sectionCardStyle(background = "#ffffff") {
+  return {
+    background,
+    border: `1px solid ${COLORS.border}`,
+    borderRadius: "12px",
+    padding: "16px",
+    boxShadow: "0 2px 10px rgba(15,23,42,0.04)",
+  };
+}
+
+function sectionHeaderStyle() {
+  return {
+    fontSize: "16px",
+    fontWeight: 800,
+    color: COLORS.heading,
+    marginBottom: "4px",
+  };
+}
+
+function sectionSubheaderStyle() {
+  return {
+    fontSize: "12px",
+    color: COLORS.textSoft,
+    marginBottom: "12px",
   };
 }
 
@@ -781,7 +808,13 @@ export default function App() {
     lines.push(`- Statin Pathway: ${statinPlan?.pathway || "Insufficient data"}`);
     lines.push(`- Recommendation: ${statinPlan?.recommendation || "Insufficient data"}`);
     lines.push(`- Goal: ${statinPlan?.goal || "Insufficient data"}`);
-    lines.push(`- Vaccine View: ${form.vaccineMode === "current" ? "Minus childhood vaccines" : "Include childhood vaccines"}`);
+    lines.push(
+      `- Vaccine View: ${
+        form.vaccineMode === "current"
+          ? "Minus childhood vaccines"
+          : "Include childhood vaccines"
+      }`
+    );
     lines.push("");
 
     if (statinPlan?.enhancers?.length > 0) {
@@ -982,159 +1015,206 @@ export default function App() {
               Patient Inputs
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-              {[
-                ["age", "Age"],
-                ["sbp", "Systolic BP"],
-                ["dbp", "Diastolic BP"],
-                ["bmi", "BMI"],
-                ["egfr", "eGFR"],
-                ["totalChol", "Total cholesterol"],
-                ["hdl", "HDL cholesterol"],
-                ["ldl", "LDL-C"],
-                ["nonHdl", "Non-HDL-C"],
-                ["triglycerides", "Triglycerides"],
-                ["apob", "ApoB"],
-                ["lpa", "Lp(a)"],
-                ["cac", "CAC"],
-              ].map(([name, label]) => (
-                <div key={name}>
-                  <label style={labelStyle()}>{label}</label>
-                  <input
-                    type="number"
-                    name={name}
-                    value={form[name]}
-                    onChange={handleChange}
-                    style={fieldStyle(!!basicError(name))}
-                  />
-                  {basicError(name) && <div style={errorStyle()}>{basicError(name)}</div>}
+            <div style={{ display: "grid", gap: "18px" }}>
+              <div style={sectionCardStyle(COLORS.cardSoft)}>
+                <div style={sectionHeaderStyle()}>PREVENT Score Inputs</div>
+                <div style={sectionSubheaderStyle()}>
+                  Required for official AHA PREVENT risk calculation.
                 </div>
-              ))}
 
-              <div>
-                <label style={labelStyle()}>Sex</label>
-                <select
-                  name="sex"
-                  value={form.sex}
-                  onChange={handleChange}
-                  style={fieldStyle(!!basicError("sex"))}
-                >
-                  <option value="">Select</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                </select>
-                {basicError("sex") && <div style={errorStyle()}>{basicError("sex")}</div>}
-              </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                  {[
+                    ["age", "Age"],
+                    ["sbp", "Systolic BP"],
+                    ["dbp", "Diastolic BP"],
+                    ["bmi", "BMI"],
+                    ["egfr", "eGFR"],
+                    ["totalChol", "Total cholesterol"],
+                    ["hdl", "HDL cholesterol"],
+                  ].map(([name, label]) => (
+                    <div key={name}>
+                      <label style={labelStyle()}>{label}</label>
+                      <input
+                        type="number"
+                        name={name}
+                        value={form[name]}
+                        onChange={handleChange}
+                        style={fieldStyle(!!basicError(name))}
+                      />
+                      {basicError(name) && <div style={errorStyle()}>{basicError(name)}</div>}
+                    </div>
+                  ))}
 
-              <div>
-                <label style={labelStyle()}>Smoking</label>
-                <select
-                  name="smoking"
-                  value={form.smoking}
-                  onChange={handleChange}
-                  style={fieldStyle(!!basicError("smoking"))}
-                >
-                  <option value="">Optional unless calculating PREVENT</option>
-                  <option value="Y">Yes</option>
-                  <option value="N">No</option>
-                </select>
-                {basicError("smoking") && <div style={errorStyle()}>{basicError("smoking")}</div>}
-              </div>
+                  <div>
+                    <label style={labelStyle()}>Sex</label>
+                    <select
+                      name="sex"
+                      value={form.sex}
+                      onChange={handleChange}
+                      style={fieldStyle(!!basicError("sex"))}
+                    >
+                      <option value="">Select</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                    </select>
+                    {basicError("sex") && <div style={errorStyle()}>{basicError("sex")}</div>}
+                  </div>
 
-              <div>
-                <label style={labelStyle()}>Pack-years</label>
-                <input
-                  type="number"
-                  name="packYears"
-                  value={form.packYears}
-                  onChange={handleChange}
-                  disabled={form.smoking !== "Y"}
-                  style={{
-                    ...fieldStyle(!!basicError("packYears")),
-                    background: form.smoking !== "Y" ? "#f2f5f8" : "#fff",
-                  }}
-                />
-                {basicError("packYears") && <div style={errorStyle()}>{basicError("packYears")}</div>}
-              </div>
+                  <div>
+                    <label style={labelStyle()}>Smoking</label>
+                    <select
+                      name="smoking"
+                      value={form.smoking}
+                      onChange={handleChange}
+                      style={fieldStyle(!!basicError("smoking"))}
+                    >
+                      <option value="">Optional unless calculating PREVENT</option>
+                      <option value="Y">Yes</option>
+                      <option value="N">No</option>
+                    </select>
+                    {basicError("smoking") && <div style={errorStyle()}>{basicError("smoking")}</div>}
+                  </div>
 
-              <div>
-                <label style={labelStyle()}>Diabetes</label>
-                <select name="diabetes" value={form.diabetes} onChange={handleChange} style={fieldStyle(false)}>
-                  <option value="">Optional unless calculating PREVENT</option>
-                  <option value="Y">Yes</option>
-                  <option value="N">No</option>
-                </select>
-              </div>
+                  <div>
+                    <label style={labelStyle()}>Diabetes</label>
+                    <select name="diabetes" value={form.diabetes} onChange={handleChange} style={fieldStyle(false)}>
+                      <option value="">Optional unless calculating PREVENT</option>
+                      <option value="Y">Yes</option>
+                      <option value="N">No</option>
+                    </select>
+                  </div>
 
-              <div>
-                <label style={labelStyle()}>BP treatment</label>
-                <select name="bpTreated" value={form.bpTreated} onChange={handleChange} style={fieldStyle(false)}>
-                  <option value="">Optional unless calculating PREVENT</option>
-                  <option value="Y">Yes</option>
-                  <option value="N">No</option>
-                </select>
-              </div>
+                  <div>
+                    <label style={labelStyle()}>BP treatment</label>
+                    <select name="bpTreated" value={form.bpTreated} onChange={handleChange} style={fieldStyle(false)}>
+                      <option value="">Optional unless calculating PREVENT</option>
+                      <option value="Y">Yes</option>
+                      <option value="N">No</option>
+                    </select>
+                  </div>
 
-              <div>
-                <label style={labelStyle()}>Lipid-lowering therapy</label>
-                <select
-                  name="lipidLowering"
-                  value={form.lipidLowering}
-                  onChange={handleChange}
-                  style={fieldStyle(false)}
-                >
-                  <option value="">Optional unless calculating PREVENT</option>
-                  <option value="Y">Yes</option>
-                  <option value="N">No</option>
-                </select>
-              </div>
-
-              <div>
-                <label style={labelStyle()}>Known ASCVD</label>
-                <select name="knownAscvd" value={form.knownAscvd} onChange={handleChange} style={fieldStyle(false)}>
-                  <option value="">Optional</option>
-                  <option value="Y">Yes</option>
-                  <option value="N">No</option>
-                </select>
-              </div>
-
-              <div>
-                <label style={labelStyle()}>Very-high-risk ASCVD</label>
-                <select
-                  name="veryHighRiskAscvd"
-                  value={form.veryHighRiskAscvd}
-                  onChange={handleChange}
-                  style={fieldStyle(false)}
-                >
-                  <option value="">Optional</option>
-                  <option value="Y">Yes</option>
-                  <option value="N">No</option>
-                </select>
-              </div>
-
-              <div>
-                <label style={labelStyle()}>Vaccine view</label>
-                <select
-                  name="vaccineMode"
-                  value={form.vaccineMode}
-                  onChange={handleChange}
-                  style={fieldStyle(false)}
-                >
-                  <option value="cumulative">Include childhood vaccines</option>
-                  <option value="current">Minus childhood vaccines</option>
-                </select>
-              </div>
-
-              {vaccineOptionFields.map(([name, label]) => (
-                <div key={name}>
-                  <label style={labelStyle()}>{label}</label>
-                  <select name={name} value={form[name]} onChange={handleChange} style={fieldStyle(false)}>
-                    <option value="">Optional</option>
-                    <option value="Y">Yes</option>
-                    <option value="N">No</option>
-                  </select>
+                  <div>
+                    <label style={labelStyle()}>Lipid-lowering therapy</label>
+                    <select
+                      name="lipidLowering"
+                      value={form.lipidLowering}
+                      onChange={handleChange}
+                      style={fieldStyle(false)}
+                    >
+                      <option value="">Optional unless calculating PREVENT</option>
+                      <option value="Y">Yes</option>
+                      <option value="N">No</option>
+                    </select>
+                  </div>
                 </div>
-              ))}
+              </div>
+
+              <div style={sectionCardStyle("#fefefe")}>
+                <div style={sectionHeaderStyle()}>Statin Pathway Inputs</div>
+                <div style={sectionSubheaderStyle()}>
+                  Used for lipid treatment direction and risk-enhancer interpretation.
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                  {[
+                    ["ldl", "LDL-C"],
+                    ["nonHdl", "Non-HDL-C"],
+                    ["triglycerides", "Triglycerides"],
+                    ["apob", "ApoB"],
+                    ["lpa", "Lp(a)"],
+                    ["cac", "CAC"],
+                  ].map(([name, label]) => (
+                    <div key={name}>
+                      <label style={labelStyle()}>{label}</label>
+                      <input
+                        type="number"
+                        name={name}
+                        value={form[name]}
+                        onChange={handleChange}
+                        style={fieldStyle(!!basicError(name))}
+                      />
+                      {basicError(name) && <div style={errorStyle()}>{basicError(name)}</div>}
+                    </div>
+                  ))}
+
+                  <div>
+                    <label style={labelStyle()}>Known ASCVD</label>
+                    <select
+                      name="knownAscvd"
+                      value={form.knownAscvd}
+                      onChange={handleChange}
+                      style={fieldStyle(false)}
+                    >
+                      <option value="">Optional</option>
+                      <option value="Y">Yes</option>
+                      <option value="N">No</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={labelStyle()}>Very-high-risk ASCVD</label>
+                    <select
+                      name="veryHighRiskAscvd"
+                      value={form.veryHighRiskAscvd}
+                      onChange={handleChange}
+                      style={fieldStyle(false)}
+                    >
+                      <option value="">Optional</option>
+                      <option value="Y">Yes</option>
+                      <option value="N">No</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div style={sectionCardStyle("#f9fafb")}>
+                <div style={sectionHeaderStyle()}>Immunization Inputs</div>
+                <div style={sectionSubheaderStyle()}>
+                  Toggle between cumulative vaccine history and current-age vaccine needs.
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                  <div>
+                    <label style={labelStyle()}>Vaccine view</label>
+                    <select
+                      name="vaccineMode"
+                      value={form.vaccineMode}
+                      onChange={handleChange}
+                      style={fieldStyle(false)}
+                    >
+                      <option value="cumulative">Include childhood vaccines</option>
+                      <option value="current">Minus childhood vaccines</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={labelStyle()}>Pack-years</label>
+                    <input
+                      type="number"
+                      name="packYears"
+                      value={form.packYears}
+                      onChange={handleChange}
+                      disabled={form.smoking !== "Y"}
+                      style={{
+                        ...fieldStyle(!!basicError("packYears")),
+                        background: form.smoking !== "Y" ? "#f2f5f8" : "#fff",
+                      }}
+                    />
+                    {basicError("packYears") && <div style={errorStyle()}>{basicError("packYears")}</div>}
+                  </div>
+
+                  {vaccineOptionFields.map(([name, label]) => (
+                    <div key={name}>
+                      <label style={labelStyle()}>{label}</label>
+                      <select name={name} value={form[name]} onChange={handleChange} style={fieldStyle(false)}>
+                        <option value="">Optional</option>
+                        <option value="Y">Yes</option>
+                        <option value="N">No</option>
+                      </select>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
