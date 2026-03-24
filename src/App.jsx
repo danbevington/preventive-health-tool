@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { calcPreventAscvd, riskCat } from "./lib/prevent";
 import { buildStatinPathway } from "./lib/statinPathway";
 
-const APP_VERSION = "v2.6.0";
+const APP_VERSION = "v2.6.1";
 const APP_LAST_REVIEWED = "2026-03-23";
 const RISK_ENGINE_LABEL = "Official AHA PREVENT 10-Year ASCVD Base Model";
 
@@ -1076,6 +1076,22 @@ export default function App() {
                   </div>
 
                   <div>
+                    <label style={labelStyle()}>Pack-years</label>
+                    <input
+                      type="number"
+                      name="packYears"
+                      value={form.packYears}
+                      onChange={handleChange}
+                      disabled={form.smoking !== "Y"}
+                      style={{
+                        ...fieldStyle(!!basicError("packYears")),
+                        background: form.smoking !== "Y" ? "#f2f5f8" : "#fff",
+                      }}
+                    />
+                    {basicError("packYears") && <div style={errorStyle()}>{basicError("packYears")}</div>}
+                  </div>
+
+                  <div>
                     <label style={labelStyle()}>Diabetes</label>
                     <select name="diabetes" value={form.diabetes} onChange={handleChange} style={fieldStyle(false)}>
                       <option value="">Optional unless calculating PREVENT</option>
@@ -1185,22 +1201,6 @@ export default function App() {
                       <option value="cumulative">Include childhood vaccines</option>
                       <option value="current">Minus childhood vaccines</option>
                     </select>
-                  </div>
-
-                  <div>
-                    <label style={labelStyle()}>Pack-years</label>
-                    <input
-                      type="number"
-                      name="packYears"
-                      value={form.packYears}
-                      onChange={handleChange}
-                      disabled={form.smoking !== "Y"}
-                      style={{
-                        ...fieldStyle(!!basicError("packYears")),
-                        background: form.smoking !== "Y" ? "#f2f5f8" : "#fff",
-                      }}
-                    />
-                    {basicError("packYears") && <div style={errorStyle()}>{basicError("packYears")}</div>}
                   </div>
 
                   {vaccineOptionFields.map(([name, label]) => (
