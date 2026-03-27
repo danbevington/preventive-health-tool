@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { calcPreventAscvd, riskCat } from "./lib/prevent";
 import { buildStatinPathway } from "./lib/statinPathway";
 
-const APP_VERSION = "v2.7.0";
+const APP_VERSION = "v2.7.1";
 const APP_LAST_REVIEWED = "2026-03-23";
 const RISK_ENGINE_LABEL = "Official AHA PREVENT 10-Year ASCVD Base Model";
 
@@ -85,16 +85,16 @@ function yn(v) {
 function fieldStyle(hasError) {
   return {
     width: "100%",
-    maxWidth: "220px",
-    padding: "8px 10px",
+    maxWidth: "110px",
+    padding: "4px 5px",
     borderRadius: "6px",
     border: `1px solid ${hasError ? COLORS.danger : COLORS.border}`,
     background: "#fff",
     boxSizing: "border-box",
     color: COLORS.text,
     outline: "none",
-    fontSize: "13px",
-    minHeight: "36px",
+    fontSize: "11px",
+    minHeight: "18px",
     boxShadow: hasError ? "0 0 0 3px rgba(180,35,24,0.08)" : "none",
   };
 }
@@ -102,9 +102,9 @@ function fieldStyle(hasError) {
 function labelStyle() {
   return {
     display: "block",
-    fontSize: "11px",
+    fontSize: "10px",
     fontWeight: 700,
-    marginBottom: "5px",
+    marginBottom: "4px",
     color: COLORS.heading,
     textTransform: "uppercase",
     letterSpacing: "0.04em",
@@ -783,20 +783,33 @@ export default function App() {
     const steps = [];
 
     if (derived.screenings.length > 0) {
-      steps.push(`Recommended screening tests: ${derived.screenings.join(", ")}.`);
+      derived.screenings.forEach((item) => steps.push(`Screening: ${item}`));
     }
+
     if (derived.vaccines.length > 0) {
-      steps.push(
-        form.vaccineMode === "current"
-          ? `Vaccines to review now based on current age/history/risk: ${derived.vaccines.join(", ")}.`
-          : `Vaccines to review by age/history/risk, including childhood series: ${derived.vaccines.join(", ")}.`
+      derived.vaccines.forEach((item) =>
+        steps.push(
+          form.vaccineMode === "current"
+            ? `Vaccine to review now: ${item}`
+            : `Vaccine/history review: ${item}`
+        )
       );
     }
+
     if (derived.counseling.length > 0) {
-      steps.push(`Lifestyle support topics to discuss: ${derived.counseling.join(", ")}.`);
+      derived.counseling.forEach((item) => steps.push(`Counseling: ${item}`));
     }
+
+    if (derived.careGaps.length > 0) {
+      derived.careGaps.forEach((item) => steps.push(`Care gap: ${item}`));
+    }
+
+    if (derived.orders.length > 0) {
+      derived.orders.forEach((item) => steps.push(`Suggested action: ${item}`));
+    }
+
     if (statinPlan?.recommendation) {
-      steps.push(`Cholesterol treatment direction: ${statinPlan.recommendation}.`);
+      steps.push(`Statin pathway recommendation: ${statinPlan.recommendation}`);
     }
 
     const intro =
@@ -805,7 +818,14 @@ export default function App() {
         : "PREVENT-ASCVD risk is not calculated yet because more data is needed or one or more values are outside official validated ranges.";
 
     return { intro, steps };
-  }, [screeningErrors, derived, statinPlan, preventRisk, preventCategory.label, form.vaccineMode]);
+  }, [
+    screeningErrors,
+    derived,
+    statinPlan,
+    preventRisk,
+    preventCategory.label,
+    form.vaccineMode,
+  ]);
 
   const copyText = useMemo(() => {
     const lines = [];
@@ -1549,7 +1569,7 @@ export default function App() {
             This tool is intended for adult primary care decision support and does not apply to pediatric populations, pregnancy, or specialized cardiology management.
           </div>
 
-          <div style={{ marginTop: "12px", fontWeight: "600", color: "#7dd3fc" }}>
+          <div style={{ marginTop: "12px", fontWeight: "600", marginBottom: "6px", color: "#7dd3fc" }}>
             Guideline Sources
           </div>
 
