@@ -1,9 +1,13 @@
 import { useMemo, useState } from "react";
 import { calcPreventAscvd, riskCat } from "./lib/prevent";
 import { buildStatinPathway } from "./lib/statinPathway";
+import { calcCha2ds2Vasc, calcWellsPE } from "./lib/clinicalScores";
+import { calcWellsDvt } from "./lib/wellsDvt";
+import { calcHasBled } from "./lib/hasBled";
+import { calcPhq9 } from "./lib/phq9";
 
-const APP_VERSION = "v2.7.1";
-const APP_LAST_REVIEWED = "2026-03-23";
+const APP_VERSION = "v3.0.0";
+const APP_LAST_REVIEWED = "2026-03-27";
 const RISK_ENGINE_LABEL = "Official AHA PREVENT 10-Year ASCVD Base Model";
 
 const INITIAL_FORM = {
@@ -48,6 +52,58 @@ const INITIAL_FORM = {
   military: "",
   travelRisk: "",
   residenceRisk: "",
+
+  // CHA2DS2-VASc
+  chaAge: "",
+  chaSex: "",
+  chaCHF: "",
+  chaHTN: "",
+  chaDM: "",
+  chaStrokeTIA: "",
+  chaVascular: "",
+
+  // Wells PE
+  wellsDvtSigns: "",
+  wellsPeMostLikely: "",
+  wellsHrOver100: "",
+  wellsRecentSurgeryImmobilization: "",
+  wellsPriorDvtPe: "",
+  wellsHemoptysis: "",
+  wellsMalignancy: "",
+
+  // Wells DVT
+  dvtActiveCancer: "",
+  dvtParalysisOrCast: "",
+  dvtBedriddenOrSurgery: "",
+  dvtLocalizedTenderness: "",
+  dvtEntireLegSwollen: "",
+  dvtCalfSwelling3cm: "",
+  dvtPittingEdema: "",
+  dvtCollateralVeins: "",
+  dvtPriorDvt: "",
+  dvtAlternativeDiagnosisLikely: "",
+
+  // HAS-BLED
+  hasBledHypertension: "",
+  hasBledRenal: "",
+  hasBledLiver: "",
+  hasBledStroke: "",
+  hasBledBleeding: "",
+  hasBledLabileInr: "",
+  hasBledElderly: "",
+  hasBledDrugs: "",
+  hasBledAlcohol: "",
+
+  // PHQ-9
+  phq9_1: "0",
+  phq9_2: "0",
+  phq9_3: "0",
+  phq9_4: "0",
+  phq9_5: "0",
+  phq9_6: "0",
+  phq9_7: "0",
+  phq9_8: "0",
+  phq9_9: "0",
 };
 
 const COLORS = {
@@ -96,6 +152,16 @@ function fieldStyle(hasError) {
     fontSize: "11px",
     minHeight: "18px",
     boxShadow: hasError ? "0 0 0 3px rgba(180,35,24,0.08)" : "none",
+  };
+}
+
+function wideFieldStyle(hasError) {
+  return {
+    ...fieldStyle(hasError),
+    maxWidth: "220px",
+    minHeight: "32px",
+    padding: "6px 8px",
+    fontSize: "12px",
   };
 }
 
@@ -631,6 +697,19 @@ function getVaccinesForDisplay(form) {
     : getCumulativeVaccinesByAgeAndRisk(form);
 }
 
+function YesNoField({ name, label, value, onChange }) {
+  return (
+    <div>
+      <label style={labelStyle()}>{label}</label>
+      <select name={name} value={value} onChange={onChange} style={wideFieldStyle(false)}>
+        <option value="">Select</option>
+        <option value="Y">Yes</option>
+        <option value="N">No</option>
+      </select>
+    </div>
+  );
+}
+
 export default function App() {
   const [form, setForm] = useState(INITIAL_FORM);
   const [copyStatus, setCopyStatus] = useState("");
@@ -642,7 +721,7 @@ export default function App() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
+    setForm((prev) => ({ ...prev, [name]: value }));
     setCopyStatus("");
   };
 
@@ -675,6 +754,11 @@ export default function App() {
 
   const preventCategory = riskCat(preventRisk);
   const statinPlan = useMemo(() => buildStatinPathway(form, preventRisk), [form, preventRisk]);
+  const chaScore = useMemo(() => calcCha2ds2Vasc(form), [form]);
+  const wellsScore = useMemo(() => calcWellsPE(form), [form]);
+  const wellsDvtScore = useMemo(() => calcWellsDvt(form), [form]);
+  const hasBledScore = useMemo(() => calcHasBled(form), [form]);
+  const phq9Score = useMemo(() => calcPhq9(form), [form]);
 
   const derived = useMemo(() => {
     const age = parseNum(form.age) ?? 0;
@@ -818,14 +902,7 @@ export default function App() {
         : "PREVENT-ASCVD risk is not calculated yet because more data is needed or one or more values are outside official validated ranges.";
 
     return { intro, steps };
-  }, [
-    screeningErrors,
-    derived,
-    statinPlan,
-    preventRisk,
-    preventCategory.label,
-    form.vaccineMode,
-  ]);
+  }, [screeningErrors, derived, statinPlan, preventRisk, preventCategory.label, form.vaccineMode]);
 
   const copyText = useMemo(() => {
     const lines = [];
@@ -844,11 +921,19 @@ export default function App() {
     lines.push(`- Statin Pathway: ${statinPlan?.pathway || "Insufficient data"}`);
     lines.push(`- Recommendation: ${statinPlan?.recommendation || "Insufficient data"}`);
     lines.push(`- Goal: ${statinPlan?.goal || "Insufficient data"}`);
+    lines.push(`- CHA₂DS₂-VASc Score: ${chaScore.score} (${chaScore.interpretation})`);
+    lines.push(`- Wells PE Score: ${wellsScore.score} (${wellsScore.interpretation})`);
+    lines.push(`- Wells DVT Score: ${wellsDvtScore.score} (${wellsDvtScore.interpretation})`);
+    lines.push(`- HAS-BLED Score: ${hasBledScore.score} (${hasBledScore.interpretation})`);
+    lines.push(`- PHQ-9 Score: ${phq9Score.score} (${phq9Score.severity})`);
+    lines.push(
+      `- PHQ-9 Item 9: ${
+        phq9Score.positiveSuicideItem ? "Positive response present" : "No positive response"
+      }`
+    );
     lines.push(
       `- Vaccine View: ${
-        form.vaccineMode === "current"
-          ? "Minus childhood vaccines"
-          : "Include childhood vaccines"
+        form.vaccineMode === "current" ? "Minus childhood vaccines" : "Include childhood vaccines"
       }`
     );
     lines.push("");
@@ -900,7 +985,19 @@ export default function App() {
     patientSummary.steps.forEach((item) => lines.push(`- ${item}`));
 
     return lines.join("\n");
-  }, [preventRisk, preventCategory.label, statinPlan, derived, patientSummary, form.vaccineMode]);
+  }, [
+    preventRisk,
+    preventCategory.label,
+    statinPlan,
+    derived,
+    patientSummary,
+    form.vaccineMode,
+    chaScore,
+    wellsScore,
+    wellsDvtScore,
+    hasBledScore,
+    phq9Score,
+  ]);
 
   const handleCopy = async () => {
     try {
@@ -937,6 +1034,18 @@ export default function App() {
     ["residenceRisk", "Residence risk"],
   ];
 
+  const phqQuestions = [
+    ["phq9_1", "Little interest or pleasure in doing things"],
+    ["phq9_2", "Feeling down, depressed, or hopeless"],
+    ["phq9_3", "Trouble falling or staying asleep, or sleeping too much"],
+    ["phq9_4", "Feeling tired or having little energy"],
+    ["phq9_5", "Poor appetite or overeating"],
+    ["phq9_6", "Feeling bad about yourself — or that you are a failure or have let yourself or your family down"],
+    ["phq9_7", "Trouble concentrating on things"],
+    ["phq9_8", "Moving or speaking slowly, or being fidgety/restless"],
+    ["phq9_9", "Thoughts that you would be better off dead or of hurting yourself"],
+  ];
+
   return (
     <div
       style={{
@@ -956,7 +1065,7 @@ export default function App() {
         }
       `}</style>
 
-      <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
+      <div style={{ maxWidth: "1320px", margin: "0 auto" }}>
         <div
           style={{
             background: `linear-gradient(135deg, ${COLORS.shell} 0%, ${COLORS.shell2} 100%)`,
@@ -967,21 +1076,14 @@ export default function App() {
             boxShadow: "0 12px 32px rgba(15,23,42,0.22)",
           }}
         >
-          <div
-            style={{
-              fontSize: "12px",
-              textTransform: "uppercase",
-              letterSpacing: "0.12em",
-              opacity: 0.72,
-            }}
-          >
+          <div style={{ fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.12em", opacity: 0.72 }}>
             Clinical Decision Support
           </div>
           <div style={{ fontSize: "28px", fontWeight: 800, marginTop: "6px" }}>
             Preventive Health Decision Tool
           </div>
           <div style={{ marginTop: "8px", fontSize: "14px", opacity: 0.86 }}>
-            Partial inputs support preventive screening output; complete inputs generate official AHA PREVENT-ASCVD base-model risk.
+            Integrated prevention, cardiovascular, thromboembolic, bleeding-risk, and PHQ-9 screening support.
           </div>
           <div style={{ marginTop: "6px", fontSize: "12px", opacity: 0.8 }}>
             Version {APP_VERSION} • Production Build
@@ -1004,28 +1106,12 @@ export default function App() {
           </div>
         </div>
 
-        <div
-          className="no-print"
-          style={{ display: "flex", gap: "10px", marginBottom: "16px", flexWrap: "wrap" }}
-        >
-          <button type="button" onClick={handleReset} style={buttonStyle("default")}>
-            Reset Form
-          </button>
-          <button type="button" onClick={handlePrint} style={buttonStyle("primary")}>
-            Print / Export Summary
-          </button>
-          <button type="button" onClick={handleCopy} style={buttonStyle("accent")}>
-            Copy Results
-          </button>
+        <div className="no-print" style={{ display: "flex", gap: "10px", marginBottom: "16px", flexWrap: "wrap" }}>
+          <button type="button" onClick={handleReset} style={buttonStyle("default")}>Reset Form</button>
+          <button type="button" onClick={handlePrint} style={buttonStyle("primary")}>Print / Export Summary</button>
+          <button type="button" onClick={handleCopy} style={buttonStyle("accent")}>Copy Results</button>
           {copyStatus && (
-            <span
-              style={{
-                alignSelf: "center",
-                fontSize: "13px",
-                color: COLORS.primary,
-                fontWeight: 700,
-              }}
-            >
+            <span style={{ alignSelf: "center", fontSize: "13px", color: COLORS.primary, fontWeight: 700 }}>
               {copyStatus}
             </span>
           )}
@@ -1034,20 +1120,13 @@ export default function App() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1.2fr 0.8fr",
+            gridTemplateColumns: "1.25fr 0.75fr",
             gap: "18px",
             alignItems: "start",
           }}
         >
           <div className="no-print" style={cardStyle()}>
-            <div
-              style={{
-                fontSize: "18px",
-                fontWeight: 800,
-                color: COLORS.heading,
-                marginBottom: "16px",
-              }}
-            >
+            <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "16px" }}>
               Patient Inputs
             </div>
 
@@ -1058,7 +1137,7 @@ export default function App() {
                   Required for official AHA PREVENT risk calculation.
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(120px, 1fr))", gap: "16px" }}>
                   {[
                     ["age", "Age"],
                     ["sbp", "Systolic BP"],
@@ -1070,25 +1149,14 @@ export default function App() {
                   ].map(([name, label]) => (
                     <div key={name}>
                       <label style={labelStyle()}>{label}</label>
-                      <input
-                        type="number"
-                        name={name}
-                        value={form[name]}
-                        onChange={handleChange}
-                        style={fieldStyle(!!basicError(name))}
-                      />
+                      <input type="number" name={name} value={form[name]} onChange={handleChange} style={fieldStyle(!!basicError(name))} />
                       {basicError(name) && <div style={errorStyle()}>{basicError(name)}</div>}
                     </div>
                   ))}
 
                   <div>
                     <label style={labelStyle()}>Sex</label>
-                    <select
-                      name="sex"
-                      value={form.sex}
-                      onChange={handleChange}
-                      style={fieldStyle(!!basicError("sex"))}
-                    >
+                    <select name="sex" value={form.sex} onChange={handleChange} style={fieldStyle(!!basicError("sex"))}>
                       <option value="">Select</option>
                       <option value="male">Male</option>
                       <option value="female">Female</option>
@@ -1098,13 +1166,8 @@ export default function App() {
 
                   <div>
                     <label style={labelStyle()}>Smoking</label>
-                    <select
-                      name="smoking"
-                      value={form.smoking}
-                      onChange={handleChange}
-                      style={fieldStyle(!!basicError("smoking"))}
-                    >
-                      <option value="">Optional unless calculating PREVENT</option>
+                    <select name="smoking" value={form.smoking} onChange={handleChange} style={fieldStyle(!!basicError("smoking"))}>
+                      <option value="">Select</option>
                       <option value="Y">Yes</option>
                       <option value="N">No</option>
                     </select>
@@ -1130,7 +1193,7 @@ export default function App() {
                   <div>
                     <label style={labelStyle()}>Diabetes</label>
                     <select name="diabetes" value={form.diabetes} onChange={handleChange} style={fieldStyle(false)}>
-                      <option value="">Optional unless calculating PREVENT</option>
+                      <option value="">Select</option>
                       <option value="Y">Yes</option>
                       <option value="N">No</option>
                     </select>
@@ -1139,7 +1202,7 @@ export default function App() {
                   <div>
                     <label style={labelStyle()}>BP treatment</label>
                     <select name="bpTreated" value={form.bpTreated} onChange={handleChange} style={fieldStyle(false)}>
-                      <option value="">Optional unless calculating PREVENT</option>
+                      <option value="">Select</option>
                       <option value="Y">Yes</option>
                       <option value="N">No</option>
                     </select>
@@ -1147,13 +1210,8 @@ export default function App() {
 
                   <div>
                     <label style={labelStyle()}>Lipid-lowering therapy</label>
-                    <select
-                      name="lipidLowering"
-                      value={form.lipidLowering}
-                      onChange={handleChange}
-                      style={fieldStyle(false)}
-                    >
-                      <option value="">Optional unless calculating PREVENT</option>
+                    <select name="lipidLowering" value={form.lipidLowering} onChange={handleChange} style={fieldStyle(false)}>
+                      <option value="">Select</option>
                       <option value="Y">Yes</option>
                       <option value="N">No</option>
                     </select>
@@ -1167,7 +1225,7 @@ export default function App() {
                   Used for lipid treatment direction and risk-enhancer interpretation.
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(120px, 1fr))", gap: "16px" }}>
                   {[
                     ["ldl", "LDL-C"],
                     ["nonHdl", "Non-HDL-C"],
@@ -1178,44 +1236,13 @@ export default function App() {
                   ].map(([name, label]) => (
                     <div key={name}>
                       <label style={labelStyle()}>{label}</label>
-                      <input
-                        type="number"
-                        name={name}
-                        value={form[name]}
-                        onChange={handleChange}
-                        style={fieldStyle(!!basicError(name))}
-                      />
+                      <input type="number" name={name} value={form[name]} onChange={handleChange} style={fieldStyle(!!basicError(name))} />
                       {basicError(name) && <div style={errorStyle()}>{basicError(name)}</div>}
                     </div>
                   ))}
 
-                  <div>
-                    <label style={labelStyle()}>Known ASCVD</label>
-                    <select
-                      name="knownAscvd"
-                      value={form.knownAscvd}
-                      onChange={handleChange}
-                      style={fieldStyle(false)}
-                    >
-                      <option value="">Optional</option>
-                      <option value="Y">Yes</option>
-                      <option value="N">No</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label style={labelStyle()}>Very-high-risk ASCVD</label>
-                    <select
-                      name="veryHighRiskAscvd"
-                      value={form.veryHighRiskAscvd}
-                      onChange={handleChange}
-                      style={fieldStyle(false)}
-                    >
-                      <option value="">Optional</option>
-                      <option value="Y">Yes</option>
-                      <option value="N">No</option>
-                    </select>
-                  </div>
+                  <YesNoField name="knownAscvd" label="Known ASCVD" value={form.knownAscvd} onChange={handleChange} />
+                  <YesNoField name="veryHighRiskAscvd" label="Very-high-risk ASCVD" value={form.veryHighRiskAscvd} onChange={handleChange} />
                 </div>
               </div>
 
@@ -1225,27 +1252,121 @@ export default function App() {
                   Toggle between cumulative vaccine history and current-age vaccine needs.
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(180px, 1fr))", gap: "16px" }}>
                   <div>
                     <label style={labelStyle()}>Vaccine view</label>
-                    <select
-                      name="vaccineMode"
-                      value={form.vaccineMode}
-                      onChange={handleChange}
-                      style={fieldStyle(false)}
-                    >
+                    <select name="vaccineMode" value={form.vaccineMode} onChange={handleChange} style={wideFieldStyle(false)}>
                       <option value="cumulative">Include childhood vaccines</option>
                       <option value="current">Minus childhood vaccines</option>
                     </select>
                   </div>
 
                   {vaccineOptionFields.map(([name, label]) => (
+                    <YesNoField key={name} name={name} label={label} value={form[name]} onChange={handleChange} />
+                  ))}
+                </div>
+              </div>
+
+              <div style={sectionCardStyle("#fffdf7")}>
+                <div style={sectionHeaderStyle()}>CHA₂DS₂-VASc Inputs</div>
+                <div style={sectionSubheaderStyle()}>
+                  Stroke-risk scoring input fields for atrial fibrillation.
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(180px, 1fr))", gap: "16px" }}>
+                  <div>
+                    <label style={labelStyle()}>Age</label>
+                    <input type="number" name="chaAge" value={form.chaAge} onChange={handleChange} style={wideFieldStyle(false)} />
+                  </div>
+
+                  <div>
+                    <label style={labelStyle()}>Sex</label>
+                    <select name="chaSex" value={form.chaSex} onChange={handleChange} style={wideFieldStyle(false)}>
+                      <option value="">Select</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                    </select>
+                  </div>
+
+                  <YesNoField name="chaCHF" label="CHF / LV dysfunction" value={form.chaCHF} onChange={handleChange} />
+                  <YesNoField name="chaHTN" label="Hypertension" value={form.chaHTN} onChange={handleChange} />
+                  <YesNoField name="chaDM" label="Diabetes mellitus" value={form.chaDM} onChange={handleChange} />
+                  <YesNoField name="chaStrokeTIA" label="Stroke / TIA / thromboembolism" value={form.chaStrokeTIA} onChange={handleChange} />
+                  <YesNoField name="chaVascular" label="Vascular disease" value={form.chaVascular} onChange={handleChange} />
+                </div>
+              </div>
+
+              <div style={sectionCardStyle("#fff8f8")}>
+                <div style={sectionHeaderStyle()}>Wells PE Inputs</div>
+                <div style={sectionSubheaderStyle()}>
+                  Pretest probability scoring inputs for pulmonary embolism.
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(180px, 1fr))", gap: "16px" }}>
+                  <YesNoField name="wellsDvtSigns" label="Clinical signs of DVT" value={form.wellsDvtSigns} onChange={handleChange} />
+                  <YesNoField name="wellsPeMostLikely" label="PE more likely than alternative diagnosis" value={form.wellsPeMostLikely} onChange={handleChange} />
+                  <YesNoField name="wellsHrOver100" label="Heart rate >100" value={form.wellsHrOver100} onChange={handleChange} />
+                  <YesNoField name="wellsRecentSurgeryImmobilization" label="Recent surgery / immobilization" value={form.wellsRecentSurgeryImmobilization} onChange={handleChange} />
+                  <YesNoField name="wellsPriorDvtPe" label="Prior DVT or PE" value={form.wellsPriorDvtPe} onChange={handleChange} />
+                  <YesNoField name="wellsHemoptysis" label="Hemoptysis" value={form.wellsHemoptysis} onChange={handleChange} />
+                  <YesNoField name="wellsMalignancy" label="Malignancy" value={form.wellsMalignancy} onChange={handleChange} />
+                </div>
+              </div>
+
+              <div style={sectionCardStyle("#fff8f5")}>
+                <div style={sectionHeaderStyle()}>Wells DVT Inputs</div>
+                <div style={sectionSubheaderStyle()}>
+                  Pretest probability scoring inputs for lower-extremity DVT.
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(180px, 1fr))", gap: "16px" }}>
+                  <YesNoField name="dvtActiveCancer" label="Active cancer" value={form.dvtActiveCancer} onChange={handleChange} />
+                  <YesNoField name="dvtParalysisOrCast" label="Paralysis / paresis / recent leg cast" value={form.dvtParalysisOrCast} onChange={handleChange} />
+                  <YesNoField name="dvtBedriddenOrSurgery" label="Bedridden >3 days or major surgery within 12 weeks" value={form.dvtBedriddenOrSurgery} onChange={handleChange} />
+                  <YesNoField name="dvtLocalizedTenderness" label="Localized deep venous tenderness" value={form.dvtLocalizedTenderness} onChange={handleChange} />
+                  <YesNoField name="dvtEntireLegSwollen" label="Entire leg swollen" value={form.dvtEntireLegSwollen} onChange={handleChange} />
+                  <YesNoField name="dvtCalfSwelling3cm" label="Calf swelling >3 cm" value={form.dvtCalfSwelling3cm} onChange={handleChange} />
+                  <YesNoField name="dvtPittingEdema" label="Pitting edema confined to symptomatic leg" value={form.dvtPittingEdema} onChange={handleChange} />
+                  <YesNoField name="dvtCollateralVeins" label="Collateral superficial veins" value={form.dvtCollateralVeins} onChange={handleChange} />
+                  <YesNoField name="dvtPriorDvt" label="Previously documented DVT" value={form.dvtPriorDvt} onChange={handleChange} />
+                  <YesNoField name="dvtAlternativeDiagnosisLikely" label="Alternative diagnosis at least as likely as DVT" value={form.dvtAlternativeDiagnosisLikely} onChange={handleChange} />
+                </div>
+              </div>
+
+              <div style={sectionCardStyle("#fff8f2")}>
+                <div style={sectionHeaderStyle()}>HAS-BLED Inputs</div>
+                <div style={sectionSubheaderStyle()}>
+                  Bleeding-risk scoring inputs for anticoagulated atrial fibrillation patients.
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(180px, 1fr))", gap: "16px" }}>
+                  <YesNoField name="hasBledHypertension" label="Hypertension (SBP >160)" value={form.hasBledHypertension} onChange={handleChange} />
+                  <YesNoField name="hasBledRenal" label="Abnormal renal function" value={form.hasBledRenal} onChange={handleChange} />
+                  <YesNoField name="hasBledLiver" label="Abnormal liver function" value={form.hasBledLiver} onChange={handleChange} />
+                  <YesNoField name="hasBledStroke" label="Prior stroke" value={form.hasBledStroke} onChange={handleChange} />
+                  <YesNoField name="hasBledBleeding" label="Bleeding history / predisposition" value={form.hasBledBleeding} onChange={handleChange} />
+                  <YesNoField name="hasBledLabileInr" label="Labile INR" value={form.hasBledLabileInr} onChange={handleChange} />
+                  <YesNoField name="hasBledElderly" label="Age >65" value={form.hasBledElderly} onChange={handleChange} />
+                  <YesNoField name="hasBledDrugs" label="Drugs predisposing to bleeding" value={form.hasBledDrugs} onChange={handleChange} />
+                  <YesNoField name="hasBledAlcohol" label="Alcohol excess" value={form.hasBledAlcohol} onChange={handleChange} />
+                </div>
+              </div>
+
+              <div style={sectionCardStyle("#f8f7ff")}>
+                <div style={sectionHeaderStyle()}>PHQ-9 Inputs</div>
+                <div style={sectionSubheaderStyle()}>
+                  Depression symptom severity screening over the past 2 weeks.
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "12px" }}>
+                  {phqQuestions.map(([name, label]) => (
                     <div key={name}>
                       <label style={labelStyle()}>{label}</label>
-                      <select name={name} value={form[name]} onChange={handleChange} style={fieldStyle(false)}>
-                        <option value="">Optional</option>
-                        <option value="Y">Yes</option>
-                        <option value="N">No</option>
+                      <select name={name} value={form[name]} onChange={handleChange} style={wideFieldStyle(false)}>
+                        <option value="0">Not at all</option>
+                        <option value="1">Several days</option>
+                        <option value="2">More than half the days</option>
+                        <option value="3">Nearly every day</option>
                       </select>
                     </div>
                   ))}
@@ -1255,50 +1376,28 @@ export default function App() {
           </div>
 
           <div style={{ display: "grid", gap: "18px" }}>
-            <div
-              className="no-print"
-              style={{
-                ...cardStyle(),
-                padding: "12px",
-                textAlign: "left",
-              }}
-            >
+            <div className="no-print" style={{ ...cardStyle(), padding: "12px", textAlign: "left" }}>
               <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("prevent")}
-                  style={tabButtonStyle(activeTab === "prevent")}
-                >
-                  PREVENT Score
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("statin")}
-                  style={tabButtonStyle(activeTab === "statin")}
-                >
-                  Statin Pathway
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("screenings")}
-                  style={tabButtonStyle(activeTab === "screenings")}
-                >
-                  Screenings
-                </button>
+                {[
+                  ["prevent", "PREVENT Score"],
+                  ["statin", "Statin Pathway"],
+                  ["screenings", "Screenings"],
+                  ["cha2ds2vasc", "CHA₂DS₂-VASc"],
+                  ["wells", "Wells PE"],
+                  ["wellsDvt", "Wells DVT"],
+                  ["hasBled", "HAS-BLED"],
+                  ["phq9", "PHQ-9"],
+                ].map(([key, label]) => (
+                  <button key={key} type="button" onClick={() => setActiveTab(key)} style={tabButtonStyle(activeTab === key)}>
+                    {label}
+                  </button>
+                ))}
               </div>
             </div>
 
             {activeTab === "prevent" && (
               <div className="print-card" style={{ ...cardStyle(COLORS.cardSoft), textAlign: "left" }}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    gap: "10px",
-                    marginBottom: "10px",
-                  }}
-                >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
                   <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading }}>
                     Risk Overview
                   </div>
@@ -1315,15 +1414,7 @@ export default function App() {
                   </span>
                 </div>
 
-                <div
-                  style={{
-                    fontSize: "32px",
-                    fontWeight: 800,
-                    color: COLORS.primaryDark,
-                    lineHeight: 1,
-                    textAlign: "left",
-                  }}
-                >
+                <div style={{ fontSize: "32px", fontWeight: 800, color: COLORS.primaryDark, lineHeight: 1, textAlign: "left" }}>
                   {preventRisk != null ? `${preventRisk}%` : "—"}
                 </div>
 
@@ -1336,27 +1427,12 @@ export default function App() {
                     ? `${preventCategory.label} risk (${preventCategory.range})`
                     : "Complete official base-model inputs within validated ranges are required to calculate PREVENT risk."}
                 </div>
-
-                <div style={{ marginTop: "14px", fontSize: "13px", color: COLORS.text, textAlign: "left" }}>
-                  <strong>Engine:</strong> {RISK_ENGINE_LABEL}
-                </div>
-                <div style={{ marginTop: "6px", fontSize: "13px", color: COLORS.text, textAlign: "left" }}>
-                  <strong>Reviewed:</strong> {APP_LAST_REVIEWED}
-                </div>
               </div>
             )}
 
             {activeTab === "statin" && (
               <div className="print-card" style={{ ...cardStyle(COLORS.primarySoft), textAlign: "left" }}>
-                <div
-                  style={{
-                    fontSize: "18px",
-                    fontWeight: 800,
-                    color: COLORS.heading,
-                    marginBottom: "10px",
-                    textAlign: "left",
-                  }}
-                >
+                <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "10px", textAlign: "left" }}>
                   Statin Pathway
                 </div>
 
@@ -1376,25 +1452,13 @@ export default function App() {
                 <div style={{ textAlign: "left" }}>
                   <strong>Notes:</strong> {statinPlan?.notes?.length ? statinPlan.notes.join(", ") : "None"}
                 </div>
-
-                <div style={{ marginTop: "10px", fontSize: "12px", color: COLORS.textSoft, textAlign: "left" }}>
-                  Based on ACC/AHA guideline framework with individualized risk modifiers.
-                </div>
               </div>
             )}
 
             {activeTab === "screenings" && (
               <>
                 <div className="print-card" style={{ ...cardStyle(COLORS.accentSoft), textAlign: "left" }}>
-                  <div
-                    style={{
-                      fontSize: "18px",
-                      fontWeight: 800,
-                      color: COLORS.accent,
-                      marginBottom: "10px",
-                      textAlign: "left",
-                    }}
-                  >
+                  <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.accent, marginBottom: "10px", textAlign: "left" }}>
                     Patient-Friendly Summary
                   </div>
                   <p style={{ marginTop: 0, color: COLORS.text, textAlign: "left" }}>{patientSummary.intro}</p>
@@ -1408,15 +1472,7 @@ export default function App() {
                 </div>
 
                 <div className="print-card" style={{ ...cardStyle(), textAlign: "left" }}>
-                  <div
-                    style={{
-                      fontSize: "18px",
-                      fontWeight: 800,
-                      color: COLORS.heading,
-                      marginBottom: "14px",
-                      textAlign: "left",
-                    }}
-                  >
+                  <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "14px", textAlign: "left" }}>
                     Clinical Output
                   </div>
 
@@ -1437,15 +1493,7 @@ export default function App() {
                           textAlign: "left",
                         }}
                       >
-                        <div
-                          style={{
-                            fontSize: "15px",
-                            fontWeight: 800,
-                            color: COLORS.heading,
-                            marginBottom: "8px",
-                            textAlign: "left",
-                          }}
-                        >
+                        <div style={{ fontSize: "15px", fontWeight: 800, color: COLORS.heading, marginBottom: "8px", textAlign: "left" }}>
                           {section.title}
                         </div>
                         <ul style={{ paddingLeft: "20px", marginBottom: 0, textAlign: "left" }}>
@@ -1469,15 +1517,7 @@ export default function App() {
                         textAlign: "left",
                       }}
                     >
-                      <div
-                        style={{
-                          fontSize: "15px",
-                          fontWeight: 800,
-                          color: COLORS.heading,
-                          marginBottom: "8px",
-                          textAlign: "left",
-                        }}
-                      >
+                      <div style={{ fontSize: "15px", fontWeight: 800, color: COLORS.heading, marginBottom: "8px", textAlign: "left" }}>
                         Suggested Orders / Actions
                       </div>
                       <ul style={{ paddingLeft: "20px", marginBottom: 0, textAlign: "left" }}>
@@ -1495,16 +1535,127 @@ export default function App() {
               </>
             )}
 
+            {activeTab === "cha2ds2vasc" && (
+              <div className="print-card" style={{ ...cardStyle("#fffdf7"), textAlign: "left" }}>
+                <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "10px" }}>
+                  CHA₂DS₂-VASc Score
+                </div>
+
+                <div style={{ fontSize: "32px", fontWeight: 800, color: COLORS.primaryDark, lineHeight: 1 }}>
+                  {chaScore.score}
+                </div>
+
+                <div style={{ marginTop: "8px", fontWeight: 700, color: COLORS.heading }}>
+                  {chaScore.interpretation}
+                </div>
+
+                <ul style={{ paddingLeft: "20px", marginTop: "12px", marginBottom: 0 }}>
+                  {chaScore.items.length ? (
+                    chaScore.items.map((item, i) => <li key={i}>{item}</li>)
+                  ) : (
+                    <li>No factors selected yet.</li>
+                  )}
+                </ul>
+              </div>
+            )}
+
+            {activeTab === "wells" && (
+              <div className="print-card" style={{ ...cardStyle("#fff8f8"), textAlign: "left" }}>
+                <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "10px" }}>
+                  Wells PE Score
+                </div>
+
+                <div style={{ fontSize: "32px", fontWeight: 800, color: COLORS.primaryDark, lineHeight: 1 }}>
+                  {wellsScore.score}
+                </div>
+
+                <div style={{ marginTop: "8px", fontWeight: 700, color: COLORS.heading }}>
+                  {wellsScore.interpretation}
+                </div>
+
+                <ul style={{ paddingLeft: "20px", marginTop: "12px", marginBottom: 0 }}>
+                  {wellsScore.items.length ? (
+                    wellsScore.items.map((item, i) => <li key={i}>{item}</li>)
+                  ) : (
+                    <li>No criteria selected yet.</li>
+                  )}
+                </ul>
+              </div>
+            )}
+
+            {activeTab === "wellsDvt" && (
+              <div className="print-card" style={{ ...cardStyle("#fff8f5"), textAlign: "left" }}>
+                <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "10px" }}>
+                  Wells DVT Score
+                </div>
+
+                <div style={{ fontSize: "32px", fontWeight: 800, color: COLORS.primaryDark, lineHeight: 1 }}>
+                  {wellsDvtScore.score}
+                </div>
+
+                <div style={{ marginTop: "8px", fontWeight: 700, color: COLORS.heading }}>
+                  {wellsDvtScore.interpretation}
+                </div>
+
+                <ul style={{ paddingLeft: "20px", marginTop: "12px", marginBottom: 0 }}>
+                  {wellsDvtScore.items.length ? (
+                    wellsDvtScore.items.map((item, i) => <li key={i}>{item}</li>)
+                  ) : (
+                    <li>No criteria selected yet.</li>
+                  )}
+                </ul>
+              </div>
+            )}
+
+            {activeTab === "hasBled" && (
+              <div className="print-card" style={{ ...cardStyle("#fff8f2"), textAlign: "left" }}>
+                <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "10px" }}>
+                  HAS-BLED Score
+                </div>
+
+                <div style={{ fontSize: "32px", fontWeight: 800, color: COLORS.primaryDark, lineHeight: 1 }}>
+                  {hasBledScore.score}
+                </div>
+
+                <div style={{ marginTop: "8px", fontWeight: 700, color: COLORS.heading }}>
+                  {hasBledScore.interpretation}
+                </div>
+
+                <ul style={{ paddingLeft: "20px", marginTop: "12px", marginBottom: 0 }}>
+                  {hasBledScore.items.length ? (
+                    hasBledScore.items.map((item, i) => <li key={i}>{item}</li>)
+                  ) : (
+                    <li>No factors selected yet.</li>
+                  )}
+                </ul>
+              </div>
+            )}
+
+            {activeTab === "phq9" && (
+              <div className="print-card" style={{ ...cardStyle("#f8f7ff"), textAlign: "left" }}>
+                <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "10px" }}>
+                  PHQ-9 Score
+                </div>
+
+                <div style={{ fontSize: "32px", fontWeight: 800, color: COLORS.primaryDark, lineHeight: 1 }}>
+                  {phq9Score.score}
+                </div>
+
+                <div style={{ marginTop: "8px", fontWeight: 700, color: COLORS.heading }}>
+                  {phq9Score.severity}
+                </div>
+
+                <div style={{ marginTop: "10px", fontSize: "13px", color: COLORS.text }}>
+                  <strong>Item 9:</strong>{" "}
+                  {phq9Score.positiveSuicideItem
+                    ? "Positive response present — follow clinic suicide safety protocol."
+                    : "No positive response on item 9."}
+                </div>
+              </div>
+            )}
+
             <div className="no-print" style={{ ...cardStyle(), textAlign: "left" }}>
-              <div
-                style={{
-                  fontSize: "18px",
-                  fontWeight: 800,
-                  color: COLORS.heading,
-                  marginBottom: "10px",
-                  textAlign: "left",
-                }}
-              >
+              <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "10px", textAlign: "left" }}>
                 Copy / Paste Text
               </div>
               <textarea
@@ -1558,42 +1709,16 @@ export default function App() {
           </div>
 
           <div style={{ marginTop: "6px" }}>
-            Recommendations reflect guideline logic last reviewed on {APP_LAST_REVIEWED} and may change as USPSTF, CDC, and AHA/ACC guidance is updated. Clinicians should verify recommendations against current primary sources.
+            Recommendations reflect guideline logic last reviewed on {APP_LAST_REVIEWED} and may change as guidance is updated.
           </div>
 
           <div style={{ marginTop: "6px" }}>
             This application does not store, transmit, or retain any patient data. All inputs are processed locally within the browser session.
           </div>
 
-          <div style={{ marginTop: "6px" }}>
-            This tool is intended for adult primary care decision support and does not apply to pediatric populations, pregnancy, or specialized cardiology management.
-          </div>
-
-          <div style={{ marginTop: "12px", fontWeight: "600", marginBottom: "6px", color: "#7dd3fc" }}>
-            Guideline Sources
-          </div>
-
-          <ul style={{ paddingLeft: "18px", marginTop: "6px", marginBottom: 0 }}>
-            <li>USPSTF Preventive Services Task Force (current recommendations)</li>
-            <li>CDC age-based and risk-based immunization schedules</li>
-            <li>AHA PREVENT official base-model equations</li>
-            <li>ACC/AHA lipid management framework for statin decision support</li>
-          </ul>
-
           <div style={{ marginTop: "10px", fontSize: "11px", color: "#9fb3c8" }}>
             © {new Date().getFullYear()} Daniel Bevington. All rights reserved. Version {APP_VERSION} | Last reviewed: {APP_LAST_REVIEWED}
           </div>
-        </div>
-
-        <div
-          style={{
-            textAlign: "center",
-            fontSize: "12px",
-            color: COLORS.textSoft,
-            marginTop: "16px",
-          }}
-        >
-          Clinical decision support only. Partial inputs support screening output; full official AHA PREVENT base-model inputs are needed for risk calculation.
         </div>
       </div>
     </div>
