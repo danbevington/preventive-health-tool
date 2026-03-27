@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { calcPreventAscvd, riskCat } from "./lib/prevent";
 import { buildStatinPathway } from "./lib/statinPathway";
 
-const APP_VERSION = "v2.6.1";
+const APP_VERSION = "v2.7.0";
 const APP_LAST_REVIEWED = "2026-03-23";
 const RISK_ENGINE_LABEL = "Official AHA PREVENT 10-Year ASCVD Base Model";
 
@@ -85,14 +85,16 @@ function yn(v) {
 function fieldStyle(hasError) {
   return {
     width: "100%",
-    padding: "11px 12px",
-    borderRadius: "8px",
+    maxWidth: "220px",
+    padding: "8px 10px",
+    borderRadius: "6px",
     border: `1px solid ${hasError ? COLORS.danger : COLORS.border}`,
     background: "#fff",
     boxSizing: "border-box",
     color: COLORS.text,
     outline: "none",
-    fontSize: "14px",
+    fontSize: "13px",
+    minHeight: "36px",
     boxShadow: hasError ? "0 0 0 3px rgba(180,35,24,0.08)" : "none",
   };
 }
@@ -100,9 +102,9 @@ function fieldStyle(hasError) {
 function labelStyle() {
   return {
     display: "block",
-    fontSize: "12px",
+    fontSize: "11px",
     fontWeight: 700,
-    marginBottom: "6px",
+    marginBottom: "5px",
     color: COLORS.heading,
     textTransform: "uppercase",
     letterSpacing: "0.04em",
@@ -149,6 +151,19 @@ function buttonStyle(kind = "default") {
     color: COLORS.text,
     cursor: "pointer",
     fontWeight: 700,
+  };
+}
+
+function tabButtonStyle(active) {
+  return {
+    padding: "9px 14px",
+    borderRadius: "8px",
+    border: `1px solid ${active ? COLORS.primaryDark : COLORS.border}`,
+    background: active ? COLORS.primarySoft : "#ffffff",
+    color: active ? COLORS.primaryDark : COLORS.text,
+    cursor: "pointer",
+    fontWeight: 700,
+    fontSize: "13px",
   };
 }
 
@@ -619,6 +634,7 @@ function getVaccinesForDisplay(form) {
 export default function App() {
   const [form, setForm] = useState(INITIAL_FORM);
   const [copyStatus, setCopyStatus] = useState("");
+  const [activeTab, setActiveTab] = useState("prevent");
 
   const screeningErrors = useMemo(() => validateScreeningInputs(form), [form]);
   const additionalErrors = useMemo(() => validateAdditionalInputs(form), [form]);
@@ -1219,115 +1235,254 @@ export default function App() {
           </div>
 
           <div style={{ display: "grid", gap: "18px" }}>
-            <div className="print-card" style={cardStyle(COLORS.cardSoft)}>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  gap: "10px",
-                  marginBottom: "10px",
-                }}
-              >
-                <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading }}>
-                  Risk Overview
-                </div>
-                <span
+            <div
+              className="no-print"
+              style={{
+                ...cardStyle(),
+                padding: "12px",
+                textAlign: "left",
+              }}
+            >
+              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("prevent")}
+                  style={tabButtonStyle(activeTab === "prevent")}
+                >
+                  PREVENT Score
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("statin")}
+                  style={tabButtonStyle(activeTab === "statin")}
+                >
+                  Statin Pathway
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("screenings")}
+                  style={tabButtonStyle(activeTab === "screenings")}
+                >
+                  Screenings
+                </button>
+              </div>
+            </div>
+
+            {activeTab === "prevent" && (
+              <div className="print-card" style={{ ...cardStyle(COLORS.cardSoft), textAlign: "left" }}>
+                <div
                   style={{
-                    ...riskBadge,
-                    borderRadius: "999px",
-                    padding: "7px 12px",
-                    fontSize: "12px",
-                    fontWeight: 800,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: "10px",
+                    marginBottom: "10px",
                   }}
                 >
-                  {preventCategory.label}
-                </span>
-              </div>
+                  <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading }}>
+                    Risk Overview
+                  </div>
+                  <span
+                    style={{
+                      ...riskBadge,
+                      borderRadius: "999px",
+                      padding: "7px 12px",
+                      fontSize: "12px",
+                      fontWeight: 800,
+                    }}
+                  >
+                    {preventCategory.label}
+                  </span>
+                </div>
 
-              <div
-                style={{
-                  fontSize: "32px",
-                  fontWeight: 800,
-                  color: COLORS.primaryDark,
-                  lineHeight: 1,
-                }}
-              >
-                {preventRisk != null ? `${preventRisk}%` : "—"}
-              </div>
+                <div
+                  style={{
+                    fontSize: "32px",
+                    fontWeight: 800,
+                    color: COLORS.primaryDark,
+                    lineHeight: 1,
+                    textAlign: "left",
+                  }}
+                >
+                  {preventRisk != null ? `${preventRisk}%` : "—"}
+                </div>
 
-              <div style={{ marginTop: "8px", fontWeight: 700, color: COLORS.heading }}>
-                Official AHA PREVENT-ASCVD 10-Year Risk
-              </div>
+                <div style={{ marginTop: "8px", fontWeight: 700, color: COLORS.heading, textAlign: "left" }}>
+                  Official AHA PREVENT-ASCVD 10-Year Risk
+                </div>
 
-              <div style={{ marginTop: "8px", fontSize: "13px", color: COLORS.textSoft }}>
-                {preventRisk != null
-                  ? `${preventCategory.label} risk (${preventCategory.range})`
-                  : "Complete official base-model inputs within validated ranges are required to calculate PREVENT risk."}
-              </div>
-            </div>
+                <div style={{ marginTop: "8px", fontSize: "13px", color: COLORS.textSoft, textAlign: "left" }}>
+                  {preventRisk != null
+                    ? `${preventCategory.label} risk (${preventCategory.range})`
+                    : "Complete official base-model inputs within validated ranges are required to calculate PREVENT risk."}
+                </div>
 
-            <div className="print-card" style={cardStyle(COLORS.primarySoft)}>
+                <div style={{ marginTop: "14px", fontSize: "13px", color: COLORS.text, textAlign: "left" }}>
+                  <strong>Engine:</strong> {RISK_ENGINE_LABEL}
+                </div>
+                <div style={{ marginTop: "6px", fontSize: "13px", color: COLORS.text, textAlign: "left" }}>
+                  <strong>Reviewed:</strong> {APP_LAST_REVIEWED}
+                </div>
+              </div>
+            )}
+
+            {activeTab === "statin" && (
+              <div className="print-card" style={{ ...cardStyle(COLORS.primarySoft), textAlign: "left" }}>
+                <div
+                  style={{
+                    fontSize: "18px",
+                    fontWeight: 800,
+                    color: COLORS.heading,
+                    marginBottom: "10px",
+                    textAlign: "left",
+                  }}
+                >
+                  Statin Pathway
+                </div>
+
+                <div style={{ marginBottom: "8px", textAlign: "left" }}>
+                  <strong>Pathway:</strong> {statinPlan?.pathway || "Insufficient data"}
+                </div>
+                <div style={{ marginBottom: "8px", textAlign: "left" }}>
+                  <strong>Recommendation:</strong> {statinPlan?.recommendation || "Insufficient data"}
+                </div>
+                <div style={{ marginBottom: "8px", textAlign: "left" }}>
+                  <strong>Goal:</strong> {statinPlan?.goal || "Insufficient data"}
+                </div>
+                <div style={{ marginBottom: "8px", textAlign: "left" }}>
+                  <strong>Risk enhancers:</strong>{" "}
+                  {statinPlan?.enhancers?.length ? statinPlan.enhancers.join(", ") : "None noted"}
+                </div>
+                <div style={{ textAlign: "left" }}>
+                  <strong>Notes:</strong> {statinPlan?.notes?.length ? statinPlan.notes.join(", ") : "None"}
+                </div>
+
+                <div style={{ marginTop: "10px", fontSize: "12px", color: COLORS.textSoft, textAlign: "left" }}>
+                  Based on ACC/AHA guideline framework with individualized risk modifiers.
+                </div>
+              </div>
+            )}
+
+            {activeTab === "screenings" && (
+              <>
+                <div className="print-card" style={{ ...cardStyle(COLORS.accentSoft), textAlign: "left" }}>
+                  <div
+                    style={{
+                      fontSize: "18px",
+                      fontWeight: 800,
+                      color: COLORS.accent,
+                      marginBottom: "10px",
+                      textAlign: "left",
+                    }}
+                  >
+                    Patient-Friendly Summary
+                  </div>
+                  <p style={{ marginTop: 0, color: COLORS.text, textAlign: "left" }}>{patientSummary.intro}</p>
+                  <ul style={{ paddingLeft: "20px", marginBottom: 0, textAlign: "left" }}>
+                    {patientSummary.steps.map((item, i) => (
+                      <li key={i} style={{ marginBottom: "6px", textAlign: "left" }}>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="print-card" style={{ ...cardStyle(), textAlign: "left" }}>
+                  <div
+                    style={{
+                      fontSize: "18px",
+                      fontWeight: 800,
+                      color: COLORS.heading,
+                      marginBottom: "14px",
+                      textAlign: "left",
+                    }}
+                  >
+                    Clinical Output
+                  </div>
+
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "16px" }}>
+                    {[
+                      { title: "Screenings", items: derived.screenings, bg: COLORS.primarySoft },
+                      { title: "Vaccines", items: derived.vaccines, bg: COLORS.successSoft },
+                      { title: "Counseling", items: derived.counseling, bg: COLORS.purpleSoft },
+                      { title: "Care Gaps", items: derived.careGaps, bg: COLORS.warningSoft },
+                    ].map((section) => (
+                      <div
+                        key={section.title}
+                        style={{
+                          background: section.bg,
+                          border: `1px solid ${COLORS.border}`,
+                          borderRadius: "10px",
+                          padding: "16px",
+                          textAlign: "left",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: "15px",
+                            fontWeight: 800,
+                            color: COLORS.heading,
+                            marginBottom: "8px",
+                            textAlign: "left",
+                          }}
+                        >
+                          {section.title}
+                        </div>
+                        <ul style={{ paddingLeft: "20px", marginBottom: 0, textAlign: "left" }}>
+                          {section.items.length
+                            ? section.items.map((item, i) => (
+                                <li key={i} style={{ marginBottom: "6px", textAlign: "left" }}>
+                                  {item}
+                                </li>
+                              ))
+                            : <li style={{ textAlign: "left" }}>None yet.</li>}
+                        </ul>
+                      </div>
+                    ))}
+
+                    <div
+                      style={{
+                        background: "#eef8f4",
+                        border: `1px solid ${COLORS.border}`,
+                        borderRadius: "10px",
+                        padding: "16px",
+                        textAlign: "left",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: "15px",
+                          fontWeight: 800,
+                          color: COLORS.heading,
+                          marginBottom: "8px",
+                          textAlign: "left",
+                        }}
+                      >
+                        Suggested Orders / Actions
+                      </div>
+                      <ul style={{ paddingLeft: "20px", marginBottom: 0, textAlign: "left" }}>
+                        {derived.orders.length
+                          ? derived.orders.map((item, i) => (
+                              <li key={i} style={{ marginBottom: "6px", textAlign: "left" }}>
+                                {item}
+                              </li>
+                            ))
+                          : <li style={{ textAlign: "left" }}>No actions yet.</li>}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            <div className="no-print" style={{ ...cardStyle(), textAlign: "left" }}>
               <div
                 style={{
                   fontSize: "18px",
                   fontWeight: 800,
                   color: COLORS.heading,
                   marginBottom: "10px",
-                }}
-              >
-                Statin Pathway
-              </div>
-
-              <div style={{ marginBottom: "8px" }}>
-                <strong>Pathway:</strong> {statinPlan?.pathway || "Insufficient data"}
-              </div>
-              <div style={{ marginBottom: "8px" }}>
-                <strong>Recommendation:</strong> {statinPlan?.recommendation || "Insufficient data"}
-              </div>
-              <div style={{ marginBottom: "8px" }}>
-                <strong>Goal:</strong> {statinPlan?.goal || "Insufficient data"}
-              </div>
-              <div style={{ marginBottom: "8px" }}>
-                <strong>Risk enhancers:</strong>{" "}
-                {statinPlan?.enhancers?.length ? statinPlan.enhancers.join(", ") : "None noted"}
-              </div>
-              <div>
-                <strong>Notes:</strong> {statinPlan?.notes?.length ? statinPlan.notes.join(", ") : "None"}
-              </div>
-              <div style={{ marginTop: "8px", fontSize: "12px", color: COLORS.textSoft }}>
-                Based on ACC/AHA guideline framework with individualized risk modifiers.
-              </div>
-            </div>
-
-            <div className="print-card" style={cardStyle(COLORS.accentSoft)}>
-              <div
-                style={{
-                  fontSize: "18px",
-                  fontWeight: 800,
-                  color: COLORS.accent,
-                  marginBottom: "10px",
-                }}
-              >
-                Patient-Friendly Summary
-              </div>
-              <p style={{ marginTop: 0, color: COLORS.text }}>{patientSummary.intro}</p>
-              <ul style={{ paddingLeft: "20px", marginBottom: 0 }}>
-                {patientSummary.steps.map((item, i) => (
-                  <li key={i} style={{ marginBottom: "6px" }}>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="no-print" style={cardStyle()}>
-              <div
-                style={{
-                  fontSize: "18px",
-                  fontWeight: 800,
-                  color: COLORS.heading,
-                  marginBottom: "10px",
+                  textAlign: "left",
                 }}
               >
                 Copy / Paste Text
@@ -1346,90 +1501,9 @@ export default function App() {
                   fontSize: "13px",
                   background: "#f8fafc",
                   color: COLORS.text,
+                  textAlign: "left",
                 }}
               />
-            </div>
-          </div>
-        </div>
-
-        <div className="print-card" style={{ ...cardStyle(), marginTop: "18px" }}>
-          <div
-            style={{
-              fontSize: "18px",
-              fontWeight: 800,
-              color: COLORS.heading,
-              marginBottom: "14px",
-            }}
-          >
-            Clinical Output
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-            {[
-              { title: "Screenings", items: derived.screenings, bg: COLORS.primarySoft },
-              { title: "Vaccines", items: derived.vaccines, bg: COLORS.successSoft },
-              { title: "Counseling", items: derived.counseling, bg: COLORS.purpleSoft },
-              { title: "Care Gaps", items: derived.careGaps, bg: COLORS.warningSoft },
-            ].map((section) => (
-              <div
-                key={section.title}
-                style={{
-                  background: section.bg,
-                  border: `1px solid ${COLORS.border}`,
-                  borderRadius: "10px",
-                  padding: "16px",
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: "15px",
-                    fontWeight: 800,
-                    color: COLORS.heading,
-                    marginBottom: "8px",
-                  }}
-                >
-                  {section.title}
-                </div>
-                <ul style={{ paddingLeft: "20px", marginBottom: 0 }}>
-                  {section.items.length
-                    ? section.items.map((item, i) => (
-                        <li key={i} style={{ marginBottom: "6px" }}>
-                          {item}
-                        </li>
-                      ))
-                    : <li>None yet.</li>}
-                </ul>
-              </div>
-            ))}
-
-            <div
-              style={{
-                gridColumn: "1 / span 2",
-                background: "#eef8f4",
-                border: `1px solid ${COLORS.border}`,
-                borderRadius: "10px",
-                padding: "16px",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: "15px",
-                  fontWeight: 800,
-                  color: COLORS.heading,
-                  marginBottom: "8px",
-                }}
-              >
-                Suggested Orders / Actions
-              </div>
-              <ul style={{ paddingLeft: "20px", marginBottom: 0 }}>
-                {derived.orders.length
-                  ? derived.orders.map((item, i) => (
-                      <li key={i} style={{ marginBottom: "6px" }}>
-                        {item}
-                      </li>
-                    ))
-                  : <li>No actions yet.</li>}
-              </ul>
             </div>
           </div>
         </div>
