@@ -2079,69 +2079,86 @@ export default function App() {
               </div>
 
               {activeSummaryTab === "plan" && (
-                <div>
-                  <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>Today's Plan</div>
-                  <ul style={{ paddingLeft: "20px", margin: 0 }}>
+                <div style={{ textAlign: "left" }}>
+                  <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px", textAlign: "left" }}>
+                    Today's Plan
+                  </div>
+                  <ul style={{ paddingLeft: "20px", margin: 0, textAlign: "left" }}>
                     {todayPlan.length
                       ? todayPlan.map((item, i) => (
-                          <li key={i} style={{ marginBottom: "8px" }}>
+                          <li key={i} style={{ marginBottom: "8px", textAlign: "left" }}>
                             {item}
                           </li>
                         ))
-                      : <li>No prioritized actions yet.</li>}
+                      : <li style={{ textAlign: "left" }}>No prioritized actions yet.</li>}
                   </ul>
                 </div>
               )}
 
               {activeSummaryTab === "screenings" && (
-                <div>
-                  <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>Screenings Due / Relevant</div>
-                  <ul style={{ paddingLeft: "20px", margin: 0 }}>
+                <div style={{ textAlign: "left" }}>
+                  <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px", textAlign: "left" }}>
+                    Screenings Due / Relevant
+                  </div>
+                  <ul style={{ paddingLeft: "20px", margin: 0, textAlign: "left" }}>
                     {derived.screenings.length
                       ? derived.screenings.map((item, i) => (
-                          <li key={i} style={{ marginBottom: "8px" }}>
+                          <li key={i} style={{ marginBottom: "8px", textAlign: "left" }}>
                             {item}
                           </li>
                         ))
-                      : <li>No screening items yet.</li>}
+                      : <li style={{ textAlign: "left" }}>No screening items yet.</li>}
                   </ul>
                 </div>
               )}
 
               {activeSummaryTab === "vaccines" && (
-                <div>
-                  <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>Vaccine Review</div>
-                  <div style={{ marginBottom: "8px", fontSize: "12px", color: COLORS.textSoft }}>
+                <div style={{ textAlign: "left" }}>
+                  <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px", textAlign: "left" }}>
+                    Vaccine Review
+                  </div>
+                  <div style={{ marginBottom: "8px", fontSize: "12px", color: COLORS.textSoft, textAlign: "left" }}>
                     View mode: {form.vaccineMode === "current" ? "Minus childhood vaccines" : "Include childhood vaccines"}
                   </div>
-                  <ul style={{ paddingLeft: "20px", margin: 0 }}>
+                  <ul style={{ paddingLeft: "20px", margin: 0, textAlign: "left" }}>
                     {derived.vaccines.length
                       ? derived.vaccines.map((item, i) => (
-                          <li key={i} style={{ marginBottom: "8px" }}>
+                          <li key={i} style={{ marginBottom: "8px", textAlign: "left" }}>
                             {item}
                           </li>
                         ))
-                      : <li>No vaccine items yet.</li>}
+                      : <li style={{ textAlign: "left" }}>No vaccine items yet.</li>}
                   </ul>
                 </div>
               )}
 
               {activeSummaryTab === "calculators" && (
-                <div style={{ display: "grid", gap: "12px" }}>
+                <div style={{ display: "grid", gap: "12px", textAlign: "left" }}>
                   {reportData.calculators.length
                     ? reportData.calculators.map((calc) => (
-                        <div key={calc.title} style={{ border: `1px solid ${COLORS.border}`, borderRadius: "14px", padding: "14px", background: COLORS.cardSoft }}>
-                          <div style={{ fontWeight: 900, color: COLORS.heading }}>{calc.title}</div>
-                          <ul style={{ paddingLeft: "20px", margin: "8px 0 0 0" }}>
+                        <div
+                          key={calc.title}
+                          style={{
+                            border: `1px solid ${COLORS.border}`,
+                            borderRadius: "14px",
+                            padding: "14px",
+                            background: COLORS.cardSoft,
+                            textAlign: "left",
+                          }}
+                        >
+                          <div style={{ fontWeight: 900, color: COLORS.heading, textAlign: "left" }}>
+                            {calc.title}
+                          </div>
+                          <ul style={{ paddingLeft: "20px", margin: "8px 0 0 0", textAlign: "left" }}>
                             {calc.lines.map((line, idx) => (
-                              <li key={idx} style={{ marginBottom: "6px" }}>
+                              <li key={idx} style={{ marginBottom: "6px", textAlign: "left" }}>
                                 {line}
                               </li>
                             ))}
                           </ul>
                         </div>
                       ))
-                    : <div style={{ color: COLORS.textSoft }}>Additional calculator outputs will appear here.</div>}
+                    : <div style={{ color: COLORS.textSoft, textAlign: "left" }}>Additional calculator outputs will appear here.</div>}
                 </div>
               )}
             </div>
