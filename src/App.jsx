@@ -262,6 +262,10 @@ function tabButtonStyle(active) {
     fontWeight: 800,
     fontSize: "13px",
     boxShadow: active ? "0 8px 18px rgba(11,92,171,0.12)" : "none",
+    textAlign: "left",
+    justifyContent: "flex-start",
+    display: "inline-flex",
+    alignItems: "center",
   };
 }
 
@@ -736,9 +740,7 @@ function getCumulativeVaccinesByAgeAndRisk(form) {
     addUnique(vaccines, "Hepatitis B if not previously completed");
     addUnique(vaccines, "Hepatitis A if catch-up or indicated");
   }
-  if (age >= 27 && age <= 45) {
-    addUnique(vaccines, "HPV based on shared clinical decision-making if not adequately vaccinated");
-  }
+  if (age >= 27 && age <= 45) addUnique(vaccines, "HPV based on shared clinical decision-making if not adequately vaccinated");
   if (age >= 50 || immunocompromised) addUnique(vaccines, "Recombinant zoster (RZV) 2-dose series");
   if (age >= 60 && age < 75) addUnique(vaccines, "RSV vaccine if indicated / shared clinical decision-making");
   if (age >= 75) addUnique(vaccines, "RSV vaccine");
@@ -1064,15 +1066,15 @@ function ModeToggle({ name, label, value, onChange }) {
   const pillStyle = (active) => ({
     flex: 1,
     minWidth: 0,
-    padding: "10px 8px",
+    padding: "8px 8px",
     borderRadius: "999px",
     border: `1px solid ${active ? COLORS.primaryDark : COLORS.border}`,
     background: active ? COLORS.primarySoft : "#fff",
     color: active ? COLORS.primaryDark : COLORS.textSoft,
     fontWeight: 800,
-    fontSize: "11px",
+    fontSize: "10px",
     cursor: "pointer",
-    lineHeight: 1.2,
+    lineHeight: 1.15,
     whiteSpace: "normal",
     wordBreak: "break-word",
     textAlign: "center",
@@ -1098,7 +1100,7 @@ function ModeToggle({ name, label, value, onChange }) {
           display: "flex",
           gap: "6px",
           padding: "4px",
-          borderRadius: "18px",
+          borderRadius: "16px",
           background: "#f4f8fc",
           border: `1px solid ${COLORS.border}`,
           width: "100%",
@@ -2055,7 +2057,15 @@ export default function App() {
             </div>
 
             <div className="print-card" style={cardStyle()}>
-              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "14px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "8px",
+                  flexWrap: "wrap",
+                  marginBottom: "14px",
+                  justifyContent: "flex-start",
+                }}
+              >
                 {[
                   ["plan", "Today's Plan"],
                   ["screenings", "Screenings"],
