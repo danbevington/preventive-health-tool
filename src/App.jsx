@@ -172,8 +172,33 @@ const PREVENT = {
   },
 };
 
+const NON_NEGATIVE_FIELDS = new Set([
+  "age",
+  "sbp",
+  "dbp",
+  "bmi",
+  "egfr",
+  "totalChol",
+  "hdl",
+  "ldl",
+  "nonHdl",
+  "triglycerides",
+  "apob",
+  "lpa",
+  "cac",
+  "packYears",
+  "chaAge",
+]);
+
 function parseNum(value) {
   return value === "" ? null : Number(value);
+}
+
+function sanitizeNonNegativeInput(name, value) {
+  if (!NON_NEGATIVE_FIELDS.has(name) || value === "") return value;
+  if (value.startsWith("-")) return value.replace(/^-+/, "");
+  const num = Number(value);
+  return Number.isFinite(num) && num < 0 ? "0" : value;
 }
 
 function yn(v) {
@@ -367,6 +392,7 @@ function calcCha2ds2Vasc(form) {
 
   return { score, items, interpretation };
 }
+
 function calcWellsPE(form) {
   let score = 0;
   const items = [];
@@ -652,6 +678,7 @@ function getRiskBadgeStyle(label) {
     border: "1px solid #bfd7ef",
   };
 }
+
 function validateScreeningInputs(form) {
   const errors = {};
   const age = parseNum(form.age);
@@ -959,6 +986,7 @@ function YesNoField({ name, label, value, onChange }) {
     </div>
   );
 }
+
 export default function App() {
   const [form, setForm] = useState(INITIAL_FORM);
   const [copyStatus, setCopyStatus] = useState("");
@@ -969,7 +997,8 @@ export default function App() {
   const preventRangeErrors = useMemo(() => validatePreventInputs(form), [form]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name } = e.target;
+    const value = sanitizeNonNegativeInput(name, e.target.value);
     setForm((prev) => ({ ...prev, [name]: value }));
     setCopyStatus("");
   };
@@ -1515,7 +1544,14 @@ export default function App() {
                   ].map(([name, label]) => (
                     <div key={name}>
                       <label style={labelStyle()}>{label}</label>
-                      <input type="number" name={name} value={form[name]} onChange={handleChange} style={fieldStyle(!!basicError(name))} />
+                      <input
+                        type="number"
+                        min="0"
+                        name={name}
+                        value={form[name]}
+                        onChange={handleChange}
+                        style={fieldStyle(!!basicError(name))}
+                      />
                       {basicError(name) && <div style={errorStyle()}>{basicError(name)}</div>}
                     </div>
                   ))}
@@ -1544,6 +1580,7 @@ export default function App() {
                     <label style={labelStyle()}>Pack-years</label>
                     <input
                       type="number"
+                      min="0"
                       name="packYears"
                       value={form.packYears}
                       onChange={handleChange}
@@ -1602,7 +1639,14 @@ export default function App() {
                   ].map(([name, label]) => (
                     <div key={name}>
                       <label style={labelStyle()}>{label}</label>
-                      <input type="number" name={name} value={form[name]} onChange={handleChange} style={fieldStyle(!!basicError(name))} />
+                      <input
+                        type="number"
+                        min="0"
+                        name={name}
+                        value={form[name]}
+                        onChange={handleChange}
+                        style={fieldStyle(!!basicError(name))}
+                      />
                       {basicError(name) && <div style={errorStyle()}>{basicError(name)}</div>}
                     </div>
                   ))}
@@ -1642,7 +1686,14 @@ export default function App() {
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(180px, 1fr))", gap: "16px" }}>
                   <div>
                     <label style={labelStyle()}>Age</label>
-                    <input type="number" name="chaAge" value={form.chaAge} onChange={handleChange} style={wideFieldStyle(false)} />
+                    <input
+                      type="number"
+                      min="0"
+                      name="chaAge"
+                      value={form.chaAge}
+                      onChange={handleChange}
+                      style={wideFieldStyle(false)}
+                    />
                   </div>
 
                   <div>
