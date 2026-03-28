@@ -96,27 +96,29 @@ const INITIAL_FORM = {
 };
 
 const COLORS = {
-  pageBg: "#eef3f8",
-  shell: "#0f172a",
-  shell2: "#16233a",
-  card: "#ffffff",
-  cardSoft: "#f8fbff",
-  border: "#d8e2ee",
-  text: "#10243e",
-  textSoft: "#5d718a",
-  heading: "#0b1f36",
-  primary: "#0a5ea8",
-  primaryDark: "#083f73",
-  primarySoft: "#eaf3fb",
-  accent: "#0f766e",
-  accentSoft: "#ecfdf5",
-  warning: "#a16207",
-  warningSoft: "#fffbeb",
+  pageBg: "#f3f7fb",
+  shell: "#0c1f38",
+  shell2: "#18365c",
+  card: "rgba(255,255,255,0.94)",
+  cardSoft: "#f7fbff",
+  cardMute: "#fcfdff",
+  border: "#d7e3ef",
+  borderStrong: "#bfd2e4",
+  text: "#11263f",
+  textSoft: "#61758d",
+  heading: "#0d2138",
+  primary: "#0b5cab",
+  primaryDark: "#093d74",
+  primarySoft: "#ebf4ff",
+  accent: "#0d7a6e",
+  accentSoft: "#edfdf8",
+  warning: "#9a6708",
+  warningSoft: "#fff8e8",
   danger: "#b42318",
-  dangerSoft: "#fef3f2",
+  dangerSoft: "#fff3f2",
   success: "#166534",
-  successSoft: "#f0fdf4",
-  purpleSoft: "#faf5ff",
+  successSoft: "#eefcf3",
+  lavenderSoft: "#f6f4ff",
 };
 
 const PREVENT = {
@@ -521,27 +523,25 @@ function calcPhq9(form) {
 function fieldStyle(hasError) {
   return {
     width: "100%",
-    maxWidth: "110px",
-    padding: "4px 5px",
-    borderRadius: "6px",
+    maxWidth: "100%",
+    padding: "10px 12px",
+    borderRadius: "12px",
     border: `1px solid ${hasError ? COLORS.danger : COLORS.border}`,
     background: "#fff",
     boxSizing: "border-box",
     color: COLORS.text,
     outline: "none",
-    fontSize: "11px",
-    minHeight: "18px",
-    boxShadow: hasError ? "0 0 0 3px rgba(180,35,24,0.08)" : "none",
+    fontSize: "13px",
+    minHeight: "42px",
+    transition: "border-color 140ms ease, box-shadow 140ms ease",
+    boxShadow: hasError ? "0 0 0 4px rgba(180,35,24,0.09)" : "0 1px 2px rgba(9,30,66,0.04)",
   };
 }
 
 function wideFieldStyle(hasError) {
   return {
     ...fieldStyle(hasError),
-    maxWidth: "220px",
-    minHeight: "32px",
-    padding: "6px 8px",
-    fontSize: "12px",
+    maxWidth: "100%",
   };
 }
 
@@ -549,11 +549,11 @@ function labelStyle() {
   return {
     display: "block",
     fontSize: "10px",
-    fontWeight: 700,
-    marginBottom: "4px",
+    fontWeight: 800,
+    marginBottom: "6px",
     color: COLORS.heading,
     textTransform: "uppercase",
-    letterSpacing: "0.04em",
+    letterSpacing: "0.08em",
   };
 }
 
@@ -561,55 +561,60 @@ function errorStyle() {
   return {
     color: COLORS.danger,
     fontSize: "12px",
-    marginTop: "5px",
-    fontWeight: 600,
+    marginTop: "6px",
+    fontWeight: 700,
   };
 }
 
 function buttonStyle(kind = "default") {
+  const base = {
+    padding: "11px 16px",
+    borderRadius: "999px",
+    cursor: "pointer",
+    fontWeight: 800,
+    fontSize: "13px",
+    letterSpacing: "0.01em",
+    transition: "transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease",
+    boxShadow: "0 8px 18px rgba(15,23,42,0.08)",
+  };
+
   if (kind === "primary") {
     return {
-      padding: "10px 14px",
-      borderRadius: "8px",
+      ...base,
       border: "1px solid #0b4f8a",
       background: `linear-gradient(180deg, ${COLORS.primary}, ${COLORS.primaryDark})`,
       color: "#fff",
-      cursor: "pointer",
-      fontWeight: 700,
     };
   }
   if (kind === "accent") {
     return {
-      padding: "10px 14px",
-      borderRadius: "8px",
-      border: "1px solid #99e6dc",
-      background: COLORS.accentSoft,
+      ...base,
+      border: "1px solid #9fe5d9",
+      background: `linear-gradient(180deg, #f4fffc, ${COLORS.accentSoft})`,
       color: COLORS.accent,
-      cursor: "pointer",
-      fontWeight: 700,
     };
   }
   return {
-    padding: "10px 14px",
-    borderRadius: "8px",
-    border: `1px solid ${COLORS.border}`,
-    background: "#ffffff",
+    ...base,
+    border: `1px solid ${COLORS.borderStrong}`,
+    background: "rgba(255,255,255,0.95)",
     color: COLORS.text,
-    cursor: "pointer",
-    fontWeight: 700,
   };
 }
 
 function tabButtonStyle(active) {
   return {
-    padding: "9px 14px",
-    borderRadius: "8px",
+    padding: "10px 14px",
+    borderRadius: "999px",
     border: `1px solid ${active ? COLORS.primaryDark : COLORS.border}`,
-    background: active ? COLORS.primarySoft : "#ffffff",
+    background: active
+      ? `linear-gradient(180deg, ${COLORS.primarySoft}, #ffffff)`
+      : "rgba(255,255,255,0.88)",
     color: active ? COLORS.primaryDark : COLORS.text,
     cursor: "pointer",
-    fontWeight: 700,
+    fontWeight: 800,
     fontSize: "13px",
+    boxShadow: active ? "0 8px 18px rgba(11,92,171,0.12)" : "none",
   };
 }
 
@@ -617,9 +622,10 @@ function cardStyle(background = COLORS.card) {
   return {
     background,
     border: `1px solid ${COLORS.border}`,
-    borderRadius: "12px",
-    padding: "18px",
-    boxShadow: "0 4px 18px rgba(15,23,42,0.06)",
+    borderRadius: "20px",
+    padding: "20px",
+    boxShadow: "0 18px 45px rgba(15,23,42,0.08)",
+    backdropFilter: "blur(8px)",
   };
 }
 
@@ -627,18 +633,19 @@ function sectionCardStyle(background = "#ffffff") {
   return {
     background,
     border: `1px solid ${COLORS.border}`,
-    borderRadius: "12px",
-    padding: "16px",
-    boxShadow: "0 2px 10px rgba(15,23,42,0.04)",
+    borderRadius: "18px",
+    padding: "18px",
+    boxShadow: "0 8px 24px rgba(15,23,42,0.04)",
   };
 }
 
 function sectionHeaderStyle() {
   return {
-    fontSize: "16px",
-    fontWeight: 800,
+    fontSize: "17px",
+    fontWeight: 900,
     color: COLORS.heading,
-    marginBottom: "4px",
+    marginBottom: "5px",
+    letterSpacing: "-0.01em",
   };
 }
 
@@ -646,7 +653,42 @@ function sectionSubheaderStyle() {
   return {
     fontSize: "12px",
     color: COLORS.textSoft,
-    marginBottom: "12px",
+    marginBottom: "14px",
+    lineHeight: 1.5,
+  };
+}
+
+function sectionToggleStyle() {
+  return {
+    width: "100%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "12px",
+    padding: "0",
+    background: "transparent",
+    border: "none",
+    cursor: "pointer",
+    textAlign: "left",
+    color: COLORS.heading,
+  };
+}
+
+function sectionChevronStyle(open) {
+  return {
+    width: "28px",
+    height: "28px",
+    minWidth: "28px",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: "999px",
+    background: COLORS.primarySoft,
+    color: COLORS.primaryDark,
+    fontSize: "16px",
+    fontWeight: 900,
+    transform: open ? "rotate(0deg)" : "rotate(-90deg)",
+    transition: "transform 140ms ease",
   };
 }
 
@@ -655,27 +697,27 @@ function getRiskBadgeStyle(label) {
     return {
       background: COLORS.dangerSoft,
       color: COLORS.danger,
-      border: "1px solid #f5c2c7",
+      border: "1px solid #f3c0bd",
     };
   }
   if (label === "Intermediate" || label === "Borderline") {
     return {
       background: COLORS.warningSoft,
       color: COLORS.warning,
-      border: "1px solid #fcd9a5",
+      border: "1px solid #f3d9a6",
     };
   }
   if (label === "Low") {
     return {
       background: COLORS.successSoft,
       color: COLORS.success,
-      border: "1px solid #b7ebc6",
+      border: "1px solid #b9e7c7",
     };
   }
   return {
     background: COLORS.primarySoft,
     color: COLORS.primaryDark,
-    border: "1px solid #bfd7ef",
+    border: "1px solid #c2d8ef",
   };
 }
 
@@ -987,10 +1029,50 @@ function YesNoField({ name, label, value, onChange }) {
   );
 }
 
+function CollapsibleSection({
+  sectionKey,
+  title,
+  subtitle,
+  collapsedSections,
+  toggleSection,
+  background,
+  children,
+}) {
+  const open = !collapsedSections[sectionKey];
+
+  return (
+    <div style={sectionCardStyle(background)}>
+      <button
+        type="button"
+        onClick={() => toggleSection(sectionKey)}
+        style={sectionToggleStyle()}
+      >
+        <div>
+          <div style={sectionHeaderStyle()}>{title}</div>
+          <div style={sectionSubheaderStyle()}>{subtitle}</div>
+        </div>
+        <span style={sectionChevronStyle(open)}>⌃</span>
+      </button>
+
+      {open && <div className="collapsible-content">{children}</div>}
+    </div>
+  );
+}
+
 export default function App() {
   const [form, setForm] = useState(INITIAL_FORM);
   const [copyStatus, setCopyStatus] = useState("");
   const [activeTab, setActiveTab] = useState("prevent");
+  const [collapsedSections, setCollapsedSections] = useState({
+    preventInputs: false,
+    statinInputs: true,
+    immunizationInputs: true,
+    chaInputs: true,
+    wellsPeInputs: true,
+    wellsDvtInputs: true,
+    hasBledInputs: true,
+    phq9Inputs: true,
+  });
 
   const screeningErrors = useMemo(() => validateScreeningInputs(form), [form]);
   const additionalErrors = useMemo(() => validateAdditionalInputs(form), [form]);
@@ -1009,6 +1091,23 @@ export default function App() {
   };
 
   const handlePrint = () => window.print();
+
+  const toggleSection = (key) => {
+    setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const focusPreventInputs = () => {
+    setCollapsedSections({
+      preventInputs: false,
+      statinInputs: true,
+      immunizationInputs: true,
+      chaInputs: true,
+      wellsPeInputs: true,
+      wellsDvtInputs: true,
+      hasBledInputs: true,
+      phq9Inputs: true,
+    });
+  };
 
   const canCalculatePrevent = useMemo(() => hasCompletePreventInputs(form), [form]);
 
@@ -1445,59 +1544,216 @@ export default function App() {
     <div
       style={{
         minHeight: "100vh",
-        background: `linear-gradient(180deg, ${COLORS.pageBg} 0%, #f7fafc 100%)`,
-        padding: "24px 16px 40px",
+        background: `
+          radial-gradient(circle at top left, rgba(97,168,255,0.14), transparent 28%),
+          radial-gradient(circle at top right, rgba(13,122,110,0.12), transparent 24%),
+          linear-gradient(180deg, ${COLORS.pageBg} 0%, #eef6ff 45%, #f8fbfe 100%)
+        `,
+        padding: "24px 16px 32px",
         fontFamily:
-          'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+          '"Avenir Next", "Segoe UI", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif',
         color: COLORS.text,
       }}
     >
       <style>{`
+        * { box-sizing: border-box; }
+
+        input:focus, select:focus, textarea:focus {
+          border-color: ${COLORS.primary} !important;
+          box-shadow: 0 0 0 4px rgba(11,92,171,0.12) !important;
+        }
+
+        button:hover { transform: translateY(-1px); }
+        button:active { transform: translateY(0); }
+
+        .app-main-grid {
+          display: grid;
+          grid-template-columns: minmax(0, 1.2fr) minmax(360px, 0.8fr);
+          gap: 18px;
+          align-items: start;
+        }
+
+        .input-grid-4 {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(120px, 1fr));
+          gap: 16px;
+        }
+
+        .input-grid-3 {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(180px, 1fr));
+          gap: 16px;
+        }
+
+        .input-grid-vax {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(180px, 1fr));
+          gap: 16px;
+        }
+
+        .results-rail {
+          display: grid;
+          gap: 18px;
+          position: sticky;
+          top: 16px;
+        }
+
+        .hero-grid {
+          display: grid;
+          grid-template-columns: 1.2fr 0.8fr;
+          gap: 18px;
+          align-items: end;
+        }
+
+        .collapsible-content {
+          overflow: hidden;
+        }
+
+        @media (max-width: 1180px) {
+          .app-main-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .results-rail {
+            position: static;
+          }
+
+          .hero-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .input-grid-4,
+          .input-grid-vax {
+            grid-template-columns: repeat(2, minmax(160px, 1fr));
+          }
+        }
+
+        @media (max-width: 760px) {
+          .input-grid-4,
+          .input-grid-3,
+          .input-grid-vax {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        @page {
+          size: auto;
+          margin: 10mm;
+        }
+
         @media print {
-          .no-print { display: none !important; }
-          .print-card { box-shadow: none !important; break-inside: avoid; }
-          body { background: white; }
+          html, body {
+            background: #fff !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+
+          .no-print {
+            display: none !important;
+          }
+
+          .print-shell {
+            max-width: none !important;
+            margin: 0 !important;
+          }
+
+          .app-main-grid {
+            display: block !important;
+          }
+
+          .results-rail {
+            position: static !important;
+            display: block !important;
+          }
+
+          .print-card {
+            box-shadow: none !important;
+            break-inside: avoid-page;
+            page-break-inside: avoid;
+            border-radius: 10px !important;
+            border: 1px solid #d6dee8 !important;
+            background: #fff !important;
+            margin: 0 0 10px 0 !important;
+            padding: 12px !important;
+          }
+
+          .print-report-stack {
+            display: block !important;
+            gap: 0 !important;
+          }
+
+          .print-report-stack > div {
+            margin-bottom: 8px !important;
+          }
+
+          .print-title {
+            font-size: 22px !important;
+          }
+
+          .print-subtle {
+            font-size: 11px !important;
+            color: #334155 !important;
+          }
         }
       `}</style>
 
-      <div style={{ maxWidth: "1320px", margin: "0 auto" }}>
+      <div className="print-shell" style={{ maxWidth: "1380px", margin: "0 auto" }}>
         <div
+          className="print-card"
           style={{
             background: `linear-gradient(135deg, ${COLORS.shell} 0%, ${COLORS.shell2} 100%)`,
             color: "#fff",
-            borderRadius: "14px",
-            padding: "22px 24px",
+            borderRadius: "24px",
+            padding: "28px",
             marginBottom: "18px",
-            boxShadow: "0 12px 32px rgba(15,23,42,0.22)",
+            boxShadow: "0 24px 50px rgba(12,31,56,0.26)",
           }}
         >
-          <div style={{ fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.12em", opacity: 0.72 }}>
-            Clinical Decision Support
-          </div>
-          <div style={{ fontSize: "28px", fontWeight: 800, marginTop: "6px" }}>
-            Preventive Health Decision Tool
-          </div>
-          <div style={{ marginTop: "8px", fontSize: "14px", opacity: 0.86 }}>
-            Integrated prevention, cardiovascular, thromboembolic, bleeding-risk, and PHQ-9 screening support.
-          </div>
-          <div style={{ marginTop: "6px", fontSize: "12px", opacity: 0.8 }}>
-            Version {APP_VERSION} • Production Build
-          </div>
-        </div>
+          <div className="hero-grid">
+            <div>
+              <div
+                style={{
+                  display: "inline-flex",
+                  padding: "7px 12px",
+                  borderRadius: "999px",
+                  background: "rgba(255,255,255,0.1)",
+                  border: "1px solid rgba(255,255,255,0.14)",
+                  fontSize: "11px",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.12em",
+                  fontWeight: 800,
+                }}
+              >
+                Clinical Decision Support
+              </div>
 
-        <div className="print-card" style={{ ...cardStyle(), marginBottom: "18px" }}>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-              gap: "8px 14px",
-              fontSize: "13px",
-              color: COLORS.textSoft,
-            }}
-          >
-            <div><strong style={{ color: COLORS.heading }}>Version:</strong> {APP_VERSION}</div>
-            <div><strong style={{ color: COLORS.heading }}>Reviewed:</strong> {APP_LAST_REVIEWED}</div>
-            <div><strong style={{ color: COLORS.heading }}>Risk engine:</strong> {RISK_ENGINE_LABEL}</div>
+              <div className="print-title" style={{ fontSize: "34px", fontWeight: 900, marginTop: "14px", letterSpacing: "-0.03em" }}>
+                Preventive Health Decision Tool
+              </div>
+
+              <div style={{ marginTop: "10px", fontSize: "15px", opacity: 0.9, lineHeight: 1.55, maxWidth: "760px" }}>
+                Integrated prevention, cardiovascular risk, thromboembolic scoring, bleeding-risk support,
+                vaccination review, and PHQ-9 screening in one streamlined workflow.
+              </div>
+            </div>
+
+            <div
+              style={{
+                background: "rgba(255,255,255,0.08)",
+                border: "1px solid rgba(255,255,255,0.14)",
+                borderRadius: "18px",
+                padding: "16px",
+              }}
+            >
+              <div className="print-subtle" style={{ fontSize: "11px", opacity: 0.74, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                Build Metadata
+              </div>
+              <div style={{ marginTop: "10px", display: "grid", gap: "8px", fontSize: "13px" }}>
+                <div><strong>Version:</strong> {APP_VERSION}</div>
+                <div><strong>Reviewed:</strong> {APP_LAST_REVIEWED}</div>
+                <div><strong>Engine:</strong> {RISK_ENGINE_LABEL}</div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1505,34 +1761,30 @@ export default function App() {
           <button type="button" onClick={handleReset} style={buttonStyle("default")}>Reset Form</button>
           <button type="button" onClick={handlePrint} style={buttonStyle("primary")}>Print / Export Summary</button>
           <button type="button" onClick={handleCopy} style={buttonStyle("accent")}>Copy Results</button>
+          <button type="button" onClick={focusPreventInputs} style={buttonStyle("default")}>Focus PREVENT Inputs</button>
           {copyStatus && (
-            <span style={{ alignSelf: "center", fontSize: "13px", color: COLORS.primary, fontWeight: 700 }}>
+            <span style={{ alignSelf: "center", fontSize: "13px", color: COLORS.primary, fontWeight: 800 }}>
               {copyStatus}
             </span>
           )}
         </div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1.25fr 0.75fr",
-            gap: "18px",
-            alignItems: "start",
-          }}
-        >
+        <div className="app-main-grid">
           <div className="no-print" style={cardStyle()}>
-            <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "16px" }}>
+            <div style={{ fontSize: "19px", fontWeight: 900, color: COLORS.heading, marginBottom: "16px", letterSpacing: "-0.02em" }}>
               Patient Inputs
             </div>
 
             <div style={{ display: "grid", gap: "18px" }}>
-              <div style={sectionCardStyle(COLORS.cardSoft)}>
-                <div style={sectionHeaderStyle()}>PREVENT Score Inputs</div>
-                <div style={sectionSubheaderStyle()}>
-                  Required for official AHA PREVENT risk calculation.
-                </div>
-
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(120px, 1fr))", gap: "16px" }}>
+              <CollapsibleSection
+                sectionKey="preventInputs"
+                title="PREVENT Score Inputs"
+                subtitle="Required for official AHA PREVENT risk calculation."
+                collapsedSections={collapsedSections}
+                toggleSection={toggleSection}
+                background={COLORS.cardSoft}
+              >
+                <div className="input-grid-4">
                   {[
                     ["age", "Age"],
                     ["sbp", "Systolic BP"],
@@ -1587,7 +1839,7 @@ export default function App() {
                       disabled={form.smoking !== "Y"}
                       style={{
                         ...fieldStyle(!!basicError("packYears")),
-                        background: form.smoking !== "Y" ? "#f2f5f8" : "#fff",
+                        background: form.smoking !== "Y" ? "#f2f6fa" : "#fff",
                       }}
                     />
                     {basicError("packYears") && <div style={errorStyle()}>{basicError("packYears")}</div>}
@@ -1620,15 +1872,17 @@ export default function App() {
                     </select>
                   </div>
                 </div>
-              </div>
+              </CollapsibleSection>
 
-              <div style={sectionCardStyle("#fefefe")}>
-                <div style={sectionHeaderStyle()}>Statin Pathway Inputs</div>
-                <div style={sectionSubheaderStyle()}>
-                  Used for lipid treatment direction and risk-enhancer interpretation.
-                </div>
-
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(120px, 1fr))", gap: "16px" }}>
+              <CollapsibleSection
+                sectionKey="statinInputs"
+                title="Statin Pathway Inputs"
+                subtitle="Used for lipid treatment direction and risk-enhancer interpretation."
+                collapsedSections={collapsedSections}
+                toggleSection={toggleSection}
+                background={COLORS.cardMute}
+              >
+                <div className="input-grid-4">
                   {[
                     ["ldl", "LDL-C"],
                     ["nonHdl", "Non-HDL-C"],
@@ -1654,15 +1908,17 @@ export default function App() {
                   <YesNoField name="knownAscvd" label="Known ASCVD" value={form.knownAscvd} onChange={handleChange} />
                   <YesNoField name="veryHighRiskAscvd" label="Very-high-risk ASCVD" value={form.veryHighRiskAscvd} onChange={handleChange} />
                 </div>
-              </div>
+              </CollapsibleSection>
 
-              <div style={sectionCardStyle("#f9fafb")}>
-                <div style={sectionHeaderStyle()}>Immunization Inputs</div>
-                <div style={sectionSubheaderStyle()}>
-                  Toggle between cumulative vaccine history and current-age vaccine needs.
-                </div>
-
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(180px, 1fr))", gap: "16px" }}>
+              <CollapsibleSection
+                sectionKey="immunizationInputs"
+                title="Immunization Inputs"
+                subtitle="Toggle between cumulative vaccine history and current-age vaccine needs."
+                collapsedSections={collapsedSections}
+                toggleSection={toggleSection}
+                background="#f7fbfb"
+              >
+                <div className="input-grid-vax">
                   <div>
                     <label style={labelStyle()}>Vaccine view</label>
                     <select name="vaccineMode" value={form.vaccineMode} onChange={handleChange} style={wideFieldStyle(false)}>
@@ -1675,15 +1931,17 @@ export default function App() {
                     <YesNoField key={name} name={name} label={label} value={form[name]} onChange={handleChange} />
                   ))}
                 </div>
-              </div>
+              </CollapsibleSection>
 
-              <div style={sectionCardStyle("#fffdf7")}>
-                <div style={sectionHeaderStyle()}>CHA₂DS₂-VASc Inputs</div>
-                <div style={sectionSubheaderStyle()}>
-                  Stroke-risk scoring input fields for atrial fibrillation.
-                </div>
-
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(180px, 1fr))", gap: "16px" }}>
+              <CollapsibleSection
+                sectionKey="chaInputs"
+                title="CHA₂DS₂-VASc Inputs"
+                subtitle="Stroke-risk scoring input fields for atrial fibrillation."
+                collapsedSections={collapsedSections}
+                toggleSection={toggleSection}
+                background="#fffdf7"
+              >
+                <div className="input-grid-3">
                   <div>
                     <label style={labelStyle()}>Age</label>
                     <input
@@ -1711,15 +1969,17 @@ export default function App() {
                   <YesNoField name="chaStrokeTIA" label="Stroke / TIA / thromboembolism" value={form.chaStrokeTIA} onChange={handleChange} />
                   <YesNoField name="chaVascular" label="Vascular disease" value={form.chaVascular} onChange={handleChange} />
                 </div>
-              </div>
+              </CollapsibleSection>
 
-              <div style={sectionCardStyle("#fff8f8")}>
-                <div style={sectionHeaderStyle()}>Wells PE Inputs</div>
-                <div style={sectionSubheaderStyle()}>
-                  Pretest probability scoring inputs for pulmonary embolism.
-                </div>
-
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(180px, 1fr))", gap: "16px" }}>
+              <CollapsibleSection
+                sectionKey="wellsPeInputs"
+                title="Wells PE Inputs"
+                subtitle="Pretest probability scoring inputs for pulmonary embolism."
+                collapsedSections={collapsedSections}
+                toggleSection={toggleSection}
+                background="#fff9f8"
+              >
+                <div className="input-grid-3">
                   <YesNoField name="wellsDvtSigns" label="Clinical signs of DVT" value={form.wellsDvtSigns} onChange={handleChange} />
                   <YesNoField name="wellsPeMostLikely" label="PE more likely than alternative diagnosis" value={form.wellsPeMostLikely} onChange={handleChange} />
                   <YesNoField name="wellsHrOver100" label="Heart rate >100" value={form.wellsHrOver100} onChange={handleChange} />
@@ -1728,15 +1988,17 @@ export default function App() {
                   <YesNoField name="wellsHemoptysis" label="Hemoptysis" value={form.wellsHemoptysis} onChange={handleChange} />
                   <YesNoField name="wellsMalignancy" label="Malignancy" value={form.wellsMalignancy} onChange={handleChange} />
                 </div>
-              </div>
+              </CollapsibleSection>
 
-              <div style={sectionCardStyle("#fff8f5")}>
-                <div style={sectionHeaderStyle()}>Wells DVT Inputs</div>
-                <div style={sectionSubheaderStyle()}>
-                  Pretest probability scoring inputs for lower-extremity DVT.
-                </div>
-
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(180px, 1fr))", gap: "16px" }}>
+              <CollapsibleSection
+                sectionKey="wellsDvtInputs"
+                title="Wells DVT Inputs"
+                subtitle="Pretest probability scoring inputs for lower-extremity DVT."
+                collapsedSections={collapsedSections}
+                toggleSection={toggleSection}
+                background="#fff8f5"
+              >
+                <div className="input-grid-3">
                   <YesNoField name="dvtActiveCancer" label="Active cancer" value={form.dvtActiveCancer} onChange={handleChange} />
                   <YesNoField name="dvtParalysisOrCast" label="Paralysis / paresis / recent leg cast" value={form.dvtParalysisOrCast} onChange={handleChange} />
                   <YesNoField name="dvtBedriddenOrSurgery" label="Bedridden >3 days or major surgery within 12 weeks" value={form.dvtBedriddenOrSurgery} onChange={handleChange} />
@@ -1748,15 +2010,17 @@ export default function App() {
                   <YesNoField name="dvtPriorDvt" label="Previously documented DVT" value={form.dvtPriorDvt} onChange={handleChange} />
                   <YesNoField name="dvtAlternativeDiagnosisLikely" label="Alternative diagnosis at least as likely as DVT" value={form.dvtAlternativeDiagnosisLikely} onChange={handleChange} />
                 </div>
-              </div>
+              </CollapsibleSection>
 
-              <div style={sectionCardStyle("#fff8f2")}>
-                <div style={sectionHeaderStyle()}>HAS-BLED Inputs</div>
-                <div style={sectionSubheaderStyle()}>
-                  Bleeding-risk scoring inputs for anticoagulated atrial fibrillation patients.
-                </div>
-
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(180px, 1fr))", gap: "16px" }}>
+              <CollapsibleSection
+                sectionKey="hasBledInputs"
+                title="HAS-BLED Inputs"
+                subtitle="Bleeding-risk scoring inputs for anticoagulated atrial fibrillation patients."
+                collapsedSections={collapsedSections}
+                toggleSection={toggleSection}
+                background="#fff8f2"
+              >
+                <div className="input-grid-3">
                   <YesNoField name="hasBledHypertension" label="Hypertension (SBP >160)" value={form.hasBledHypertension} onChange={handleChange} />
                   <YesNoField name="hasBledRenal" label="Abnormal renal function" value={form.hasBledRenal} onChange={handleChange} />
                   <YesNoField name="hasBledLiver" label="Abnormal liver function" value={form.hasBledLiver} onChange={handleChange} />
@@ -1767,14 +2031,16 @@ export default function App() {
                   <YesNoField name="hasBledDrugs" label="Drugs predisposing to bleeding" value={form.hasBledDrugs} onChange={handleChange} />
                   <YesNoField name="hasBledAlcohol" label="Alcohol excess" value={form.hasBledAlcohol} onChange={handleChange} />
                 </div>
-              </div>
+              </CollapsibleSection>
 
-              <div style={sectionCardStyle("#f8f7ff")}>
-                <div style={sectionHeaderStyle()}>PHQ-9 Inputs</div>
-                <div style={sectionSubheaderStyle()}>
-                  Depression symptom severity screening over the past 2 weeks.
-                </div>
-
+              <CollapsibleSection
+                sectionKey="phq9Inputs"
+                title="PHQ-9 Inputs"
+                subtitle="Depression symptom severity screening over the past 2 weeks."
+                collapsedSections={collapsedSections}
+                toggleSection={toggleSection}
+                background="#f8f7ff"
+              >
                 <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "12px" }}>
                   {phqQuestions.map(([name, label]) => (
                     <div key={name}>
@@ -1788,12 +2054,12 @@ export default function App() {
                     </div>
                   ))}
                 </div>
-              </div>
+              </CollapsibleSection>
             </div>
           </div>
 
-          <div style={{ display: "grid", gap: "18px" }}>
-            <div className="no-print" style={{ ...cardStyle(), padding: "12px", textAlign: "left" }}>
+          <div className="results-rail">
+            <div className="no-print" style={{ ...cardStyle(), padding: "14px", textAlign: "left" }}>
               <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                 {[
                   ["prevent", "PREVENT Score"],
@@ -1813,31 +2079,31 @@ export default function App() {
             </div>
 
             {activeTab === "prevent" && (
-              <div className="print-card" style={{ ...cardStyle(COLORS.cardSoft), textAlign: "left" }}>
+              <div className="no-print" style={{ ...cardStyle(COLORS.cardSoft), textAlign: "left" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
-                  <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading }}>Risk Overview</div>
+                  <div style={{ fontSize: "18px", fontWeight: 900, color: COLORS.heading }}>Risk Overview</div>
                   <span
                     style={{
                       ...riskBadge,
                       borderRadius: "999px",
-                      padding: "7px 12px",
+                      padding: "8px 13px",
                       fontSize: "12px",
-                      fontWeight: 800,
+                      fontWeight: 900,
                     }}
                   >
                     {preventCategory.label}
                   </span>
                 </div>
 
-                <div style={{ fontSize: "32px", fontWeight: 800, color: COLORS.primaryDark, lineHeight: 1 }}>
+                <div style={{ fontSize: "40px", fontWeight: 900, color: COLORS.primaryDark, lineHeight: 1, letterSpacing: "-0.03em" }}>
                   {preventRisk != null ? `${preventRisk}%` : "—"}
                 </div>
 
-                <div style={{ marginTop: "8px", fontWeight: 700, color: COLORS.heading }}>
+                <div style={{ marginTop: "10px", fontWeight: 800, color: COLORS.heading }}>
                   Official AHA PREVENT-ASCVD 10-Year Risk
                 </div>
 
-                <div style={{ marginTop: "8px", fontSize: "13px", color: COLORS.textSoft }}>
+                <div style={{ marginTop: "8px", fontSize: "13px", color: COLORS.textSoft, lineHeight: 1.55 }}>
                   {preventRisk != null
                     ? `${preventCategory.label} risk (${preventCategory.range})`
                     : "Complete official base-model inputs within validated ranges are required to calculate PREVENT risk."}
@@ -1846,8 +2112,8 @@ export default function App() {
             )}
 
             {activeTab === "statin" && (
-              <div className="print-card" style={{ ...cardStyle(COLORS.primarySoft), textAlign: "left" }}>
-                <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "10px" }}>
+              <div className="no-print" style={{ ...cardStyle(COLORS.primarySoft), textAlign: "left" }}>
+                <div style={{ fontSize: "18px", fontWeight: 900, color: COLORS.heading, marginBottom: "12px" }}>
                   Statin Pathway
                 </div>
                 <div style={{ marginBottom: "8px" }}><strong>Pathway:</strong> {statinPlan?.pathway || "Insufficient data"}</div>
@@ -1863,11 +2129,11 @@ export default function App() {
 
             {activeTab === "screenings" && (
               <>
-                <div className="print-card" style={{ ...cardStyle(COLORS.accentSoft), textAlign: "left" }}>
-                  <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.accent, marginBottom: "10px" }}>
+                <div className="no-print" style={{ ...cardStyle(COLORS.accentSoft), textAlign: "left" }}>
+                  <div style={{ fontSize: "18px", fontWeight: 900, color: COLORS.accent, marginBottom: "10px" }}>
                     Patient-Friendly Summary
                   </div>
-                  <p style={{ marginTop: 0, color: COLORS.text }}>{patientSummary.intro}</p>
+                  <p style={{ marginTop: 0, color: COLORS.text, lineHeight: 1.6 }}>{patientSummary.intro}</p>
                   <ul style={{ paddingLeft: "20px", marginBottom: 0 }}>
                     {patientSummary.steps.map((item, i) => (
                       <li key={i} style={{ marginBottom: "6px" }}>{item}</li>
@@ -1875,8 +2141,8 @@ export default function App() {
                   </ul>
                 </div>
 
-                <div className="print-card" style={{ ...cardStyle(), textAlign: "left" }}>
-                  <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "14px" }}>
+                <div className="no-print" style={{ ...cardStyle(), textAlign: "left" }}>
+                  <div style={{ fontSize: "18px", fontWeight: 900, color: COLORS.heading, marginBottom: "14px" }}>
                     Clinical Output
                   </div>
 
@@ -1884,7 +2150,7 @@ export default function App() {
                     {[
                       { title: "Screenings", items: derived.screenings, bg: COLORS.primarySoft },
                       { title: "Vaccines", items: derived.vaccines, bg: COLORS.successSoft },
-                      { title: "Counseling", items: derived.counseling, bg: COLORS.purpleSoft },
+                      { title: "Counseling", items: derived.counseling, bg: COLORS.lavenderSoft },
                       { title: "Care Gaps", items: derived.careGaps, bg: COLORS.warningSoft },
                     ].map((section) => (
                       <div
@@ -1892,11 +2158,11 @@ export default function App() {
                         style={{
                           background: section.bg,
                           border: `1px solid ${COLORS.border}`,
-                          borderRadius: "10px",
+                          borderRadius: "14px",
                           padding: "16px",
                         }}
                       >
-                        <div style={{ fontSize: "15px", fontWeight: 800, color: COLORS.heading, marginBottom: "8px" }}>
+                        <div style={{ fontSize: "15px", fontWeight: 900, color: COLORS.heading, marginBottom: "8px" }}>
                           {section.title}
                         </div>
                         <ul style={{ paddingLeft: "20px", marginBottom: 0 }}>
@@ -1913,11 +2179,11 @@ export default function App() {
                       style={{
                         background: "#eef8f4",
                         border: `1px solid ${COLORS.border}`,
-                        borderRadius: "10px",
+                        borderRadius: "14px",
                         padding: "16px",
                       }}
                     >
-                      <div style={{ fontSize: "15px", fontWeight: 800, color: COLORS.heading, marginBottom: "8px" }}>
+                      <div style={{ fontSize: "15px", fontWeight: 900, color: COLORS.heading, marginBottom: "8px" }}>
                         Suggested Orders / Actions
                       </div>
                       <ul style={{ paddingLeft: "20px", marginBottom: 0 }}>
@@ -1934,14 +2200,14 @@ export default function App() {
             )}
 
             {activeTab === "cha2ds2vasc" && (
-              <div className="print-card" style={{ ...cardStyle("#fffdf7"), textAlign: "left" }}>
-                <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "10px" }}>
+              <div className="no-print" style={{ ...cardStyle("#fffdf7"), textAlign: "left" }}>
+                <div style={{ fontSize: "18px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>
                   CHA₂DS₂-VASc Score
                 </div>
-                <div style={{ fontSize: "32px", fontWeight: 800, color: COLORS.primaryDark, lineHeight: 1 }}>
+                <div style={{ fontSize: "40px", fontWeight: 900, color: COLORS.primaryDark, lineHeight: 1 }}>
                   {chaScore.score}
                 </div>
-                <div style={{ marginTop: "8px", fontWeight: 700, color: COLORS.heading }}>
+                <div style={{ marginTop: "8px", fontWeight: 800, color: COLORS.heading }}>
                   {chaScore.interpretation}
                 </div>
                 <ul style={{ paddingLeft: "20px", marginTop: "12px", marginBottom: 0 }}>
@@ -1951,14 +2217,14 @@ export default function App() {
             )}
 
             {activeTab === "wells" && (
-              <div className="print-card" style={{ ...cardStyle("#fff8f8"), textAlign: "left" }}>
-                <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "10px" }}>
+              <div className="no-print" style={{ ...cardStyle("#fff8f8"), textAlign: "left" }}>
+                <div style={{ fontSize: "18px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>
                   Wells PE Score
                 </div>
-                <div style={{ fontSize: "32px", fontWeight: 800, color: COLORS.primaryDark, lineHeight: 1 }}>
+                <div style={{ fontSize: "40px", fontWeight: 900, color: COLORS.primaryDark, lineHeight: 1 }}>
                   {wellsScore.score}
                 </div>
-                <div style={{ marginTop: "8px", fontWeight: 700, color: COLORS.heading }}>
+                <div style={{ marginTop: "8px", fontWeight: 800, color: COLORS.heading }}>
                   {wellsScore.interpretation}
                 </div>
                 <ul style={{ paddingLeft: "20px", marginTop: "12px", marginBottom: 0 }}>
@@ -1968,14 +2234,14 @@ export default function App() {
             )}
 
             {activeTab === "wellsDvt" && (
-              <div className="print-card" style={{ ...cardStyle("#fff8f5"), textAlign: "left" }}>
-                <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "10px" }}>
+              <div className="no-print" style={{ ...cardStyle("#fff8f5"), textAlign: "left" }}>
+                <div style={{ fontSize: "18px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>
                   Wells DVT Score
                 </div>
-                <div style={{ fontSize: "32px", fontWeight: 800, color: COLORS.primaryDark, lineHeight: 1 }}>
+                <div style={{ fontSize: "40px", fontWeight: 900, color: COLORS.primaryDark, lineHeight: 1 }}>
                   {wellsDvtScore.score}
                 </div>
-                <div style={{ marginTop: "8px", fontWeight: 700, color: COLORS.heading }}>
+                <div style={{ marginTop: "8px", fontWeight: 800, color: COLORS.heading }}>
                   {wellsDvtScore.interpretation}
                 </div>
                 <ul style={{ paddingLeft: "20px", marginTop: "12px", marginBottom: 0 }}>
@@ -1985,14 +2251,14 @@ export default function App() {
             )}
 
             {activeTab === "hasBled" && (
-              <div className="print-card" style={{ ...cardStyle("#fff8f2"), textAlign: "left" }}>
-                <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "10px" }}>
+              <div className="no-print" style={{ ...cardStyle("#fff8f2"), textAlign: "left" }}>
+                <div style={{ fontSize: "18px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>
                   HAS-BLED Score
                 </div>
-                <div style={{ fontSize: "32px", fontWeight: 800, color: COLORS.primaryDark, lineHeight: 1 }}>
+                <div style={{ fontSize: "40px", fontWeight: 900, color: COLORS.primaryDark, lineHeight: 1 }}>
                   {hasBledScore.score}
                 </div>
-                <div style={{ marginTop: "8px", fontWeight: 700, color: COLORS.heading }}>
+                <div style={{ marginTop: "8px", fontWeight: 800, color: COLORS.heading }}>
                   {hasBledScore.interpretation}
                 </div>
                 <ul style={{ paddingLeft: "20px", marginTop: "12px", marginBottom: 0 }}>
@@ -2002,14 +2268,14 @@ export default function App() {
             )}
 
             {activeTab === "phq9" && (
-              <div className="print-card" style={{ ...cardStyle("#f8f7ff"), textAlign: "left" }}>
-                <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "10px" }}>
+              <div className="no-print" style={{ ...cardStyle("#f8f7ff"), textAlign: "left" }}>
+                <div style={{ fontSize: "18px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>
                   PHQ-9 Score
                 </div>
-                <div style={{ fontSize: "32px", fontWeight: 800, color: COLORS.primaryDark, lineHeight: 1 }}>
+                <div style={{ fontSize: "40px", fontWeight: 900, color: COLORS.primaryDark, lineHeight: 1 }}>
                   {phq9Score.score}
                 </div>
-                <div style={{ marginTop: "8px", fontWeight: 700, color: COLORS.heading }}>
+                <div style={{ marginTop: "8px", fontWeight: 800, color: COLORS.heading }}>
                   {phq9Score.severity}
                 </div>
                 <div style={{ marginTop: "10px", fontSize: "13px", color: COLORS.text }}>
@@ -2022,26 +2288,26 @@ export default function App() {
             )}
 
             <div className="print-card" style={{ ...cardStyle(), textAlign: "left" }}>
-              <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "14px" }}>
+              <div style={{ fontSize: "18px", fontWeight: 900, color: COLORS.heading, marginBottom: "14px" }}>
                 Printable Report
               </div>
 
-              <div style={{ display: "grid", gap: "14px" }}>
+              <div className="print-report-stack" style={{ display: "grid", gap: "12px" }}>
                 {reportData.calculators.length > 0 && (
                   <div
                     style={{
                       background: COLORS.cardSoft,
                       border: `1px solid ${COLORS.border}`,
-                      borderRadius: "10px",
+                      borderRadius: "14px",
                       padding: "14px",
                     }}
                   >
-                    <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: "8px" }}>
+                    <div style={{ fontWeight: 900, color: COLORS.heading, marginBottom: "8px" }}>
                       Calculators
                     </div>
                     {reportData.calculators.map((calc) => (
                       <div key={calc.title} style={{ marginBottom: "10px" }}>
-                        <div style={{ fontWeight: 700 }}>{calc.title}</div>
+                        <div style={{ fontWeight: 800 }}>{calc.title}</div>
                         <ul style={{ paddingLeft: "20px", margin: "6px 0 0 0" }}>
                           {calc.lines.map((line, idx) => (
                             <li key={idx}>{line}</li>
@@ -2057,11 +2323,11 @@ export default function App() {
                     style={{
                       background: COLORS.primarySoft,
                       border: `1px solid ${COLORS.border}`,
-                      borderRadius: "10px",
+                      borderRadius: "14px",
                       padding: "14px",
                     }}
                   >
-                    <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: "8px" }}>
+                    <div style={{ fontWeight: 900, color: COLORS.heading, marginBottom: "8px" }}>
                       Screenings
                     </div>
                     <ul style={{ paddingLeft: "20px", margin: 0 }}>
@@ -2077,11 +2343,11 @@ export default function App() {
                     style={{
                       background: COLORS.successSoft,
                       border: `1px solid ${COLORS.border}`,
-                      borderRadius: "10px",
+                      borderRadius: "14px",
                       padding: "14px",
                     }}
                   >
-                    <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: "8px" }}>
+                    <div style={{ fontWeight: 900, color: COLORS.heading, marginBottom: "8px" }}>
                       Vaccines
                     </div>
                     <div style={{ marginBottom: "8px", fontSize: "13px", color: COLORS.textSoft }}>
@@ -2101,13 +2367,13 @@ export default function App() {
                 {reportData.counseling.length > 0 && (
                   <div
                     style={{
-                      background: COLORS.purpleSoft,
+                      background: COLORS.lavenderSoft,
                       border: `1px solid ${COLORS.border}`,
-                      borderRadius: "10px",
+                      borderRadius: "14px",
                       padding: "14px",
                     }}
                   >
-                    <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: "8px" }}>
+                    <div style={{ fontWeight: 900, color: COLORS.heading, marginBottom: "8px" }}>
                       Counseling
                     </div>
                     <ul style={{ paddingLeft: "20px", margin: 0 }}>
@@ -2123,11 +2389,11 @@ export default function App() {
                     style={{
                       background: COLORS.warningSoft,
                       border: `1px solid ${COLORS.border}`,
-                      borderRadius: "10px",
+                      borderRadius: "14px",
                       padding: "14px",
                     }}
                   >
-                    <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: "8px" }}>
+                    <div style={{ fontWeight: 900, color: COLORS.heading, marginBottom: "8px" }}>
                       Care Gaps
                     </div>
                     <ul style={{ paddingLeft: "20px", margin: 0 }}>
@@ -2143,11 +2409,11 @@ export default function App() {
                     style={{
                       background: "#eef8f4",
                       border: `1px solid ${COLORS.border}`,
-                      borderRadius: "10px",
+                      borderRadius: "14px",
                       padding: "14px",
                     }}
                   >
-                    <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: "8px" }}>
+                    <div style={{ fontWeight: 900, color: COLORS.heading, marginBottom: "8px" }}>
                       Suggested Orders / Actions
                     </div>
                     <ul style={{ paddingLeft: "20px", margin: 0 }}>
@@ -2172,7 +2438,7 @@ export default function App() {
             </div>
 
             <div className="no-print" style={{ ...cardStyle(), textAlign: "left" }}>
-              <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "10px" }}>
+              <div style={{ fontSize: "18px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>
                 Copy / Paste Text
               </div>
               <textarea
@@ -2181,8 +2447,8 @@ export default function App() {
                 style={{
                   width: "100%",
                   minHeight: "220px",
-                  padding: "12px",
-                  borderRadius: "8px",
+                  padding: "14px",
+                  borderRadius: "14px",
                   border: `1px solid ${COLORS.border}`,
                   boxSizing: "border-box",
                   fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
@@ -2196,18 +2462,20 @@ export default function App() {
         </div>
 
         <div
+          className="print-card"
           style={{
-            marginTop: "32px",
+            marginTop: "22px",
             padding: "18px",
-            backgroundColor: "#0b1f3a",
+            background: "linear-gradient(180deg, #0c1f38, #112846)",
             color: "#e6edf3",
-            borderRadius: "10px",
-            border: "1px solid #1e3a5f",
+            borderRadius: "18px",
+            border: "1px solid #1d3d63",
             fontSize: "13px",
-            lineHeight: "1.5",
+            lineHeight: "1.6",
+            boxShadow: "0 14px 32px rgba(12,31,56,0.18)",
           }}
         >
-          <div style={{ fontWeight: "600", marginBottom: "8px", color: "#7dd3fc" }}>
+          <div style={{ fontWeight: 800, marginBottom: "8px", color: "#7dd3fc", letterSpacing: "0.02em" }}>
             Clinical Disclaimer
           </div>
 
@@ -2232,7 +2500,7 @@ export default function App() {
             This application does not store, transmit, or retain any patient data. All inputs are processed locally within the browser session.
           </div>
 
-          <div style={{ marginTop: "10px", fontSize: "11px", color: "#9fb3c8" }}>
+          <div style={{ marginTop: "10px", fontSize: "11px", color: "#a7bbcf" }}>
             © {new Date().getFullYear()} Daniel Bevington. All rights reserved. Version {APP_VERSION} | Last reviewed: {APP_LAST_REVIEWED}
           </div>
         </div>
