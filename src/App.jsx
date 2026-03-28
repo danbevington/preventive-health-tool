@@ -26,9 +26,7 @@ const INITIAL_FORM = {
   lpa: "",
   cac: "",
   packYears: "",
-
   vaccineMode: "cumulative",
-
   priorVaccineHistoryKnown: "",
   evidenceOfImmunityMMR: "",
   evidenceOfImmunityVaricella: "",
@@ -46,7 +44,6 @@ const INITIAL_FORM = {
   military: "",
   travelRisk: "",
   residenceRisk: "",
-
   chaAge: "",
   chaSex: "",
   chaCHF: "",
@@ -54,7 +51,6 @@ const INITIAL_FORM = {
   chaDM: "",
   chaStrokeTIA: "",
   chaVascular: "",
-
   wellsDvtSigns: "",
   wellsPeMostLikely: "",
   wellsHrOver100: "",
@@ -62,7 +58,6 @@ const INITIAL_FORM = {
   wellsPriorDvtPe: "",
   wellsHemoptysis: "",
   wellsMalignancy: "",
-
   dvtActiveCancer: "",
   dvtParalysisOrCast: "",
   dvtBedriddenOrSurgery: "",
@@ -73,7 +68,6 @@ const INITIAL_FORM = {
   dvtCollateralVeins: "",
   dvtPriorDvt: "",
   dvtAlternativeDiagnosisLikely: "",
-
   hasBledHypertension: "",
   hasBledRenal: "",
   hasBledLiver: "",
@@ -83,7 +77,6 @@ const INITIAL_FORM = {
   hasBledElderly: "",
   hasBledDrugs: "",
   hasBledAlcohol: "",
-
   phq9_1: "0",
   phq9_2: "0",
   phq9_3: "0",
@@ -678,176 +671,6 @@ function hasCompletePreventInputs(form) {
   );
 }
 
-function getCumulativeVaccinesByAgeAndRisk(form) {
-  const age = Number(form.age || 0);
-  const sex = form.sex;
-  const pregnant = form.pregnant === "Y";
-  const immunocompromised = form.immunocompromised === "Y";
-  const chronicLiverDisease = form.chronicLiverDisease === "Y";
-  const chronicKidneyDisease = form.chronicKidneyDisease === "Y";
-  const chronicHeartDisease = form.chronicHeartDisease === "Y";
-  const chronicLungDisease = form.chronicLungDisease === "Y";
-  const asplenia = form.asplenia === "Y";
-  const cochlearImplant = form.cochlearImplant === "Y";
-  const csfLeak = form.csfLeak === "Y";
-  const healthcareWorker = form.healthcareWorker === "Y";
-  const collegeDormResident = form.collegeDormResident === "Y";
-  const military = form.military === "Y";
-  const travelRisk = form.travelRisk === "Y";
-  const residenceRisk = form.residenceRisk === "Y";
-  const priorVaccineHistoryKnown = form.priorVaccineHistoryKnown === "Y";
-  const evidenceOfImmunityMMR = form.evidenceOfImmunityMMR === "Y";
-  const evidenceOfImmunityVaricella = form.evidenceOfImmunityVaricella === "Y";
-
-  const vaccines = [];
-  if (!Number.isFinite(age) || age < 0) return vaccines;
-
-  if (age >= 0) addUnique(vaccines, "Hepatitis B series");
-  if (age >= 2 / 12) {
-    addUnique(vaccines, "Rotavirus series");
-    addUnique(vaccines, "DTaP series");
-    addUnique(vaccines, "Hib series");
-    addUnique(vaccines, "Pneumococcal conjugate (PCV) series");
-    addUnique(vaccines, "Inactivated poliovirus (IPV) series");
-  }
-  if (age >= 6 / 12) {
-    addUnique(vaccines, "Influenza annually");
-    addUnique(vaccines, "COVID-19 per current CDC age-based schedule");
-  }
-  if (age >= 1) {
-    addUnique(vaccines, "MMR series");
-    addUnique(vaccines, "Varicella series");
-    addUnique(vaccines, "Hepatitis A series");
-  }
-  if (age >= 4) {
-    addUnique(vaccines, "DTaP booster at 4–6 years");
-    addUnique(vaccines, "IPV booster at 4–6 years");
-    addUnique(vaccines, "MMR second dose");
-    addUnique(vaccines, "Varicella second dose");
-  }
-  if (age >= 9) addUnique(vaccines, "HPV series");
-  if (age >= 11) {
-    addUnique(vaccines, "Tdap adolescent dose");
-    addUnique(vaccines, "MenACWY first dose");
-  }
-  if (age >= 16) addUnique(vaccines, "MenACWY booster");
-  if (age >= 19) {
-    addUnique(vaccines, "COVID-19 per current adult CDC schedule");
-    addUnique(vaccines, "Td or Tdap booster every 10 years after Tdap");
-  }
-  if (age >= 19 && age <= 26) {
-    addUnique(vaccines, "HPV catch-up if not previously completed");
-    addUnique(vaccines, "Hepatitis B if not previously completed");
-    addUnique(vaccines, "Hepatitis A if catch-up or indicated");
-  }
-  if (age >= 27 && age <= 45) addUnique(vaccines, "HPV based on shared clinical decision-making if not adequately vaccinated");
-  if (age >= 50 || immunocompromised) addUnique(vaccines, "Recombinant zoster (RZV) 2-dose series");
-  if (age >= 60 && age < 75) addUnique(vaccines, "RSV vaccine if indicated / shared clinical decision-making");
-  if (age >= 75) addUnique(vaccines, "RSV vaccine");
-  if (age >= 65) {
-    addUnique(vaccines, "Pneumococcal vaccine per current CDC adult age/risk schedule");
-    addUnique(vaccines, "Influenza annually (higher-dose/adjuvanted product may be preferred)");
-  }
-  if (sex === "female" && pregnant) {
-    addUnique(vaccines, "Tdap during each pregnancy");
-    addUnique(vaccines, "RSV vaccine during pregnancy when seasonally indicated");
-  }
-  if (!evidenceOfImmunityMMR && age >= 19) addUnique(vaccines, "MMR if lacking evidence of immunity");
-  if (!evidenceOfImmunityVaricella && age >= 19) addUnique(vaccines, "Varicella if lacking evidence of immunity");
-  if (!priorVaccineHistoryKnown && age >= 19) addUnique(vaccines, "Review prior vaccine history / registry and assess catch-up needs");
-  if (immunocompromised || asplenia || cochlearImplant || csfLeak || chronicHeartDisease || chronicLungDisease || chronicKidneyDisease) {
-    addUnique(vaccines, "Pneumococcal vaccine based on risk condition");
-  }
-  if (asplenia) {
-    addUnique(vaccines, "Meningococcal vaccines based on asplenia risk");
-    addUnique(vaccines, "Hib if indicated");
-  }
-  if (chronicLiverDisease) {
-    addUnique(vaccines, "Hepatitis A vaccine");
-    addUnique(vaccines, "Hepatitis B vaccine");
-  }
-  if (healthcareWorker) {
-    addUnique(vaccines, "Hepatitis B if not immune");
-    addUnique(vaccines, "MMR if lacking evidence of immunity");
-    addUnique(vaccines, "Varicella if lacking evidence of immunity");
-    addUnique(vaccines, "Annual influenza");
-  }
-  if (collegeDormResident || military) addUnique(vaccines, "Meningococcal vaccination if indicated");
-  if (travelRisk || residenceRisk) {
-    addUnique(vaccines, "Travel/residence-based vaccines as indicated");
-    addUnique(vaccines, "Meningococcal / Hepatitis A / other destination-specific vaccines if indicated");
-  }
-
-  return vaccines;
-}
-
-function getCurrentAgeVaccinesNeeded(form) {
-  const age = Number(form.age || 0);
-  const sex = form.sex;
-  const pregnant = form.pregnant === "Y";
-  const immunocompromised = form.immunocompromised === "Y";
-  const chronicLiverDisease = form.chronicLiverDisease === "Y";
-  const chronicKidneyDisease = form.chronicKidneyDisease === "Y";
-  const chronicHeartDisease = form.chronicHeartDisease === "Y";
-  const chronicLungDisease = form.chronicLungDisease === "Y";
-  const asplenia = form.asplenia === "Y";
-  const cochlearImplant = form.cochlearImplant === "Y";
-  const csfLeak = form.csfLeak === "Y";
-  const healthcareWorker = form.healthcareWorker === "Y";
-  const collegeDormResident = form.collegeDormResident === "Y";
-  const military = form.military === "Y";
-  const travelRisk = form.travelRisk === "Y";
-  const residenceRisk = form.residenceRisk === "Y";
-  const priorVaccineHistoryKnown = form.priorVaccineHistoryKnown === "Y";
-  const evidenceOfImmunityMMR = form.evidenceOfImmunityMMR === "Y";
-  const evidenceOfImmunityVaricella = form.evidenceOfImmunityVaricella === "Y";
-
-  const vaccines = [];
-  if (!Number.isFinite(age) || age < 0) return vaccines;
-
-  if (age >= 6 / 12) addUnique(vaccines, "Influenza annually");
-  if (age >= 19) addUnique(vaccines, "COVID-19 per current CDC adult schedule");
-  if (age >= 19) addUnique(vaccines, "Td or Tdap booster if due (every 10 years after prior Tdap)");
-  if (age >= 50 || immunocompromised) addUnique(vaccines, "Recombinant zoster (RZV) if not completed");
-  if (age >= 60 && age < 75) addUnique(vaccines, "RSV vaccine if indicated / shared clinical decision-making");
-  if (age >= 75) addUnique(vaccines, "RSV vaccine");
-  if (age >= 65) addUnique(vaccines, "Pneumococcal vaccine per current adult age/risk schedule");
-
-  if (!priorVaccineHistoryKnown && age >= 19) addUnique(vaccines, "Review vaccine registry/history to determine catch-up needs");
-  if (age >= 19 && age <= 26) {
-    addUnique(vaccines, "HPV catch-up if series incomplete");
-    addUnique(vaccines, "Hepatitis B catch-up if series incomplete");
-  }
-  if (age >= 27 && age <= 45) addUnique(vaccines, "HPV may be considered by shared decision-making if not fully vaccinated");
-  if (!evidenceOfImmunityMMR && age >= 19) addUnique(vaccines, "MMR if lacking evidence of immunity");
-  if (!evidenceOfImmunityVaricella && age >= 19) addUnique(vaccines, "Varicella if lacking evidence of immunity");
-  if (sex === "female" && pregnant) {
-    addUnique(vaccines, "Tdap during current pregnancy");
-    addUnique(vaccines, "RSV vaccine during pregnancy when seasonally indicated");
-  }
-  if (immunocompromised || asplenia || cochlearImplant || csfLeak || chronicHeartDisease || chronicLungDisease || chronicKidneyDisease) {
-    addUnique(vaccines, "Pneumococcal vaccine based on risk condition");
-  }
-  if (asplenia) {
-    addUnique(vaccines, "Meningococcal vaccines based on asplenia risk");
-    addUnique(vaccines, "Hib if indicated");
-  }
-  if (chronicLiverDisease) {
-    addUnique(vaccines, "Hepatitis A vaccine");
-    addUnique(vaccines, "Hepatitis B vaccine");
-  }
-  if (healthcareWorker) {
-    addUnique(vaccines, "Hepatitis B if not immune");
-    addUnique(vaccines, "MMR if lacking evidence of immunity");
-    addUnique(vaccines, "Varicella if lacking evidence of immunity");
-    addUnique(vaccines, "Annual influenza");
-  }
-  if (collegeDormResident || military) addUnique(vaccines, "Meningococcal vaccination if indicated");
-  if (travelRisk || residenceRisk) addUnique(vaccines, "Travel/residence-based vaccines as indicated");
-
-  return vaccines;
-}
-
 function getVaccinesForDisplay(form) {
   return form.vaccineMode === "current"
     ? getCurrentAgeVaccinesNeeded(form)
@@ -1204,7 +1027,6 @@ export default function App() {
 
   const preventRisk = useMemo(() => {
     if (!canCalculatePrevent) return null;
-
     return calcPreventAscvd({
       age: Number(form.age),
       sex: form.sex,
@@ -1262,7 +1084,9 @@ export default function App() {
       orders.push("Screening mammogram");
     }
 
-    if (form.sex === "female" && age >= 21 && age <= 65) screenings.push("Cervical cancer screening");
+    if (form.sex === "female" && age >= 21 && age <= 65) {
+      screenings.push("Cervical cancer screening");
+    }
 
     if (form.sex === "male" && age >= 65 && age <= 75 && form.smoking === "Y") {
       screenings.push("AAA one-time screening");
@@ -1488,7 +1312,6 @@ export default function App() {
 
   const copyText = useMemo(() => {
     const lines = [];
-
     lines.push("Preventive Health Decision Tool Summary");
     lines.push(`Version: ${APP_VERSION}`);
     lines.push(`Last reviewed: ${APP_LAST_REVIEWED}`);
@@ -2056,7 +1879,7 @@ export default function App() {
               </div>
             </div>
 
-            <div className="print-card" style={cardStyle()}>
+            <div className="print-card" style={{ ...cardStyle(), textAlign: "left" }}>
               <div
                 style={{
                   display: "flex",
@@ -2083,10 +1906,10 @@ export default function App() {
                   <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px", textAlign: "left" }}>
                     Today's Plan
                   </div>
-                  <ul style={{ paddingLeft: "20px", margin: 0, textAlign: "left" }}>
+                  <ul style={{ paddingLeft: "20px", margin: 0, textAlign: "left", listStylePosition: "outside" }}>
                     {todayPlan.length
                       ? todayPlan.map((item, i) => (
-                          <li key={i} style={{ marginBottom: "8px", textAlign: "left" }}>
+                          <li key={i} style={{ marginBottom: "8px", textAlign: "left", lineHeight: 1.5 }}>
                             {item}
                           </li>
                         ))
@@ -2100,10 +1923,10 @@ export default function App() {
                   <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px", textAlign: "left" }}>
                     Screenings Due / Relevant
                   </div>
-                  <ul style={{ paddingLeft: "20px", margin: 0, textAlign: "left" }}>
+                  <ul style={{ paddingLeft: "20px", margin: 0, textAlign: "left", listStylePosition: "outside" }}>
                     {derived.screenings.length
                       ? derived.screenings.map((item, i) => (
-                          <li key={i} style={{ marginBottom: "8px", textAlign: "left" }}>
+                          <li key={i} style={{ marginBottom: "8px", textAlign: "left", lineHeight: 1.5 }}>
                             {item}
                           </li>
                         ))
@@ -2120,10 +1943,10 @@ export default function App() {
                   <div style={{ marginBottom: "8px", fontSize: "12px", color: COLORS.textSoft, textAlign: "left" }}>
                     View mode: {form.vaccineMode === "current" ? "Minus childhood vaccines" : "Include childhood vaccines"}
                   </div>
-                  <ul style={{ paddingLeft: "20px", margin: 0, textAlign: "left" }}>
+                  <ul style={{ paddingLeft: "20px", margin: 0, textAlign: "left", listStylePosition: "outside" }}>
                     {derived.vaccines.length
                       ? derived.vaccines.map((item, i) => (
-                          <li key={i} style={{ marginBottom: "8px", textAlign: "left" }}>
+                          <li key={i} style={{ marginBottom: "8px", textAlign: "left", lineHeight: 1.5 }}>
                             {item}
                           </li>
                         ))
@@ -2149,9 +1972,9 @@ export default function App() {
                           <div style={{ fontWeight: 900, color: COLORS.heading, textAlign: "left" }}>
                             {calc.title}
                           </div>
-                          <ul style={{ paddingLeft: "20px", margin: "8px 0 0 0", textAlign: "left" }}>
+                          <ul style={{ paddingLeft: "20px", margin: "8px 0 0 0", textAlign: "left", listStylePosition: "outside" }}>
                             {calc.lines.map((line, idx) => (
-                              <li key={idx} style={{ marginBottom: "6px", textAlign: "left" }}>
+                              <li key={idx} style={{ marginBottom: "6px", textAlign: "left", lineHeight: 1.5 }}>
                                 {line}
                               </li>
                             ))}
@@ -2163,36 +1986,53 @@ export default function App() {
               )}
             </div>
 
-            <div className="print-card" style={cardStyle()}>
-              <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>Patient-Friendly Summary</div>
-              <p style={{ marginTop: 0, color: COLORS.text, lineHeight: 1.6 }}>{patientSummary.intro}</p>
-              <ul style={{ paddingLeft: "20px", margin: 0 }}>
+            <div className="print-card" style={{ ...cardStyle(), textAlign: "left" }}>
+              <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px", textAlign: "left" }}>
+                Patient-Friendly Summary
+              </div>
+              <p style={{ marginTop: 0, color: COLORS.text, lineHeight: 1.6, textAlign: "left" }}>
+                {patientSummary.intro}
+              </p>
+              <ul style={{ paddingLeft: "20px", margin: 0, textAlign: "left", listStylePosition: "outside" }}>
                 {patientSummary.steps.slice(0, 12).map((item, i) => (
-                  <li key={i} style={{ marginBottom: "7px" }}>
+                  <li key={i} style={{ marginBottom: "7px", textAlign: "left", lineHeight: 1.5 }}>
                     {item}
                   </li>
                 ))}
               </ul>
             </div>
 
-            <div className="print-card" style={cardStyle()}>
-              <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "12px" }}>Printable Report</div>
-              <div style={{ display: "grid", gap: "10px" }}>
+            <div className="print-card" style={{ ...cardStyle(), textAlign: "left" }}>
+              <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "12px", textAlign: "left" }}>
+                Printable Report
+              </div>
+              <div style={{ display: "grid", gap: "10px", textAlign: "left" }}>
                 {[
                   ["Care Gaps", derived.careGaps, COLORS.warningSoft],
                   ["Counseling", derived.counseling, COLORS.lavenderSoft],
                   ["Suggested Orders / Actions", derived.orders, COLORS.successSoft],
                 ].map(([title, items, bg]) => (
-                  <div key={title} style={{ background: bg, border: `1px solid ${COLORS.border}`, borderRadius: "14px", padding: "14px" }}>
-                    <div style={{ fontWeight: 900, color: COLORS.heading, marginBottom: "8px" }}>{title}</div>
-                    <ul style={{ paddingLeft: "20px", margin: 0 }}>
+                  <div
+                    key={title}
+                    style={{
+                      background: bg,
+                      border: `1px solid ${COLORS.border}`,
+                      borderRadius: "14px",
+                      padding: "14px",
+                      textAlign: "left",
+                    }}
+                  >
+                    <div style={{ fontWeight: 900, color: COLORS.heading, marginBottom: "8px", textAlign: "left" }}>
+                      {title}
+                    </div>
+                    <ul style={{ paddingLeft: "20px", margin: 0, textAlign: "left", listStylePosition: "outside" }}>
                       {items.length
                         ? items.map((item, i) => (
-                            <li key={i} style={{ marginBottom: "6px" }}>
+                            <li key={i} style={{ marginBottom: "6px", textAlign: "left", lineHeight: 1.5 }}>
                               {item}
                             </li>
                           ))
-                        : <li>None.</li>}
+                        : <li style={{ textAlign: "left" }}>None.</li>}
                     </ul>
                   </div>
                 ))}
