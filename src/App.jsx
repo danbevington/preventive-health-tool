@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 
-const APP_VERSION = "v3.0.0";
+const APP_VERSION = "v3.1.0";
 const APP_LAST_REVIEWED = "2026-03-27";
 const RISK_ENGINE_LABEL = "Official AHA PREVENT 10-Year ASCVD Base Model";
 
@@ -47,7 +47,6 @@ const INITIAL_FORM = {
   travelRisk: "",
   residenceRisk: "",
 
-  // CHA2DS2-VASc
   chaAge: "",
   chaSex: "",
   chaCHF: "",
@@ -56,7 +55,6 @@ const INITIAL_FORM = {
   chaStrokeTIA: "",
   chaVascular: "",
 
-  // Wells PE
   wellsDvtSigns: "",
   wellsPeMostLikely: "",
   wellsHrOver100: "",
@@ -65,7 +63,6 @@ const INITIAL_FORM = {
   wellsHemoptysis: "",
   wellsMalignancy: "",
 
-  // Wells DVT
   dvtActiveCancer: "",
   dvtParalysisOrCast: "",
   dvtBedriddenOrSurgery: "",
@@ -77,7 +74,6 @@ const INITIAL_FORM = {
   dvtPriorDvt: "",
   dvtAlternativeDiagnosisLikely: "",
 
-  // HAS-BLED
   hasBledHypertension: "",
   hasBledRenal: "",
   hasBledLiver: "",
@@ -88,7 +84,6 @@ const INITIAL_FORM = {
   hasBledDrugs: "",
   hasBledAlcohol: "",
 
-  // PHQ-9
   phq9_1: "0",
   phq9_2: "0",
   phq9_3: "0",
@@ -176,6 +171,18 @@ const PREVENT = {
     constant: -3.500655,
   },
 };
+
+function parseNum(value) {
+  return value === "" ? null : Number(value);
+}
+
+function yn(v) {
+  return v === "Y";
+}
+
+function addUnique(list, text) {
+  if (!list.includes(text)) list.push(text);
+}
 
 function calcPreventAscvd({
   age,
@@ -360,7 +367,6 @@ function calcCha2ds2Vasc(form) {
 
   return { score, items, interpretation };
 }
-
 function calcWellsPE(form) {
   let score = 0;
   const items = [];
@@ -484,14 +490,6 @@ function calcPhq9(form) {
     severity,
     positiveSuicideItem: Number(form.phq9_9 || 0) > 0,
   };
-}
-
-function parseNum(value) {
-  return value === "" ? null : Number(value);
-}
-
-function yn(v) {
-  return v === "Y";
 }
 
 function fieldStyle(hasError) {
@@ -654,7 +652,6 @@ function getRiskBadgeStyle(label) {
     border: "1px solid #bfd7ef",
   };
 }
-
 function validateScreeningInputs(form) {
   const errors = {};
   const age = parseNum(form.age);
@@ -662,36 +659,14 @@ function validateScreeningInputs(form) {
   const dbp = parseNum(form.dbp);
   const packYears = parseNum(form.packYears);
 
-  if (!Number.isFinite(age) || age < 0 || age > 100) {
-    errors.age = "Age must be 0–100.";
-  }
-
-  if (form.sex !== "" && !["male", "female"].includes(form.sex)) {
-    errors.sex = "Sex must be male or female.";
-  }
-
-  if (form.sbp !== "" && (!Number.isFinite(sbp) || sbp < 70 || sbp > 250)) {
-    errors.sbp = "Systolic BP must be 70–250.";
-  }
-
-  if (form.dbp !== "" && (!Number.isFinite(dbp) || dbp < 40 || dbp > 150)) {
-    errors.dbp = "Diastolic BP must be 40–150.";
-  }
-
-  if (
-    form.sbp !== "" &&
-    form.dbp !== "" &&
-    Number.isFinite(sbp) &&
-    Number.isFinite(dbp) &&
-    dbp >= sbp
-  ) {
+  if (!Number.isFinite(age) || age < 0 || age > 100) errors.age = "Age must be 0–100.";
+  if (form.sex !== "" && !["male", "female"].includes(form.sex)) errors.sex = "Sex must be male or female.";
+  if (form.sbp !== "" && (!Number.isFinite(sbp) || sbp < 70 || sbp > 250)) errors.sbp = "Systolic BP must be 70–250.";
+  if (form.dbp !== "" && (!Number.isFinite(dbp) || dbp < 40 || dbp > 150)) errors.dbp = "Diastolic BP must be 40–150.";
+  if (form.sbp !== "" && form.dbp !== "" && Number.isFinite(sbp) && Number.isFinite(dbp) && dbp >= sbp) {
     errors.dbp = "Diastolic must be lower than systolic.";
   }
-
-  if (form.smoking !== "" && !["Y", "N"].includes(form.smoking)) {
-    errors.smoking = "Smoking must be Y or N.";
-  }
-
+  if (form.smoking !== "" && !["Y", "N"].includes(form.smoking)) errors.smoking = "Smoking must be Y or N.";
   if (
     form.smoking === "Y" &&
     form.packYears !== "" &&
@@ -712,29 +687,12 @@ function validateAdditionalInputs(form) {
   const lpa = parseNum(form.lpa);
   const cac = parseNum(form.cac);
 
-  if (form.ldl !== "" && (!Number.isFinite(ldl) || ldl < 20 || ldl > 400)) {
-    errors.ldl = "LDL-C must be 20–400.";
-  }
-
-  if (form.nonHdl !== "" && (!Number.isFinite(nonHdl) || nonHdl < 30 || nonHdl > 500)) {
-    errors.nonHdl = "Non-HDL-C must be 30–500.";
-  }
-
-  if (form.triglycerides !== "" && (!Number.isFinite(tg) || tg < 20 || tg > 2000)) {
-    errors.triglycerides = "Triglycerides must be 20–2000.";
-  }
-
-  if (form.apob !== "" && (!Number.isFinite(apob) || apob < 20 || apob > 300)) {
-    errors.apob = "ApoB must be 20–300.";
-  }
-
-  if (form.lpa !== "" && (!Number.isFinite(lpa) || lpa < 0 || lpa > 500)) {
-    errors.lpa = "Lp(a) must be 0–500.";
-  }
-
-  if (form.cac !== "" && (!Number.isFinite(cac) || cac < 0 || cac > 5000)) {
-    errors.cac = "CAC must be 0–5000.";
-  }
+  if (form.ldl !== "" && (!Number.isFinite(ldl) || ldl < 20 || ldl > 400)) errors.ldl = "LDL-C must be 20–400.";
+  if (form.nonHdl !== "" && (!Number.isFinite(nonHdl) || nonHdl < 30 || nonHdl > 500)) errors.nonHdl = "Non-HDL-C must be 30–500.";
+  if (form.triglycerides !== "" && (!Number.isFinite(tg) || tg < 20 || tg > 2000)) errors.triglycerides = "Triglycerides must be 20–2000.";
+  if (form.apob !== "" && (!Number.isFinite(apob) || apob < 20 || apob > 300)) errors.apob = "ApoB must be 20–300.";
+  if (form.lpa !== "" && (!Number.isFinite(lpa) || lpa < 0 || lpa > 500)) errors.lpa = "Lp(a) must be 0–500.";
+  if (form.cac !== "" && (!Number.isFinite(cac) || cac < 0 || cac > 5000)) errors.cac = "CAC must be 0–5000.";
 
   return errors;
 }
@@ -748,33 +706,15 @@ function validatePreventInputs(form) {
   const totalChol = parseNum(form.totalChol);
   const hdl = parseNum(form.hdl);
 
-  if (form.age !== "" && (!Number.isFinite(age) || age < 30 || age > 79)) {
-    errors.age = "For official PREVENT, age must be 30–79.";
-  }
-
-  if (form.sbp !== "" && (!Number.isFinite(sbp) || sbp < 90 || sbp > 200)) {
-    errors.sbp = "For official PREVENT, SBP must be 90–200.";
-  }
-
-  if (form.bmi !== "" && (!Number.isFinite(bmi) || bmi < 18.5 || bmi > 39.9)) {
-    errors.bmi = "For official PREVENT, BMI must be 18.5–39.9.";
-  }
-
-  if (form.egfr !== "" && (!Number.isFinite(egfr) || egfr <= 0)) {
-    errors.egfr = "eGFR must be >0.";
-  }
-
+  if (form.age !== "" && (!Number.isFinite(age) || age < 30 || age > 79)) errors.age = "For official PREVENT, age must be 30–79.";
+  if (form.sbp !== "" && (!Number.isFinite(sbp) || sbp < 90 || sbp > 200)) errors.sbp = "For official PREVENT, SBP must be 90–200.";
+  if (form.bmi !== "" && (!Number.isFinite(bmi) || bmi < 18.5 || bmi > 39.9)) errors.bmi = "For official PREVENT, BMI must be 18.5–39.9.";
+  if (form.egfr !== "" && (!Number.isFinite(egfr) || egfr <= 0)) errors.egfr = "eGFR must be >0.";
   if (form.totalChol !== "" && (!Number.isFinite(totalChol) || totalChol < 130 || totalChol > 320)) {
     errors.totalChol = "For official PREVENT, total cholesterol must be 130–320.";
   }
-
-  if (form.hdl !== "" && (!Number.isFinite(hdl) || hdl < 20 || hdl > 100)) {
-    errors.hdl = "For official PREVENT, HDL must be 20–100.";
-  }
-
-  if (Number.isFinite(totalChol) && Number.isFinite(hdl) && hdl >= totalChol) {
-    errors.hdl = "HDL must be lower than total cholesterol.";
-  }
+  if (form.hdl !== "" && (!Number.isFinite(hdl) || hdl < 20 || hdl > 100)) errors.hdl = "For official PREVENT, HDL must be 20–100.";
+  if (Number.isFinite(totalChol) && Number.isFinite(hdl) && hdl >= totalChol) errors.hdl = "HDL must be lower than total cholesterol.";
 
   return errors;
 }
@@ -812,10 +752,6 @@ function hasCompletePreventInputs(form) {
     hdl <= 100 &&
     hdl < totalChol
   );
-}
-
-function addUnique(list, text) {
-  if (!list.includes(text)) list.push(text);
 }
 
 function getCumulativeVaccinesByAgeAndRisk(form) {
@@ -886,15 +822,9 @@ function getCumulativeVaccinesByAgeAndRisk(form) {
   if (age >= 27 && age <= 45) {
     addUnique(vaccines, "HPV based on shared clinical decision-making if not adequately vaccinated");
   }
-  if (age >= 50 || immunocompromised) {
-    addUnique(vaccines, "Recombinant zoster (RZV) 2-dose series");
-  }
-  if (age >= 60 && age < 75) {
-    addUnique(vaccines, "RSV vaccine if indicated / shared clinical decision-making");
-  }
-  if (age >= 75) {
-    addUnique(vaccines, "RSV vaccine");
-  }
+  if (age >= 50 || immunocompromised) addUnique(vaccines, "Recombinant zoster (RZV) 2-dose series");
+  if (age >= 60 && age < 75) addUnique(vaccines, "RSV vaccine if indicated / shared clinical decision-making");
+  if (age >= 75) addUnique(vaccines, "RSV vaccine");
   if (age >= 65) {
     addUnique(vaccines, "Pneumococcal vaccine per current CDC adult age/risk schedule");
     addUnique(vaccines, "Influenza annually (higher-dose/adjuvanted product may be preferred)");
@@ -905,25 +835,11 @@ function getCumulativeVaccinesByAgeAndRisk(form) {
     addUnique(vaccines, "RSV vaccine during pregnancy when seasonally indicated");
   }
 
-  if (!evidenceOfImmunityMMR && age >= 19) {
-    addUnique(vaccines, "MMR if lacking evidence of immunity");
-  }
-  if (!evidenceOfImmunityVaricella && age >= 19) {
-    addUnique(vaccines, "Varicella if lacking evidence of immunity");
-  }
-  if (!priorVaccineHistoryKnown && age >= 19) {
-    addUnique(vaccines, "Review prior vaccine history / registry and assess catch-up needs");
-  }
+  if (!evidenceOfImmunityMMR && age >= 19) addUnique(vaccines, "MMR if lacking evidence of immunity");
+  if (!evidenceOfImmunityVaricella && age >= 19) addUnique(vaccines, "Varicella if lacking evidence of immunity");
+  if (!priorVaccineHistoryKnown && age >= 19) addUnique(vaccines, "Review prior vaccine history / registry and assess catch-up needs");
 
-  if (
-    immunocompromised ||
-    asplenia ||
-    cochlearImplant ||
-    csfLeak ||
-    chronicHeartDisease ||
-    chronicLungDisease ||
-    chronicKidneyDisease
-  ) {
+  if (immunocompromised || asplenia || cochlearImplant || csfLeak || chronicHeartDisease || chronicLungDisease || chronicKidneyDisease) {
     addUnique(vaccines, "Pneumococcal vaccine based on risk condition");
   }
 
@@ -944,9 +860,7 @@ function getCumulativeVaccinesByAgeAndRisk(form) {
     addUnique(vaccines, "Annual influenza");
   }
 
-  if (collegeDormResident || military) {
-    addUnique(vaccines, "Meningococcal vaccination if indicated");
-  }
+  if (collegeDormResident || military) addUnique(vaccines, "Meningococcal vaccination if indicated");
 
   if (travelRisk || residenceRisk) {
     addUnique(vaccines, "Travel/residence-based vaccines as indicated");
@@ -990,37 +904,21 @@ function getCurrentAgeVaccinesNeeded(form) {
   if (age >= 75) addUnique(vaccines, "RSV vaccine");
   if (age >= 65) addUnique(vaccines, "Pneumococcal vaccine per current adult age/risk schedule");
 
-  if (!priorVaccineHistoryKnown && age >= 19) {
-    addUnique(vaccines, "Review vaccine registry/history to determine catch-up needs");
-  }
+  if (!priorVaccineHistoryKnown && age >= 19) addUnique(vaccines, "Review vaccine registry/history to determine catch-up needs");
   if (age >= 19 && age <= 26) {
     addUnique(vaccines, "HPV catch-up if series incomplete");
     addUnique(vaccines, "Hepatitis B catch-up if series incomplete");
   }
-  if (age >= 27 && age <= 45) {
-    addUnique(vaccines, "HPV may be considered by shared decision-making if not fully vaccinated");
-  }
-  if (!evidenceOfImmunityMMR && age >= 19) {
-    addUnique(vaccines, "MMR if lacking evidence of immunity");
-  }
-  if (!evidenceOfImmunityVaricella && age >= 19) {
-    addUnique(vaccines, "Varicella if lacking evidence of immunity");
-  }
+  if (age >= 27 && age <= 45) addUnique(vaccines, "HPV may be considered by shared decision-making if not fully vaccinated");
+  if (!evidenceOfImmunityMMR && age >= 19) addUnique(vaccines, "MMR if lacking evidence of immunity");
+  if (!evidenceOfImmunityVaricella && age >= 19) addUnique(vaccines, "Varicella if lacking evidence of immunity");
 
   if (sex === "female" && pregnant) {
     addUnique(vaccines, "Tdap during current pregnancy");
     addUnique(vaccines, "RSV vaccine during pregnancy when seasonally indicated");
   }
 
-  if (
-    immunocompromised ||
-    asplenia ||
-    cochlearImplant ||
-    csfLeak ||
-    chronicHeartDisease ||
-    chronicLungDisease ||
-    chronicKidneyDisease
-  ) {
+  if (immunocompromised || asplenia || cochlearImplant || csfLeak || chronicHeartDisease || chronicLungDisease || chronicKidneyDisease) {
     addUnique(vaccines, "Pneumococcal vaccine based on risk condition");
   }
   if (asplenia) {
@@ -1037,12 +935,8 @@ function getCurrentAgeVaccinesNeeded(form) {
     addUnique(vaccines, "Varicella if lacking evidence of immunity");
     addUnique(vaccines, "Annual influenza");
   }
-  if (collegeDormResident || military) {
-    addUnique(vaccines, "Meningococcal vaccination if indicated");
-  }
-  if (travelRisk || residenceRisk) {
-    addUnique(vaccines, "Travel/residence-based vaccines as indicated");
-  }
+  if (collegeDormResident || military) addUnique(vaccines, "Meningococcal vaccination if indicated");
+  if (travelRisk || residenceRisk) addUnique(vaccines, "Travel/residence-based vaccines as indicated");
 
   return vaccines;
 }
@@ -1065,7 +959,6 @@ function YesNoField({ name, label, value, onChange }) {
     </div>
   );
 }
-
 export default function App() {
   const [form, setForm] = useState(INITIAL_FORM);
   const [copyStatus, setCopyStatus] = useState("");
@@ -1212,6 +1105,171 @@ export default function App() {
     return { screenings, vaccines, counseling, careGaps, orders };
   }, [form, screeningErrors, preventRisk, preventCategory.label]);
 
+  const reportData = useMemo(() => {
+    const calculators = [];
+
+    if (preventRisk != null || hasCompletePreventInputs(form)) {
+      calculators.push({
+        title: "PREVENT-ASCVD",
+        lines: [
+          `10-year risk: ${preventRisk != null ? `${preventRisk}% (${preventCategory.label})` : "Not calculated"}`,
+          "Model: Official AHA PREVENT base model",
+        ],
+      });
+    }
+
+    const showStatinResult =
+      form.ldl !== "" ||
+      form.knownAscvd === "Y" ||
+      form.veryHighRiskAscvd === "Y" ||
+      form.diabetes === "Y" ||
+      form.triglycerides !== "" ||
+      form.apob !== "" ||
+      form.lpa !== "" ||
+      form.cac !== "";
+
+    if (showStatinResult) {
+      calculators.push({
+        title: "Statin Pathway",
+        lines: [
+          `Pathway: ${statinPlan?.pathway || "Insufficient data"}`,
+          `Recommendation: ${statinPlan?.recommendation || "Insufficient data"}`,
+          `Goal: ${statinPlan?.goal || "Insufficient data"}`,
+          `Risk enhancers: ${statinPlan?.enhancers?.length ? statinPlan.enhancers.join(", ") : "None noted"}`,
+          `Notes: ${statinPlan?.notes?.length ? statinPlan.notes.join(", ") : "None"}`,
+        ],
+      });
+    }
+
+    const showChaResult =
+      form.chaAge !== "" ||
+      form.chaSex !== "" ||
+      form.chaCHF === "Y" ||
+      form.chaHTN === "Y" ||
+      form.chaDM === "Y" ||
+      form.chaStrokeTIA === "Y" ||
+      form.chaVascular === "Y";
+
+    if (showChaResult) {
+      calculators.push({
+        title: "CHA₂DS₂-VASc",
+        lines: [
+          `Score: ${chaScore.score}`,
+          `Interpretation: ${chaScore.interpretation}`,
+          ...(chaScore.items?.length ? [`Factors: ${chaScore.items.join(", ")}`] : []),
+        ],
+      });
+    }
+
+    const showWellsPeResult =
+      form.wellsDvtSigns === "Y" ||
+      form.wellsPeMostLikely === "Y" ||
+      form.wellsHrOver100 === "Y" ||
+      form.wellsRecentSurgeryImmobilization === "Y" ||
+      form.wellsPriorDvtPe === "Y" ||
+      form.wellsHemoptysis === "Y" ||
+      form.wellsMalignancy === "Y";
+
+    if (showWellsPeResult) {
+      calculators.push({
+        title: "Wells PE",
+        lines: [
+          `Score: ${wellsScore.score}`,
+          `Interpretation: ${wellsScore.interpretation}`,
+          ...(wellsScore.items?.length ? [`Criteria: ${wellsScore.items.join(", ")}`] : []),
+        ],
+      });
+    }
+
+    const showWellsDvtResult =
+      form.dvtActiveCancer === "Y" ||
+      form.dvtParalysisOrCast === "Y" ||
+      form.dvtBedriddenOrSurgery === "Y" ||
+      form.dvtLocalizedTenderness === "Y" ||
+      form.dvtEntireLegSwollen === "Y" ||
+      form.dvtCalfSwelling3cm === "Y" ||
+      form.dvtPittingEdema === "Y" ||
+      form.dvtCollateralVeins === "Y" ||
+      form.dvtPriorDvt === "Y" ||
+      form.dvtAlternativeDiagnosisLikely === "Y";
+
+    if (showWellsDvtResult) {
+      calculators.push({
+        title: "Wells DVT",
+        lines: [
+          `Score: ${wellsDvtScore.score}`,
+          `Interpretation: ${wellsDvtScore.interpretation}`,
+          ...(wellsDvtScore.items?.length ? [`Criteria: ${wellsDvtScore.items.join(", ")}`] : []),
+        ],
+      });
+    }
+
+    const showHasBledResult =
+      form.hasBledHypertension === "Y" ||
+      form.hasBledRenal === "Y" ||
+      form.hasBledLiver === "Y" ||
+      form.hasBledStroke === "Y" ||
+      form.hasBledBleeding === "Y" ||
+      form.hasBledLabileInr === "Y" ||
+      form.hasBledElderly === "Y" ||
+      form.hasBledDrugs === "Y" ||
+      form.hasBledAlcohol === "Y";
+
+    if (showHasBledResult) {
+      calculators.push({
+        title: "HAS-BLED",
+        lines: [
+          `Score: ${hasBledScore.score}`,
+          `Interpretation: ${hasBledScore.interpretation}`,
+          ...(hasBledScore.items?.length ? [`Factors: ${hasBledScore.items.join(", ")}`] : []),
+        ],
+      });
+    }
+
+    const showPhq9Result = [
+      form.phq9_1,
+      form.phq9_2,
+      form.phq9_3,
+      form.phq9_4,
+      form.phq9_5,
+      form.phq9_6,
+      form.phq9_7,
+      form.phq9_8,
+      form.phq9_9,
+    ].some((v) => v !== "0");
+
+    if (showPhq9Result) {
+      calculators.push({
+        title: "PHQ-9",
+        lines: [
+          `Score: ${phq9Score.score}`,
+          `Severity: ${phq9Score.severity}`,
+          `Item 9: ${phq9Score.positiveSuicideItem ? "Positive response present" : "No positive response"}`,
+        ],
+      });
+    }
+
+    return {
+      calculators,
+      screenings: derived.screenings,
+      vaccines: derived.vaccines,
+      counseling: derived.counseling,
+      careGaps: derived.careGaps,
+      orders: derived.orders,
+    };
+  }, [
+    form,
+    preventRisk,
+    preventCategory.label,
+    statinPlan,
+    chaScore,
+    wellsScore,
+    wellsDvtScore,
+    hasBledScore,
+    phq9Score,
+    derived,
+  ]);
+
   const patientSummary = useMemo(() => {
     if (Object.keys(screeningErrors).length > 0) {
       return {
@@ -1222,10 +1280,7 @@ export default function App() {
 
     const steps = [];
 
-    if (derived.screenings.length > 0) {
-      derived.screenings.forEach((item) => steps.push(`Screening: ${item}`));
-    }
-
+    if (derived.screenings.length > 0) derived.screenings.forEach((item) => steps.push(`Screening: ${item}`));
     if (derived.vaccines.length > 0) {
       derived.vaccines.forEach((item) =>
         steps.push(
@@ -1235,22 +1290,10 @@ export default function App() {
         )
       );
     }
-
-    if (derived.counseling.length > 0) {
-      derived.counseling.forEach((item) => steps.push(`Counseling: ${item}`));
-    }
-
-    if (derived.careGaps.length > 0) {
-      derived.careGaps.forEach((item) => steps.push(`Care gap: ${item}`));
-    }
-
-    if (derived.orders.length > 0) {
-      derived.orders.forEach((item) => steps.push(`Suggested action: ${item}`));
-    }
-
-    if (statinPlan?.recommendation) {
-      steps.push(`Statin pathway recommendation: ${statinPlan.recommendation}`);
-    }
+    if (derived.counseling.length > 0) derived.counseling.forEach((item) => steps.push(`Counseling: ${item}`));
+    if (derived.careGaps.length > 0) derived.careGaps.forEach((item) => steps.push(`Care gap: ${item}`));
+    if (derived.orders.length > 0) derived.orders.forEach((item) => steps.push(`Suggested action: ${item}`));
+    if (statinPlan?.recommendation) steps.push(`Statin pathway recommendation: ${statinPlan.recommendation}`);
 
     const intro =
       preventRisk != null
@@ -1262,77 +1305,56 @@ export default function App() {
 
   const copyText = useMemo(() => {
     const lines = [];
+
     lines.push("Preventive Health Decision Tool Summary");
     lines.push(`Version: ${APP_VERSION}`);
     lines.push(`Last reviewed: ${APP_LAST_REVIEWED}`);
     lines.push(`Risk engine: ${RISK_ENGINE_LABEL}`);
     lines.push("");
 
-    lines.push("Clinical Results");
-    lines.push(
-      `- PREVENT-ASCVD 10-Year Risk: ${
-        preventRisk != null ? `${preventRisk}% (${preventCategory.label})` : "Not calculated"
-      }`
-    );
-    lines.push(`- Statin Pathway: ${statinPlan?.pathway || "Insufficient data"}`);
-    lines.push(`- Recommendation: ${statinPlan?.recommendation || "Insufficient data"}`);
-    lines.push(`- Goal: ${statinPlan?.goal || "Insufficient data"}`);
-    lines.push(`- CHA₂DS₂-VASc Score: ${chaScore.score} (${chaScore.interpretation})`);
-    lines.push(`- Wells PE Score: ${wellsScore.score} (${wellsScore.interpretation})`);
-    lines.push(`- Wells DVT Score: ${wellsDvtScore.score} (${wellsDvtScore.interpretation})`);
-    lines.push(`- HAS-BLED Score: ${hasBledScore.score} (${hasBledScore.interpretation})`);
-    lines.push(`- PHQ-9 Score: ${phq9Score.score} (${phq9Score.severity})`);
-    lines.push(
-      `- PHQ-9 Item 9: ${
-        phq9Score.positiveSuicideItem ? "Positive response present" : "No positive response"
-      }`
-    );
-    lines.push(
-      `- Vaccine View: ${
-        form.vaccineMode === "current" ? "Minus childhood vaccines" : "Include childhood vaccines"
-      }`
-    );
-    lines.push("");
-
-    if (statinPlan?.enhancers?.length > 0) {
-      lines.push("Risk Enhancers");
-      statinPlan.enhancers.forEach((item) => lines.push(`- ${item}`));
+    if (reportData.calculators.length > 0) {
+      lines.push("Calculators");
+      reportData.calculators.forEach((calc) => {
+        lines.push(`- ${calc.title}`);
+        calc.lines.forEach((line) => lines.push(`  - ${line}`));
+      });
       lines.push("");
     }
 
-    if (statinPlan?.notes?.length > 0) {
-      lines.push("Statin Notes");
-      statinPlan.notes.forEach((item) => lines.push(`- ${item}`));
-      lines.push("");
-    }
-
-    if (derived.screenings.length > 0) {
+    if (reportData.screenings.length > 0) {
       lines.push("Screenings");
-      derived.screenings.forEach((item) => lines.push(`- ${item}`));
+      reportData.screenings.forEach((item) => lines.push(`- ${item}`));
       lines.push("");
     }
 
-    if (derived.vaccines.length > 0) {
+    if (reportData.vaccines.length > 0) {
       lines.push("Vaccines");
-      derived.vaccines.forEach((item) => lines.push(`- ${item}`));
+      lines.push(
+        `- View mode: ${
+          form.vaccineMode === "current"
+            ? "Minus childhood vaccines"
+            : "Include childhood vaccines"
+        }`
+      );
+      reportData.vaccines.forEach((item) => lines.push(`- ${item}`));
       lines.push("");
     }
 
-    if (derived.counseling.length > 0) {
+    if (reportData.counseling.length > 0) {
       lines.push("Counseling");
-      derived.counseling.forEach((item) => lines.push(`- ${item}`));
+      reportData.counseling.forEach((item) => lines.push(`- ${item}`));
       lines.push("");
     }
 
-    if (derived.careGaps.length > 0) {
+    if (reportData.careGaps.length > 0) {
       lines.push("Care Gaps");
-      derived.careGaps.forEach((item) => lines.push(`- ${item}`));
+      reportData.careGaps.forEach((item) => lines.push(`- ${item}`));
       lines.push("");
     }
 
-    if (derived.orders.length > 0) {
+    if (reportData.orders.length > 0) {
       lines.push("Suggested Orders / Actions");
-      derived.orders.forEach((item) => lines.push(`- ${item}`));
+      reportData.orders.forEach((item) => lines.push(`- ${item}`));
       lines.push("");
     }
 
@@ -1341,19 +1363,7 @@ export default function App() {
     patientSummary.steps.forEach((item) => lines.push(`- ${item}`));
 
     return lines.join("\n");
-  }, [
-    preventRisk,
-    preventCategory.label,
-    statinPlan,
-    derived,
-    patientSummary,
-    form.vaccineMode,
-    chaScore,
-    wellsScore,
-    wellsDvtScore,
-    hasBledScore,
-    phq9Score,
-  ]);
+  }, [reportData, form.vaccineMode, patientSummary]);
 
   const handleCopy = async () => {
     try {
@@ -1754,9 +1764,7 @@ export default function App() {
             {activeTab === "prevent" && (
               <div className="print-card" style={{ ...cardStyle(COLORS.cardSoft), textAlign: "left" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
-                  <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading }}>
-                    Risk Overview
-                  </div>
+                  <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading }}>Risk Overview</div>
                   <span
                     style={{
                       ...riskBadge,
@@ -1770,15 +1778,15 @@ export default function App() {
                   </span>
                 </div>
 
-                <div style={{ fontSize: "32px", fontWeight: 800, color: COLORS.primaryDark, lineHeight: 1, textAlign: "left" }}>
+                <div style={{ fontSize: "32px", fontWeight: 800, color: COLORS.primaryDark, lineHeight: 1 }}>
                   {preventRisk != null ? `${preventRisk}%` : "—"}
                 </div>
 
-                <div style={{ marginTop: "8px", fontWeight: 700, color: COLORS.heading, textAlign: "left" }}>
+                <div style={{ marginTop: "8px", fontWeight: 700, color: COLORS.heading }}>
                   Official AHA PREVENT-ASCVD 10-Year Risk
                 </div>
 
-                <div style={{ marginTop: "8px", fontSize: "13px", color: COLORS.textSoft, textAlign: "left" }}>
+                <div style={{ marginTop: "8px", fontSize: "13px", color: COLORS.textSoft }}>
                   {preventRisk != null
                     ? `${preventCategory.label} risk (${preventCategory.range})`
                     : "Complete official base-model inputs within validated ranges are required to calculate PREVENT risk."}
@@ -1788,47 +1796,36 @@ export default function App() {
 
             {activeTab === "statin" && (
               <div className="print-card" style={{ ...cardStyle(COLORS.primarySoft), textAlign: "left" }}>
-                <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "10px", textAlign: "left" }}>
+                <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "10px" }}>
                   Statin Pathway
                 </div>
-
-                <div style={{ marginBottom: "8px", textAlign: "left" }}>
-                  <strong>Pathway:</strong> {statinPlan?.pathway || "Insufficient data"}
-                </div>
-                <div style={{ marginBottom: "8px", textAlign: "left" }}>
-                  <strong>Recommendation:</strong> {statinPlan?.recommendation || "Insufficient data"}
-                </div>
-                <div style={{ marginBottom: "8px", textAlign: "left" }}>
-                  <strong>Goal:</strong> {statinPlan?.goal || "Insufficient data"}
-                </div>
-                <div style={{ marginBottom: "8px", textAlign: "left" }}>
+                <div style={{ marginBottom: "8px" }}><strong>Pathway:</strong> {statinPlan?.pathway || "Insufficient data"}</div>
+                <div style={{ marginBottom: "8px" }}><strong>Recommendation:</strong> {statinPlan?.recommendation || "Insufficient data"}</div>
+                <div style={{ marginBottom: "8px" }}><strong>Goal:</strong> {statinPlan?.goal || "Insufficient data"}</div>
+                <div style={{ marginBottom: "8px" }}>
                   <strong>Risk enhancers:</strong>{" "}
                   {statinPlan?.enhancers?.length ? statinPlan.enhancers.join(", ") : "None noted"}
                 </div>
-                <div style={{ textAlign: "left" }}>
-                  <strong>Notes:</strong> {statinPlan?.notes?.length ? statinPlan.notes.join(", ") : "None"}
-                </div>
+                <div><strong>Notes:</strong> {statinPlan?.notes?.length ? statinPlan.notes.join(", ") : "None"}</div>
               </div>
             )}
 
             {activeTab === "screenings" && (
               <>
                 <div className="print-card" style={{ ...cardStyle(COLORS.accentSoft), textAlign: "left" }}>
-                  <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.accent, marginBottom: "10px", textAlign: "left" }}>
+                  <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.accent, marginBottom: "10px" }}>
                     Patient-Friendly Summary
                   </div>
-                  <p style={{ marginTop: 0, color: COLORS.text, textAlign: "left" }}>{patientSummary.intro}</p>
-                  <ul style={{ paddingLeft: "20px", marginBottom: 0, textAlign: "left" }}>
+                  <p style={{ marginTop: 0, color: COLORS.text }}>{patientSummary.intro}</p>
+                  <ul style={{ paddingLeft: "20px", marginBottom: 0 }}>
                     {patientSummary.steps.map((item, i) => (
-                      <li key={i} style={{ marginBottom: "6px", textAlign: "left" }}>
-                        {item}
-                      </li>
+                      <li key={i} style={{ marginBottom: "6px" }}>{item}</li>
                     ))}
                   </ul>
                 </div>
 
                 <div className="print-card" style={{ ...cardStyle(), textAlign: "left" }}>
-                  <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "14px", textAlign: "left" }}>
+                  <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "14px" }}>
                     Clinical Output
                   </div>
 
@@ -1846,20 +1843,17 @@ export default function App() {
                           border: `1px solid ${COLORS.border}`,
                           borderRadius: "10px",
                           padding: "16px",
-                          textAlign: "left",
                         }}
                       >
-                        <div style={{ fontSize: "15px", fontWeight: 800, color: COLORS.heading, marginBottom: "8px", textAlign: "left" }}>
+                        <div style={{ fontSize: "15px", fontWeight: 800, color: COLORS.heading, marginBottom: "8px" }}>
                           {section.title}
                         </div>
-                        <ul style={{ paddingLeft: "20px", marginBottom: 0, textAlign: "left" }}>
+                        <ul style={{ paddingLeft: "20px", marginBottom: 0 }}>
                           {section.items.length
                             ? section.items.map((item, i) => (
-                                <li key={i} style={{ marginBottom: "6px", textAlign: "left" }}>
-                                  {item}
-                                </li>
+                                <li key={i} style={{ marginBottom: "6px" }}>{item}</li>
                               ))
-                            : <li style={{ textAlign: "left" }}>None yet.</li>}
+                            : <li>None yet.</li>}
                         </ul>
                       </div>
                     ))}
@@ -1870,20 +1864,17 @@ export default function App() {
                         border: `1px solid ${COLORS.border}`,
                         borderRadius: "10px",
                         padding: "16px",
-                        textAlign: "left",
                       }}
                     >
-                      <div style={{ fontSize: "15px", fontWeight: 800, color: COLORS.heading, marginBottom: "8px", textAlign: "left" }}>
+                      <div style={{ fontSize: "15px", fontWeight: 800, color: COLORS.heading, marginBottom: "8px" }}>
                         Suggested Orders / Actions
                       </div>
-                      <ul style={{ paddingLeft: "20px", marginBottom: 0, textAlign: "left" }}>
+                      <ul style={{ paddingLeft: "20px", marginBottom: 0 }}>
                         {derived.orders.length
                           ? derived.orders.map((item, i) => (
-                              <li key={i} style={{ marginBottom: "6px", textAlign: "left" }}>
-                                {item}
-                              </li>
+                              <li key={i} style={{ marginBottom: "6px" }}>{item}</li>
                             ))
-                          : <li style={{ textAlign: "left" }}>No actions yet.</li>}
+                          : <li>No actions yet.</li>}
                       </ul>
                     </div>
                   </div>
@@ -1896,21 +1887,14 @@ export default function App() {
                 <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "10px" }}>
                   CHA₂DS₂-VASc Score
                 </div>
-
                 <div style={{ fontSize: "32px", fontWeight: 800, color: COLORS.primaryDark, lineHeight: 1 }}>
                   {chaScore.score}
                 </div>
-
                 <div style={{ marginTop: "8px", fontWeight: 700, color: COLORS.heading }}>
                   {chaScore.interpretation}
                 </div>
-
                 <ul style={{ paddingLeft: "20px", marginTop: "12px", marginBottom: 0 }}>
-                  {chaScore.items.length ? (
-                    chaScore.items.map((item, i) => <li key={i}>{item}</li>)
-                  ) : (
-                    <li>No factors selected yet.</li>
-                  )}
+                  {chaScore.items.length ? chaScore.items.map((item, i) => <li key={i}>{item}</li>) : <li>No factors selected yet.</li>}
                 </ul>
               </div>
             )}
@@ -1920,21 +1904,14 @@ export default function App() {
                 <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "10px" }}>
                   Wells PE Score
                 </div>
-
                 <div style={{ fontSize: "32px", fontWeight: 800, color: COLORS.primaryDark, lineHeight: 1 }}>
                   {wellsScore.score}
                 </div>
-
                 <div style={{ marginTop: "8px", fontWeight: 700, color: COLORS.heading }}>
                   {wellsScore.interpretation}
                 </div>
-
                 <ul style={{ paddingLeft: "20px", marginTop: "12px", marginBottom: 0 }}>
-                  {wellsScore.items.length ? (
-                    wellsScore.items.map((item, i) => <li key={i}>{item}</li>)
-                  ) : (
-                    <li>No criteria selected yet.</li>
-                  )}
+                  {wellsScore.items.length ? wellsScore.items.map((item, i) => <li key={i}>{item}</li>) : <li>No criteria selected yet.</li>}
                 </ul>
               </div>
             )}
@@ -1944,21 +1921,14 @@ export default function App() {
                 <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "10px" }}>
                   Wells DVT Score
                 </div>
-
                 <div style={{ fontSize: "32px", fontWeight: 800, color: COLORS.primaryDark, lineHeight: 1 }}>
                   {wellsDvtScore.score}
                 </div>
-
                 <div style={{ marginTop: "8px", fontWeight: 700, color: COLORS.heading }}>
                   {wellsDvtScore.interpretation}
                 </div>
-
                 <ul style={{ paddingLeft: "20px", marginTop: "12px", marginBottom: 0 }}>
-                  {wellsDvtScore.items.length ? (
-                    wellsDvtScore.items.map((item, i) => <li key={i}>{item}</li>)
-                  ) : (
-                    <li>No criteria selected yet.</li>
-                  )}
+                  {wellsDvtScore.items.length ? wellsDvtScore.items.map((item, i) => <li key={i}>{item}</li>) : <li>No criteria selected yet.</li>}
                 </ul>
               </div>
             )}
@@ -1968,21 +1938,14 @@ export default function App() {
                 <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "10px" }}>
                   HAS-BLED Score
                 </div>
-
                 <div style={{ fontSize: "32px", fontWeight: 800, color: COLORS.primaryDark, lineHeight: 1 }}>
                   {hasBledScore.score}
                 </div>
-
                 <div style={{ marginTop: "8px", fontWeight: 700, color: COLORS.heading }}>
                   {hasBledScore.interpretation}
                 </div>
-
                 <ul style={{ paddingLeft: "20px", marginTop: "12px", marginBottom: 0 }}>
-                  {hasBledScore.items.length ? (
-                    hasBledScore.items.map((item, i) => <li key={i}>{item}</li>)
-                  ) : (
-                    <li>No factors selected yet.</li>
-                  )}
+                  {hasBledScore.items.length ? hasBledScore.items.map((item, i) => <li key={i}>{item}</li>) : <li>No factors selected yet.</li>}
                 </ul>
               </div>
             )}
@@ -1992,15 +1955,12 @@ export default function App() {
                 <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "10px" }}>
                   PHQ-9 Score
                 </div>
-
                 <div style={{ fontSize: "32px", fontWeight: 800, color: COLORS.primaryDark, lineHeight: 1 }}>
                   {phq9Score.score}
                 </div>
-
                 <div style={{ marginTop: "8px", fontWeight: 700, color: COLORS.heading }}>
                   {phq9Score.severity}
                 </div>
-
                 <div style={{ marginTop: "10px", fontSize: "13px", color: COLORS.text }}>
                   <strong>Item 9:</strong>{" "}
                   {phq9Score.positiveSuicideItem
@@ -2010,8 +1970,158 @@ export default function App() {
               </div>
             )}
 
+            <div className="print-card" style={{ ...cardStyle(), textAlign: "left" }}>
+              <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "14px" }}>
+                Printable Report
+              </div>
+
+              <div style={{ display: "grid", gap: "14px" }}>
+                {reportData.calculators.length > 0 && (
+                  <div
+                    style={{
+                      background: COLORS.cardSoft,
+                      border: `1px solid ${COLORS.border}`,
+                      borderRadius: "10px",
+                      padding: "14px",
+                    }}
+                  >
+                    <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: "8px" }}>
+                      Calculators
+                    </div>
+                    {reportData.calculators.map((calc) => (
+                      <div key={calc.title} style={{ marginBottom: "10px" }}>
+                        <div style={{ fontWeight: 700 }}>{calc.title}</div>
+                        <ul style={{ paddingLeft: "20px", margin: "6px 0 0 0" }}>
+                          {calc.lines.map((line, idx) => (
+                            <li key={idx}>{line}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {reportData.screenings.length > 0 && (
+                  <div
+                    style={{
+                      background: COLORS.primarySoft,
+                      border: `1px solid ${COLORS.border}`,
+                      borderRadius: "10px",
+                      padding: "14px",
+                    }}
+                  >
+                    <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: "8px" }}>
+                      Screenings
+                    </div>
+                    <ul style={{ paddingLeft: "20px", margin: 0 }}>
+                      {reportData.screenings.map((item, i) => (
+                        <li key={i}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {reportData.vaccines.length > 0 && (
+                  <div
+                    style={{
+                      background: COLORS.successSoft,
+                      border: `1px solid ${COLORS.border}`,
+                      borderRadius: "10px",
+                      padding: "14px",
+                    }}
+                  >
+                    <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: "8px" }}>
+                      Vaccines
+                    </div>
+                    <div style={{ marginBottom: "8px", fontSize: "13px", color: COLORS.textSoft }}>
+                      View mode:{" "}
+                      {form.vaccineMode === "current"
+                        ? "Minus childhood vaccines"
+                        : "Include childhood vaccines"}
+                    </div>
+                    <ul style={{ paddingLeft: "20px", margin: 0 }}>
+                      {reportData.vaccines.map((item, i) => (
+                        <li key={i}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {reportData.counseling.length > 0 && (
+                  <div
+                    style={{
+                      background: COLORS.purpleSoft,
+                      border: `1px solid ${COLORS.border}`,
+                      borderRadius: "10px",
+                      padding: "14px",
+                    }}
+                  >
+                    <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: "8px" }}>
+                      Counseling
+                    </div>
+                    <ul style={{ paddingLeft: "20px", margin: 0 }}>
+                      {reportData.counseling.map((item, i) => (
+                        <li key={i}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {reportData.careGaps.length > 0 && (
+                  <div
+                    style={{
+                      background: COLORS.warningSoft,
+                      border: `1px solid ${COLORS.border}`,
+                      borderRadius: "10px",
+                      padding: "14px",
+                    }}
+                  >
+                    <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: "8px" }}>
+                      Care Gaps
+                    </div>
+                    <ul style={{ paddingLeft: "20px", margin: 0 }}>
+                      {reportData.careGaps.map((item, i) => (
+                        <li key={i}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {reportData.orders.length > 0 && (
+                  <div
+                    style={{
+                      background: "#eef8f4",
+                      border: `1px solid ${COLORS.border}`,
+                      borderRadius: "10px",
+                      padding: "14px",
+                    }}
+                  >
+                    <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: "8px" }}>
+                      Suggested Orders / Actions
+                    </div>
+                    <ul style={{ paddingLeft: "20px", margin: 0 }}>
+                      {reportData.orders.map((item, i) => (
+                        <li key={i}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {reportData.calculators.length === 0 &&
+                  reportData.screenings.length === 0 &&
+                  reportData.vaccines.length === 0 &&
+                  reportData.counseling.length === 0 &&
+                  reportData.careGaps.length === 0 &&
+                  reportData.orders.length === 0 && (
+                    <div style={{ color: COLORS.textSoft, fontSize: "13px" }}>
+                      Results will appear here for copying and printing once inputs are entered.
+                    </div>
+                  )}
+              </div>
+            </div>
+
             <div className="no-print" style={{ ...cardStyle(), textAlign: "left" }}>
-              <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "10px", textAlign: "left" }}>
+              <div style={{ fontSize: "18px", fontWeight: 800, color: COLORS.heading, marginBottom: "10px" }}>
                 Copy / Paste Text
               </div>
               <textarea
@@ -2028,7 +2138,6 @@ export default function App() {
                   fontSize: "13px",
                   background: "#f8fafc",
                   color: COLORS.text,
-                  textAlign: "left",
                 }}
               />
             </div>
