@@ -339,9 +339,9 @@ function calcPreventAscvd({
 function riskCat(r) {
   if (r == null) return { label: "Not calculated", range: "" };
   if (r < 3) return { label: "Low", range: "<3%" };
-  if (r < 5) return { label: "Borderline", range: "3–<5%" };
-  if (r < 10) return { label: "Intermediate", range: "5–<10%" };
-  return { label: "High", range: "≥10%" };
+  if (r < 5) return { label: "Borderline", range: "3-<5%" };
+  if (r < 10) return { label: "Intermediate", range: "5-<10%" };
+  return { label: "High", range: ">=10%" };
 }
 
 function buildStatinPathway(form, preventRisk) {
@@ -391,9 +391,9 @@ function buildStatinPathway(form, preventRisk) {
     }
   }
 
-  if (ldl >= 160) enhancers.push("LDL-C ≥160 mg/dL");
-  if (tg >= 175) enhancers.push("Triglycerides ≥175 mg/dL");
-  if (apob >= 130) enhancers.push("ApoB ≥130 mg/dL");
+  if (ldl >= 160) enhancers.push("LDL-C >=160 mg/dL");
+  if (tg >= 175) enhancers.push("Triglycerides >=175 mg/dL");
+  if (apob >= 130) enhancers.push("ApoB >=130 mg/dL");
   if (lpa >= 50) enhancers.push("Lp(a) elevated");
   if (cac > 0) enhancers.push(`CAC present (${cac})`);
 
@@ -419,10 +419,10 @@ function calcCha2ds2Vasc(form) {
   }
   if (age >= 75) {
     score += 2;
-    items.push("Age ≥75");
+    items.push("Age >=75");
   } else if (age >= 65) {
     score += 1;
-    items.push("Age 65–74");
+    items.push("Age 65-74");
   }
   if (form.chaDM === "Y") {
     score += 1;
@@ -580,16 +580,16 @@ function validateScreeningInputs(form) {
   const dbp = parseNum(form.dbp);
   const packYears = parseNum(form.packYears);
 
-  if (!Number.isFinite(age) || age < 0 || age > 100) errors.age = "Age must be 0–100.";
+  if (!Number.isFinite(age) || age < 0 || age > 100) errors.age = "Age must be 0-100.";
   if (form.sex !== "" && !["male", "female"].includes(form.sex)) errors.sex = "Sex must be male or female.";
-  if (form.sbp !== "" && (!Number.isFinite(sbp) || sbp < 70 || sbp > 250)) errors.sbp = "Systolic BP must be 70–250.";
-  if (form.dbp !== "" && (!Number.isFinite(dbp) || dbp < 40 || dbp > 150)) errors.dbp = "Diastolic BP must be 40–150.";
+  if (form.sbp !== "" && (!Number.isFinite(sbp) || sbp < 70 || sbp > 250)) errors.sbp = "Systolic BP must be 70-250.";
+  if (form.dbp !== "" && (!Number.isFinite(dbp) || dbp < 40 || dbp > 150)) errors.dbp = "Diastolic BP must be 40-150.";
   if (form.sbp !== "" && form.dbp !== "" && Number.isFinite(sbp) && Number.isFinite(dbp) && dbp >= sbp) {
     errors.dbp = "Diastolic must be lower than systolic.";
   }
   if (form.smoking !== "" && !["Y", "N"].includes(form.smoking)) errors.smoking = "Smoking must be Y or N.";
   if (form.smoking === "Y" && form.packYears !== "" && (!Number.isFinite(packYears) || packYears < 0 || packYears > 200)) {
-    errors.packYears = "Pack-years must be 0–200.";
+    errors.packYears = "Pack-years must be 0-200.";
   }
 
   return errors;
@@ -604,12 +604,12 @@ function validateAdditionalInputs(form) {
   const lpa = parseNum(form.lpa);
   const cac = parseNum(form.cac);
 
-  if (form.ldl !== "" && (!Number.isFinite(ldl) || ldl < 20 || ldl > 400)) errors.ldl = "LDL-C must be 20–400.";
-  if (form.nonHdl !== "" && (!Number.isFinite(nonHdl) || nonHdl < 30 || nonHdl > 500)) errors.nonHdl = "Non-HDL-C must be 30–500.";
-  if (form.triglycerides !== "" && (!Number.isFinite(tg) || tg < 20 || tg > 2000)) errors.triglycerides = "Triglycerides must be 20–2000.";
-  if (form.apob !== "" && (!Number.isFinite(apob) || apob < 20 || apob > 300)) errors.apob = "ApoB must be 20–300.";
-  if (form.lpa !== "" && (!Number.isFinite(lpa) || lpa < 0 || lpa > 500)) errors.lpa = "Lp(a) must be 0–500.";
-  if (form.cac !== "" && (!Number.isFinite(cac) || cac < 0 || cac > 5000)) errors.cac = "CAC must be 0–5000.";
+  if (form.ldl !== "" && (!Number.isFinite(ldl) || ldl < 20 || ldl > 400)) errors.ldl = "LDL-C must be 20-400.";
+  if (form.nonHdl !== "" && (!Number.isFinite(nonHdl) || nonHdl < 30 || nonHdl > 500)) errors.nonHdl = "Non-HDL-C must be 30-500.";
+  if (form.triglycerides !== "" && (!Number.isFinite(tg) || tg < 20 || tg > 2000)) errors.triglycerides = "Triglycerides must be 20-2000.";
+  if (form.apob !== "" && (!Number.isFinite(apob) || apob < 20 || apob > 300)) errors.apob = "ApoB must be 20-300.";
+  if (form.lpa !== "" && (!Number.isFinite(lpa) || lpa < 0 || lpa > 500)) errors.lpa = "Lp(a) must be 0-500.";
+  if (form.cac !== "" && (!Number.isFinite(cac) || cac < 0 || cac > 5000)) errors.cac = "CAC must be 0-5000.";
 
   return errors;
 }
@@ -623,14 +623,14 @@ function validatePreventInputs(form) {
   const totalChol = parseNum(form.totalChol);
   const hdl = parseNum(form.hdl);
 
-  if (form.age !== "" && (!Number.isFinite(age) || age < 30 || age > 79)) errors.age = "For official PREVENT, age must be 30–79.";
-  if (form.sbp !== "" && (!Number.isFinite(sbp) || sbp < 90 || sbp > 200)) errors.sbp = "For official PREVENT, SBP must be 90–200.";
-  if (form.bmi !== "" && (!Number.isFinite(bmi) || bmi < 18.5 || bmi > 39.9)) errors.bmi = "For official PREVENT, BMI must be 18.5–39.9.";
+  if (form.age !== "" && (!Number.isFinite(age) || age < 30 || age > 79)) errors.age = "For official PREVENT, age must be 30-79.";
+  if (form.sbp !== "" && (!Number.isFinite(sbp) || sbp < 90 || sbp > 200)) errors.sbp = "For official PREVENT, SBP must be 90-200.";
+  if (form.bmi !== "" && (!Number.isFinite(bmi) || bmi < 18.5 || bmi > 39.9)) errors.bmi = "For official PREVENT, BMI must be 18.5-39.9.";
   if (form.egfr !== "" && (!Number.isFinite(egfr) || egfr <= 0)) errors.egfr = "eGFR must be >0.";
   if (form.totalChol !== "" && (!Number.isFinite(totalChol) || totalChol < 130 || totalChol > 320)) {
-    errors.totalChol = "For official PREVENT, total cholesterol must be 130–320.";
+    errors.totalChol = "For official PREVENT, total cholesterol must be 130-320.";
   }
-  if (form.hdl !== "" && (!Number.isFinite(hdl) || hdl < 20 || hdl > 100)) errors.hdl = "For official PREVENT, HDL must be 20–100.";
+  if (form.hdl !== "" && (!Number.isFinite(hdl) || hdl < 20 || hdl > 100)) errors.hdl = "For official PREVENT, HDL must be 20-100.";
   if (Number.isFinite(totalChol) && Number.isFinite(hdl) && hdl >= totalChol) errors.hdl = "HDL must be lower than total cholesterol.";
 
   return errors;
@@ -669,6 +669,176 @@ function hasCompletePreventInputs(form) {
     hdl <= 100 &&
     hdl < totalChol
   );
+}
+
+function getCumulativeVaccinesByAgeAndRisk(form) {
+  const age = Number(form.age || 0);
+  const sex = form.sex;
+  const pregnant = form.pregnant === "Y";
+  const immunocompromised = form.immunocompromised === "Y";
+  const chronicLiverDisease = form.chronicLiverDisease === "Y";
+  const chronicKidneyDisease = form.chronicKidneyDisease === "Y";
+  const chronicHeartDisease = form.chronicHeartDisease === "Y";
+  const chronicLungDisease = form.chronicLungDisease === "Y";
+  const asplenia = form.asplenia === "Y";
+  const cochlearImplant = form.cochlearImplant === "Y";
+  const csfLeak = form.csfLeak === "Y";
+  const healthcareWorker = form.healthcareWorker === "Y";
+  const collegeDormResident = form.collegeDormResident === "Y";
+  const military = form.military === "Y";
+  const travelRisk = form.travelRisk === "Y";
+  const residenceRisk = form.residenceRisk === "Y";
+  const priorVaccineHistoryKnown = form.priorVaccineHistoryKnown === "Y";
+  const evidenceOfImmunityMMR = form.evidenceOfImmunityMMR === "Y";
+  const evidenceOfImmunityVaricella = form.evidenceOfImmunityVaricella === "Y";
+
+  const vaccines = [];
+  if (!Number.isFinite(age) || age < 0) return vaccines;
+
+  if (age >= 0) addUnique(vaccines, "Hepatitis B series");
+  if (age >= 2 / 12) {
+    addUnique(vaccines, "Rotavirus series");
+    addUnique(vaccines, "DTaP series");
+    addUnique(vaccines, "Hib series");
+    addUnique(vaccines, "Pneumococcal conjugate (PCV) series");
+    addUnique(vaccines, "Inactivated poliovirus (IPV) series");
+  }
+  if (age >= 6 / 12) {
+    addUnique(vaccines, "Influenza annually");
+    addUnique(vaccines, "COVID-19 per current CDC age-based schedule");
+  }
+  if (age >= 1) {
+    addUnique(vaccines, "MMR series");
+    addUnique(vaccines, "Varicella series");
+    addUnique(vaccines, "Hepatitis A series");
+  }
+  if (age >= 4) {
+    addUnique(vaccines, "DTaP booster at 4-6 years");
+    addUnique(vaccines, "IPV booster at 4-6 years");
+    addUnique(vaccines, "MMR second dose");
+    addUnique(vaccines, "Varicella second dose");
+  }
+  if (age >= 9) addUnique(vaccines, "HPV series");
+  if (age >= 11) {
+    addUnique(vaccines, "Tdap adolescent dose");
+    addUnique(vaccines, "MenACWY first dose");
+  }
+  if (age >= 16) addUnique(vaccines, "MenACWY booster");
+  if (age >= 19) {
+    addUnique(vaccines, "COVID-19 per current adult CDC schedule");
+    addUnique(vaccines, "Td or Tdap booster every 10 years after Tdap");
+  }
+  if (age >= 19 && age <= 26) {
+    addUnique(vaccines, "HPV catch-up if not previously completed");
+    addUnique(vaccines, "Hepatitis B if not previously completed");
+    addUnique(vaccines, "Hepatitis A if catch-up or indicated");
+  }
+  if (age >= 27 && age <= 45) addUnique(vaccines, "HPV based on shared clinical decision-making if not adequately vaccinated");
+  if (age >= 50 || immunocompromised) addUnique(vaccines, "Recombinant zoster (RZV) 2-dose series");
+  if (age >= 60 && age < 75) addUnique(vaccines, "RSV vaccine if indicated / shared clinical decision-making");
+  if (age >= 75) addUnique(vaccines, "RSV vaccine");
+  if (age >= 65) {
+    addUnique(vaccines, "Pneumococcal vaccine per current CDC adult age/risk schedule");
+    addUnique(vaccines, "Influenza annually (higher-dose/adjuvanted product may be preferred)");
+  }
+  if (sex === "female" && pregnant) {
+    addUnique(vaccines, "Tdap during each pregnancy");
+    addUnique(vaccines, "RSV vaccine during pregnancy when seasonally indicated");
+  }
+  if (!evidenceOfImmunityMMR && age >= 19) addUnique(vaccines, "MMR if lacking evidence of immunity");
+  if (!evidenceOfImmunityVaricella && age >= 19) addUnique(vaccines, "Varicella if lacking evidence of immunity");
+  if (!priorVaccineHistoryKnown && age >= 19) addUnique(vaccines, "Review prior vaccine history / registry and assess catch-up needs");
+  if (immunocompromised || asplenia || cochlearImplant || csfLeak || chronicHeartDisease || chronicLungDisease || chronicKidneyDisease) {
+    addUnique(vaccines, "Pneumococcal vaccine based on risk condition");
+  }
+  if (asplenia) {
+    addUnique(vaccines, "Meningococcal vaccines based on asplenia risk");
+    addUnique(vaccines, "Hib if indicated");
+  }
+  if (chronicLiverDisease) {
+    addUnique(vaccines, "Hepatitis A vaccine");
+    addUnique(vaccines, "Hepatitis B vaccine");
+  }
+  if (healthcareWorker) {
+    addUnique(vaccines, "Hepatitis B if not immune");
+    addUnique(vaccines, "MMR if lacking evidence of immunity");
+    addUnique(vaccines, "Varicella if lacking evidence of immunity");
+    addUnique(vaccines, "Annual influenza");
+  }
+  if (collegeDormResident || military) addUnique(vaccines, "Meningococcal vaccination if indicated");
+  if (travelRisk || residenceRisk) {
+    addUnique(vaccines, "Travel/residence-based vaccines as indicated");
+    addUnique(vaccines, "Meningococcal / Hepatitis A / other destination-specific vaccines if indicated");
+  }
+
+  return vaccines;
+}
+
+function getCurrentAgeVaccinesNeeded(form) {
+  const age = Number(form.age || 0);
+  const sex = form.sex;
+  const pregnant = form.pregnant === "Y";
+  const immunocompromised = form.immunocompromised === "Y";
+  const chronicLiverDisease = form.chronicLiverDisease === "Y";
+  const chronicKidneyDisease = form.chronicKidneyDisease === "Y";
+  const chronicHeartDisease = form.chronicHeartDisease === "Y";
+  const chronicLungDisease = form.chronicLungDisease === "Y";
+  const asplenia = form.asplenia === "Y";
+  const cochlearImplant = form.cochlearImplant === "Y";
+  const csfLeak = form.csfLeak === "Y";
+  const healthcareWorker = form.healthcareWorker === "Y";
+  const collegeDormResident = form.collegeDormResident === "Y";
+  const military = form.military === "Y";
+  const travelRisk = form.travelRisk === "Y";
+  const residenceRisk = form.residenceRisk === "Y";
+  const priorVaccineHistoryKnown = form.priorVaccineHistoryKnown === "Y";
+  const evidenceOfImmunityMMR = form.evidenceOfImmunityMMR === "Y";
+  const evidenceOfImmunityVaricella = form.evidenceOfImmunityVaricella === "Y";
+
+  const vaccines = [];
+  if (!Number.isFinite(age) || age < 0) return vaccines;
+
+  if (age >= 6 / 12) addUnique(vaccines, "Influenza annually");
+  if (age >= 19) addUnique(vaccines, "COVID-19 per current CDC adult schedule");
+  if (age >= 19) addUnique(vaccines, "Td or Tdap booster if due (every 10 years after prior Tdap)");
+  if (age >= 50 || immunocompromised) addUnique(vaccines, "Recombinant zoster (RZV) if not completed");
+  if (age >= 60 && age < 75) addUnique(vaccines, "RSV vaccine if indicated / shared clinical decision-making");
+  if (age >= 75) addUnique(vaccines, "RSV vaccine");
+  if (age >= 65) addUnique(vaccines, "Pneumococcal vaccine per current adult age/risk schedule");
+
+  if (!priorVaccineHistoryKnown && age >= 19) addUnique(vaccines, "Review vaccine registry/history to determine catch-up needs");
+  if (age >= 19 && age <= 26) {
+    addUnique(vaccines, "HPV catch-up if series incomplete");
+    addUnique(vaccines, "Hepatitis B catch-up if series incomplete");
+  }
+  if (age >= 27 && age <= 45) addUnique(vaccines, "HPV may be considered by shared decision-making if not fully vaccinated");
+  if (!evidenceOfImmunityMMR && age >= 19) addUnique(vaccines, "MMR if lacking evidence of immunity");
+  if (!evidenceOfImmunityVaricella && age >= 19) addUnique(vaccines, "Varicella if lacking evidence of immunity");
+  if (sex === "female" && pregnant) {
+    addUnique(vaccines, "Tdap during current pregnancy");
+    addUnique(vaccines, "RSV vaccine during pregnancy when seasonally indicated");
+  }
+  if (immunocompromised || asplenia || cochlearImplant || csfLeak || chronicHeartDisease || chronicLungDisease || chronicKidneyDisease) {
+    addUnique(vaccines, "Pneumococcal vaccine based on risk condition");
+  }
+  if (asplenia) {
+    addUnique(vaccines, "Meningococcal vaccines based on asplenia risk");
+    addUnique(vaccines, "Hib if indicated");
+  }
+  if (chronicLiverDisease) {
+    addUnique(vaccines, "Hepatitis A vaccine");
+    addUnique(vaccines, "Hepatitis B vaccine");
+  }
+  if (healthcareWorker) {
+    addUnique(vaccines, "Hepatitis B if not immune");
+    addUnique(vaccines, "MMR if lacking evidence of immunity");
+    addUnique(vaccines, "Varicella if lacking evidence of immunity");
+    addUnique(vaccines, "Annual influenza");
+  }
+  if (collegeDormResident || military) addUnique(vaccines, "Meningococcal vaccination if indicated");
+  if (travelRisk || residenceRisk) addUnique(vaccines, "Travel/residence-based vaccines as indicated");
+
+  return vaccines;
 }
 
 function getVaccinesForDisplay(form) {
@@ -872,12 +1042,8 @@ function PillToggle({ name, label, value, onChange }) {
           minWidth: 0,
         }}
       >
-        <button type="button" style={pillStyle(value === "Y")} onClick={() => setValue("Y")}>
-          Yes
-        </button>
-        <button type="button" style={pillStyle(value === "N")} onClick={() => setValue("N")}>
-          No
-        </button>
+        <button type="button" style={pillStyle(value === "Y")} onClick={() => setValue("Y")}>Yes</button>
+        <button type="button" style={pillStyle(value === "N")} onClick={() => setValue("N")}>No</button>
       </div>
     </div>
   );
@@ -1177,7 +1343,7 @@ export default function App() {
 
     if (showChaResult) {
       calculators.push({
-        title: "CHA₂DS₂-VASc",
+        title: "CHA2DS2-VASc",
         lines: [
           `Score: ${chaScore.score}`,
           `Interpretation: ${chaScore.interpretation}`,
@@ -1434,6 +1600,23 @@ export default function App() {
           box-shadow: 0 0 0 4px rgba(11,92,171,0.12) !important;
         }
 
+        .summary-left,
+        .summary-left * {
+          text-align: left;
+        }
+
+        .summary-left ul,
+        .summary-left ol {
+          padding-left: 20px;
+          margin: 0;
+          list-style-position: outside;
+        }
+
+        .summary-left li {
+          text-align: left;
+          line-height: 1.5;
+        }
+
         @page {
           size: auto;
           margin: 10mm;
@@ -1619,9 +1802,13 @@ export default function App() {
         </div>
 
         <div className="print-only-summary" style={{ display: "none" }}>
-          <div className="print-card">
-            <div style={{ fontSize: "20px", fontWeight: 900, color: COLORS.heading }}>Clinical Summary</div>
-            <div style={{ marginTop: "10px", fontSize: "13px", color: COLORS.textSoft }}>{patientSnapshot}</div>
+          <div className="print-card summary-left">
+            <div style={{ fontSize: "20px", fontWeight: 900, color: COLORS.heading }}>
+              Clinical Summary
+            </div>
+            <div style={{ marginTop: "10px", fontSize: "13px", color: COLORS.textSoft }}>
+              {patientSnapshot}
+            </div>
             <div style={{ marginTop: "12px", display: "grid", gap: "8px" }}>
               <div><strong>PREVENT:</strong> {preventRisk != null ? `${preventRisk}% (${preventCategory.label})` : "Not calculated"}</div>
               <div><strong>Statin pathway:</strong> {statinPlan.recommendation}</div>
@@ -1739,7 +1926,7 @@ export default function App() {
               <Panel title="Additional Calculators" subtitle="Stroke, thromboembolic, bleeding-risk, and PHQ-9 tools." defaultOpen={false}>
                 <div style={{ display: "grid", gap: "18px" }}>
                   <div>
-                    <div style={{ fontSize: "14px", fontWeight: 900, color: COLORS.heading, marginBottom: "12px" }}>CHA₂DS₂-VASc</div>
+                    <div style={{ fontSize: "14px", fontWeight: 900, color: COLORS.heading, marginBottom: "12px" }}>CHA2DS2-VASc</div>
                     <div className="adv-grid-3">
                       <Field name="chaAge" label="Age" value={form.chaAge} onChange={handleChange} />
                       <SelectField
@@ -1879,7 +2066,7 @@ export default function App() {
               </div>
             </div>
 
-            <div className="print-card" style={{ ...cardStyle(), textAlign: "left" }}>
+            <div className="print-card summary-left" style={{ ...cardStyle(), textAlign: "left" }}>
               <div
                 style={{
                   display: "flex",
@@ -1902,61 +2089,49 @@ export default function App() {
               </div>
 
               {activeSummaryTab === "plan" && (
-                <div style={{ textAlign: "left" }}>
-                  <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px", textAlign: "left" }}>
+                <div>
+                  <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>
                     Today's Plan
                   </div>
-                  <ul style={{ paddingLeft: "20px", margin: 0, textAlign: "left", listStylePosition: "outside" }}>
+                  <ul>
                     {todayPlan.length
-                      ? todayPlan.map((item, i) => (
-                          <li key={i} style={{ marginBottom: "8px", textAlign: "left", lineHeight: 1.5 }}>
-                            {item}
-                          </li>
-                        ))
-                      : <li style={{ textAlign: "left" }}>No prioritized actions yet.</li>}
+                      ? todayPlan.map((item, i) => <li key={i} style={{ marginBottom: "8px" }}>{item}</li>)
+                      : <li>No prioritized actions yet.</li>}
                   </ul>
                 </div>
               )}
 
               {activeSummaryTab === "screenings" && (
-                <div style={{ textAlign: "left" }}>
-                  <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px", textAlign: "left" }}>
+                <div>
+                  <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>
                     Screenings Due / Relevant
                   </div>
-                  <ul style={{ paddingLeft: "20px", margin: 0, textAlign: "left", listStylePosition: "outside" }}>
+                  <ul>
                     {derived.screenings.length
-                      ? derived.screenings.map((item, i) => (
-                          <li key={i} style={{ marginBottom: "8px", textAlign: "left", lineHeight: 1.5 }}>
-                            {item}
-                          </li>
-                        ))
-                      : <li style={{ textAlign: "left" }}>No screening items yet.</li>}
+                      ? derived.screenings.map((item, i) => <li key={i} style={{ marginBottom: "8px" }}>{item}</li>)
+                      : <li>No screening items yet.</li>}
                   </ul>
                 </div>
               )}
 
               {activeSummaryTab === "vaccines" && (
-                <div style={{ textAlign: "left" }}>
-                  <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px", textAlign: "left" }}>
+                <div>
+                  <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>
                     Vaccine Review
                   </div>
-                  <div style={{ marginBottom: "8px", fontSize: "12px", color: COLORS.textSoft, textAlign: "left" }}>
+                  <div style={{ marginBottom: "8px", fontSize: "12px", color: COLORS.textSoft }}>
                     View mode: {form.vaccineMode === "current" ? "Minus childhood vaccines" : "Include childhood vaccines"}
                   </div>
-                  <ul style={{ paddingLeft: "20px", margin: 0, textAlign: "left", listStylePosition: "outside" }}>
+                  <ul>
                     {derived.vaccines.length
-                      ? derived.vaccines.map((item, i) => (
-                          <li key={i} style={{ marginBottom: "8px", textAlign: "left", lineHeight: 1.5 }}>
-                            {item}
-                          </li>
-                        ))
-                      : <li style={{ textAlign: "left" }}>No vaccine items yet.</li>}
+                      ? derived.vaccines.map((item, i) => <li key={i} style={{ marginBottom: "8px" }}>{item}</li>)
+                      : <li>No vaccine items yet.</li>}
                   </ul>
                 </div>
               )}
 
               {activeSummaryTab === "calculators" && (
-                <div style={{ display: "grid", gap: "12px", textAlign: "left" }}>
+                <div style={{ display: "grid", gap: "12px" }}>
                   {reportData.calculators.length
                     ? reportData.calculators.map((calc) => (
                         <div
@@ -1966,47 +2141,40 @@ export default function App() {
                             borderRadius: "14px",
                             padding: "14px",
                             background: COLORS.cardSoft,
-                            textAlign: "left",
                           }}
                         >
-                          <div style={{ fontWeight: 900, color: COLORS.heading, textAlign: "left" }}>
-                            {calc.title}
-                          </div>
-                          <ul style={{ paddingLeft: "20px", margin: "8px 0 0 0", textAlign: "left", listStylePosition: "outside" }}>
+                          <div style={{ fontWeight: 900, color: COLORS.heading }}>{calc.title}</div>
+                          <ul style={{ marginTop: "8px" }}>
                             {calc.lines.map((line, idx) => (
-                              <li key={idx} style={{ marginBottom: "6px", textAlign: "left", lineHeight: 1.5 }}>
-                                {line}
-                              </li>
+                              <li key={idx} style={{ marginBottom: "6px" }}>{line}</li>
                             ))}
                           </ul>
                         </div>
                       ))
-                    : <div style={{ color: COLORS.textSoft, textAlign: "left" }}>Additional calculator outputs will appear here.</div>}
+                    : <div style={{ color: COLORS.textSoft }}>Additional calculator outputs will appear here.</div>}
                 </div>
               )}
             </div>
 
-            <div className="print-card" style={{ ...cardStyle(), textAlign: "left" }}>
-              <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px", textAlign: "left" }}>
+            <div className="print-card summary-left" style={{ ...cardStyle(), textAlign: "left" }}>
+              <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>
                 Patient-Friendly Summary
               </div>
-              <p style={{ marginTop: 0, color: COLORS.text, lineHeight: 1.6, textAlign: "left" }}>
+              <p style={{ marginTop: 0, color: COLORS.text, lineHeight: 1.6 }}>
                 {patientSummary.intro}
               </p>
-              <ul style={{ paddingLeft: "20px", margin: 0, textAlign: "left", listStylePosition: "outside" }}>
+              <ul>
                 {patientSummary.steps.slice(0, 12).map((item, i) => (
-                  <li key={i} style={{ marginBottom: "7px", textAlign: "left", lineHeight: 1.5 }}>
-                    {item}
-                  </li>
+                  <li key={i} style={{ marginBottom: "7px" }}>{item}</li>
                 ))}
               </ul>
             </div>
 
-            <div className="print-card" style={{ ...cardStyle(), textAlign: "left" }}>
-              <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "12px", textAlign: "left" }}>
+            <div className="print-card summary-left" style={{ ...cardStyle(), textAlign: "left" }}>
+              <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "12px" }}>
                 Printable Report
               </div>
-              <div style={{ display: "grid", gap: "10px", textAlign: "left" }}>
+              <div style={{ display: "grid", gap: "10px" }}>
                 {[
                   ["Care Gaps", derived.careGaps, COLORS.warningSoft],
                   ["Counseling", derived.counseling, COLORS.lavenderSoft],
@@ -2019,20 +2187,15 @@ export default function App() {
                       border: `1px solid ${COLORS.border}`,
                       borderRadius: "14px",
                       padding: "14px",
-                      textAlign: "left",
                     }}
                   >
-                    <div style={{ fontWeight: 900, color: COLORS.heading, marginBottom: "8px", textAlign: "left" }}>
+                    <div style={{ fontWeight: 900, color: COLORS.heading, marginBottom: "8px" }}>
                       {title}
                     </div>
-                    <ul style={{ paddingLeft: "20px", margin: 0, textAlign: "left", listStylePosition: "outside" }}>
+                    <ul>
                       {items.length
-                        ? items.map((item, i) => (
-                            <li key={i} style={{ marginBottom: "6px", textAlign: "left", lineHeight: 1.5 }}>
-                              {item}
-                            </li>
-                          ))
-                        : <li style={{ textAlign: "left" }}>None.</li>}
+                        ? items.map((item, i) => <li key={i} style={{ marginBottom: "6px" }}>{item}</li>)
+                        : <li>None.</li>}
                     </ul>
                   </div>
                 ))}
