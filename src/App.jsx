@@ -535,7 +535,11 @@ function validateScreeningInputs(form) {
     errors.dbp = "Diastolic must be lower than systolic.";
   }
   if (form.smoking !== "" && !["Y", "N"].includes(form.smoking)) errors.smoking = "Smoking must be Y or N.";
-  if (form.smoking === "Y" && form.packYears !== "" && (!Number.isFinite(packYears) || packYears < 0 || packYears > 200)) {
+  if (
+    form.smoking === "Y" &&
+    form.packYears !== "" &&
+    (!Number.isFinite(packYears) || packYears < 0 || packYears > 200)
+  ) {
     errors.packYears = "Pack-years must be 0–200.";
   }
 
@@ -1007,6 +1011,59 @@ function PillToggle({ name, label, value, onChange }) {
         </button>
         <button type="button" style={pillStyle(value === "N")} onClick={() => setValue("N")}>
           No
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ModeToggle({ name, label, value, onChange }) {
+  const setValue = (next) => onChange({ target: { name, value: next } });
+
+  const pillStyle = (active) => ({
+    flex: 1,
+    minWidth: 0,
+    padding: "9px 10px",
+    borderRadius: "999px",
+    border: `1px solid ${active ? COLORS.primaryDark : COLORS.border}`,
+    background: active ? COLORS.primarySoft : "#fff",
+    color: active ? COLORS.primaryDark : COLORS.textSoft,
+    fontWeight: 800,
+    fontSize: "12px",
+    cursor: "pointer",
+    lineHeight: 1.2,
+  });
+
+  return (
+    <div>
+      <div
+        style={{
+          display: "block",
+          fontSize: "10px",
+          fontWeight: 800,
+          marginBottom: "6px",
+          color: COLORS.heading,
+          textTransform: "uppercase",
+          letterSpacing: "0.08em",
+        }}
+      >
+        {label}
+      </div>
+      <div
+        style={{
+          display: "flex",
+          gap: "8px",
+          padding: "4px",
+          borderRadius: "999px",
+          background: "#f4f8fc",
+          border: `1px solid ${COLORS.border}`,
+        }}
+      >
+        <button type="button" style={pillStyle(value === "cumulative")} onClick={() => setValue("cumulative")}>
+          Include childhood vaccines
+        </button>
+        <button type="button" style={pillStyle(value === "current")} onClick={() => setValue("current")}>
+          Minus childhood vaccines
         </button>
       </div>
     </div>
@@ -1798,15 +1855,11 @@ export default function App() {
                   defaultOpen={false}
                 >
                   <div className="adv-grid-4">
-                    <SelectField
+                    <ModeToggle
                       name="vaccineMode"
                       label="Vaccine view"
                       value={form.vaccineMode}
                       onChange={handleChange}
-                      options={[
-                        { value: "cumulative", label: "Include childhood vaccines" },
-                        { value: "current", label: "Minus childhood vaccines" },
-                      ]}
                     />
 
                     {vaccineOptionFields.map(([name, label]) => {
