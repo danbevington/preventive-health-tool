@@ -96,29 +96,29 @@ const INITIAL_FORM = {
 };
 
 const COLORS = {
-  pageBg: "#f3f7fb",
-  shell: "#0c1f38",
-  shell2: "#18365c",
-  card: "rgba(255,255,255,0.94)",
-  cardSoft: "#f7fbff",
-  cardMute: "#fcfdff",
-  border: "#d7e3ef",
-  borderStrong: "#bfd2e4",
-  text: "#11263f",
-  textSoft: "#61758d",
-  heading: "#0d2138",
+  bg: "#f4f8fc",
+  bg2: "#edf5ff",
+  shell: "#0d223d",
+  shell2: "#17406c",
+  card: "#ffffff",
+  cardSoft: "#f8fbff",
+  border: "#d9e4ef",
+  borderStrong: "#bfd0e2",
+  text: "#13263c",
+  textSoft: "#62758b",
+  heading: "#0c2037",
   primary: "#0b5cab",
-  primaryDark: "#093d74",
-  primarySoft: "#ebf4ff",
-  accent: "#0d7a6e",
-  accentSoft: "#edfdf8",
+  primaryDark: "#083b72",
+  primarySoft: "#eaf3ff",
+  accent: "#0f766e",
+  accentSoft: "#ecfdf8",
   warning: "#9a6708",
   warningSoft: "#fff8e8",
   danger: "#b42318",
-  dangerSoft: "#fff3f2",
+  dangerSoft: "#fff4f3",
   success: "#166534",
   successSoft: "#eefcf3",
-  lavenderSoft: "#f6f4ff",
+  lavenderSoft: "#f7f5ff",
 };
 
 const PREVENT = {
@@ -520,207 +520,6 @@ function calcPhq9(form) {
   };
 }
 
-function fieldStyle(hasError) {
-  return {
-    width: "100%",
-    maxWidth: "100%",
-    padding: "10px 12px",
-    borderRadius: "12px",
-    border: `1px solid ${hasError ? COLORS.danger : COLORS.border}`,
-    background: "#fff",
-    boxSizing: "border-box",
-    color: COLORS.text,
-    outline: "none",
-    fontSize: "13px",
-    minHeight: "42px",
-    transition: "border-color 140ms ease, box-shadow 140ms ease",
-    boxShadow: hasError ? "0 0 0 4px rgba(180,35,24,0.09)" : "0 1px 2px rgba(9,30,66,0.04)",
-  };
-}
-
-function wideFieldStyle(hasError) {
-  return {
-    ...fieldStyle(hasError),
-    maxWidth: "100%",
-  };
-}
-
-function labelStyle() {
-  return {
-    display: "block",
-    fontSize: "10px",
-    fontWeight: 800,
-    marginBottom: "6px",
-    color: COLORS.heading,
-    textTransform: "uppercase",
-    letterSpacing: "0.08em",
-  };
-}
-
-function errorStyle() {
-  return {
-    color: COLORS.danger,
-    fontSize: "12px",
-    marginTop: "6px",
-    fontWeight: 700,
-  };
-}
-
-function buttonStyle(kind = "default") {
-  const base = {
-    padding: "11px 16px",
-    borderRadius: "999px",
-    cursor: "pointer",
-    fontWeight: 800,
-    fontSize: "13px",
-    letterSpacing: "0.01em",
-    transition: "transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease",
-    boxShadow: "0 8px 18px rgba(15,23,42,0.08)",
-  };
-
-  if (kind === "primary") {
-    return {
-      ...base,
-      border: "1px solid #0b4f8a",
-      background: `linear-gradient(180deg, ${COLORS.primary}, ${COLORS.primaryDark})`,
-      color: "#fff",
-    };
-  }
-  if (kind === "accent") {
-    return {
-      ...base,
-      border: "1px solid #9fe5d9",
-      background: `linear-gradient(180deg, #f4fffc, ${COLORS.accentSoft})`,
-      color: COLORS.accent,
-    };
-  }
-  return {
-    ...base,
-    border: `1px solid ${COLORS.borderStrong}`,
-    background: "rgba(255,255,255,0.95)",
-    color: COLORS.text,
-  };
-}
-
-function tabButtonStyle(active) {
-  return {
-    padding: "10px 14px",
-    borderRadius: "999px",
-    border: `1px solid ${active ? COLORS.primaryDark : COLORS.border}`,
-    background: active
-      ? `linear-gradient(180deg, ${COLORS.primarySoft}, #ffffff)`
-      : "rgba(255,255,255,0.88)",
-    color: active ? COLORS.primaryDark : COLORS.text,
-    cursor: "pointer",
-    fontWeight: 800,
-    fontSize: "13px",
-    boxShadow: active ? "0 8px 18px rgba(11,92,171,0.12)" : "none",
-  };
-}
-
-function cardStyle(background = COLORS.card) {
-  return {
-    background,
-    border: `1px solid ${COLORS.border}`,
-    borderRadius: "20px",
-    padding: "20px",
-    boxShadow: "0 18px 45px rgba(15,23,42,0.08)",
-    backdropFilter: "blur(8px)",
-  };
-}
-
-function sectionCardStyle(background = "#ffffff") {
-  return {
-    background,
-    border: `1px solid ${COLORS.border}`,
-    borderRadius: "18px",
-    padding: "18px",
-    boxShadow: "0 8px 24px rgba(15,23,42,0.04)",
-  };
-}
-
-function sectionHeaderStyle() {
-  return {
-    fontSize: "17px",
-    fontWeight: 900,
-    color: COLORS.heading,
-    marginBottom: "5px",
-    letterSpacing: "-0.01em",
-  };
-}
-
-function sectionSubheaderStyle() {
-  return {
-    fontSize: "12px",
-    color: COLORS.textSoft,
-    marginBottom: "14px",
-    lineHeight: 1.5,
-  };
-}
-
-function sectionToggleStyle() {
-  return {
-    width: "100%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: "12px",
-    padding: "0",
-    background: "transparent",
-    border: "none",
-    cursor: "pointer",
-    textAlign: "left",
-    color: COLORS.heading,
-  };
-}
-
-function sectionChevronStyle(open) {
-  return {
-    width: "28px",
-    height: "28px",
-    minWidth: "28px",
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: "999px",
-    background: COLORS.primarySoft,
-    color: COLORS.primaryDark,
-    fontSize: "16px",
-    fontWeight: 900,
-    transform: open ? "rotate(0deg)" : "rotate(-90deg)",
-    transition: "transform 140ms ease",
-  };
-}
-
-function getRiskBadgeStyle(label) {
-  if (label === "High") {
-    return {
-      background: COLORS.dangerSoft,
-      color: COLORS.danger,
-      border: "1px solid #f3c0bd",
-    };
-  }
-  if (label === "Intermediate" || label === "Borderline") {
-    return {
-      background: COLORS.warningSoft,
-      color: COLORS.warning,
-      border: "1px solid #f3d9a6",
-    };
-  }
-  if (label === "Low") {
-    return {
-      background: COLORS.successSoft,
-      color: COLORS.success,
-      border: "1px solid #b9e7c7",
-    };
-  }
-  return {
-    background: COLORS.primarySoft,
-    color: COLORS.primaryDark,
-    border: "1px solid #c2d8ef",
-  };
-}
-
 function validateScreeningInputs(form) {
   const errors = {};
   const age = parseNum(form.age);
@@ -736,11 +535,7 @@ function validateScreeningInputs(form) {
     errors.dbp = "Diastolic must be lower than systolic.";
   }
   if (form.smoking !== "" && !["Y", "N"].includes(form.smoking)) errors.smoking = "Smoking must be Y or N.";
-  if (
-    form.smoking === "Y" &&
-    form.packYears !== "" &&
-    (!Number.isFinite(packYears) || packYears < 0 || packYears > 200)
-  ) {
+  if (form.smoking === "Y" && form.packYears !== "" && (!Number.isFinite(packYears) || packYears < 0 || packYears > 200)) {
     errors.packYears = "Pack-years must be 0–200.";
   }
 
@@ -1016,45 +811,261 @@ function getVaccinesForDisplay(form) {
     : getCumulativeVaccinesByAgeAndRisk(form);
 }
 
-function YesNoField({ name, label, value, onChange }) {
+function formatPatientSnapshot(form, risk, riskLabel) {
+  const bits = [];
+  if (form.age) bits.push(`${form.age} y/o`);
+  if (form.sex) bits.push(form.sex === "female" ? "female" : "male");
+  if (form.smoking === "Y") bits.push("smoker");
+  else if (form.smoking === "N") bits.push("non-smoker");
+  if (form.sbp && form.dbp) bits.push(`BP ${form.sbp}/${form.dbp}`);
+  if (form.bmi) bits.push(`BMI ${form.bmi}`);
+  if (risk != null) bits.push(`PREVENT ${risk}% ${riskLabel.toLowerCase()}`);
+  return bits.length ? bits.join(" • ") : "Enter core inputs to generate a patient snapshot.";
+}
+
+function getPriorityPlan(derived, statinPlan, phq9Score) {
+  const items = [];
+  derived.orders.forEach((x) => addUnique(items, x));
+  if (derived.counseling.includes("Smoking cessation counseling")) addUnique(items, "Offer smoking cessation counseling");
+  if (
+    statinPlan?.recommendation &&
+    statinPlan.recommendation !== "Lifestyle optimization" &&
+    statinPlan.recommendation !== "Need complete PREVENT inputs"
+  ) {
+    addUnique(items, statinPlan.recommendation);
+  }
+  if (phq9Score.positiveSuicideItem) addUnique(items, "Follow clinic suicide safety protocol");
+  return items.slice(0, 6);
+}
+
+function getRiskBadgeStyle(label) {
+  if (label === "High") return { background: COLORS.dangerSoft, color: COLORS.danger, border: "1px solid #f0c0bb" };
+  if (label === "Intermediate" || label === "Borderline") return { background: COLORS.warningSoft, color: COLORS.warning, border: "1px solid #efd8a3" };
+  if (label === "Low") return { background: COLORS.successSoft, color: COLORS.success, border: "1px solid #bde7c8" };
+  return { background: COLORS.primarySoft, color: COLORS.primaryDark, border: "1px solid #c9dbef" };
+}
+
+function Stat({ label, value, tone = "default" }) {
+  const bgMap = {
+    default: COLORS.cardSoft,
+    primary: COLORS.primarySoft,
+    success: COLORS.successSoft,
+    warning: COLORS.warningSoft,
+    danger: COLORS.dangerSoft,
+  };
+
   return (
-    <div>
-      <label style={labelStyle()}>{label}</label>
-      <select name={name} value={value} onChange={onChange} style={wideFieldStyle(false)}>
-        <option value="">Select</option>
-        <option value="Y">Yes</option>
-        <option value="N">No</option>
-      </select>
+    <div
+      style={{
+        background: bgMap[tone] || bgMap.default,
+        border: `1px solid ${COLORS.border}`,
+        borderRadius: "16px",
+        padding: "14px",
+      }}
+    >
+      <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.08em", color: COLORS.textSoft, fontWeight: 800 }}>
+        {label}
+      </div>
+      <div style={{ marginTop: "8px", fontSize: "22px", fontWeight: 900, color: COLORS.heading, lineHeight: 1.05 }}>
+        {value}
+      </div>
     </div>
   );
 }
 
-function CollapsibleSection({
-  sectionKey,
-  title,
-  subtitle,
-  collapsedSections,
-  toggleSection,
-  background,
-  children,
-}) {
-  const open = !collapsedSections[sectionKey];
+function Field({ name, label, value, onChange, error, min = "0", disabled = false, step }) {
+  return (
+    <div>
+      <label
+        style={{
+          display: "block",
+          fontSize: "10px",
+          fontWeight: 800,
+          marginBottom: "6px",
+          color: COLORS.heading,
+          textTransform: "uppercase",
+          letterSpacing: "0.08em",
+        }}
+      >
+        {label}
+      </label>
+      <input
+        type="number"
+        min={min}
+        step={step}
+        name={name}
+        value={value}
+        disabled={disabled}
+        onChange={onChange}
+        style={{
+          width: "100%",
+          padding: "11px 12px",
+          minHeight: "44px",
+          borderRadius: "12px",
+          border: `1px solid ${error ? COLORS.danger : COLORS.border}`,
+          background: disabled ? "#f3f6f9" : "#fff",
+          boxSizing: "border-box",
+          fontSize: "13px",
+          color: COLORS.text,
+          boxShadow: error ? "0 0 0 4px rgba(180,35,24,0.08)" : "0 1px 2px rgba(15,23,42,0.04)",
+          outline: "none",
+        }}
+      />
+      {error && <div style={{ color: COLORS.danger, fontSize: "12px", marginTop: "6px", fontWeight: 700 }}>{error}</div>}
+    </div>
+  );
+}
+
+function SelectField({ name, label, value, onChange, options, error }) {
+  return (
+    <div>
+      <label
+        style={{
+          display: "block",
+          fontSize: "10px",
+          fontWeight: 800,
+          marginBottom: "6px",
+          color: COLORS.heading,
+          textTransform: "uppercase",
+          letterSpacing: "0.08em",
+        }}
+      >
+        {label}
+      </label>
+      <select
+        name={name}
+        value={value}
+        onChange={onChange}
+        style={{
+          width: "100%",
+          padding: "11px 12px",
+          minHeight: "44px",
+          borderRadius: "12px",
+          border: `1px solid ${error ? COLORS.danger : COLORS.border}`,
+          background: "#fff",
+          boxSizing: "border-box",
+          fontSize: "13px",
+          color: COLORS.text,
+          outline: "none",
+        }}
+      >
+        <option value="">Select</option>
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+      {error && <div style={{ color: COLORS.danger, fontSize: "12px", marginTop: "6px", fontWeight: 700 }}>{error}</div>}
+    </div>
+  );
+}
+
+function PillToggle({ name, label, value, onChange }) {
+  const setValue = (next) => onChange({ target: { name, value: next } });
+
+  const pillStyle = (active) => ({
+    flex: 1,
+    minWidth: 0,
+    padding: "9px 10px",
+    borderRadius: "999px",
+    border: `1px solid ${active ? COLORS.primaryDark : COLORS.border}`,
+    background: active ? COLORS.primarySoft : "#fff",
+    color: active ? COLORS.primaryDark : COLORS.textSoft,
+    fontWeight: 800,
+    fontSize: "12px",
+    cursor: "pointer",
+  });
 
   return (
-    <div style={sectionCardStyle(background)}>
+    <div>
+      <div
+        style={{
+          display: "block",
+          fontSize: "10px",
+          fontWeight: 800,
+          marginBottom: "6px",
+          color: COLORS.heading,
+          textTransform: "uppercase",
+          letterSpacing: "0.08em",
+        }}
+      >
+        {label}
+      </div>
+      <div
+        style={{
+          display: "flex",
+          gap: "8px",
+          padding: "4px",
+          borderRadius: "999px",
+          background: "#f4f8fc",
+          border: `1px solid ${COLORS.border}`,
+        }}
+      >
+        <button type="button" style={pillStyle(value === "Y")} onClick={() => setValue("Y")}>
+          Yes
+        </button>
+        <button type="button" style={pillStyle(value === "N")} onClick={() => setValue("N")}>
+          No
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function Panel({ title, subtitle, children, defaultOpen = false }) {
+  const [open, setOpen] = useState(defaultOpen);
+
+  return (
+    <div
+      style={{
+        background: COLORS.card,
+        border: `1px solid ${COLORS.border}`,
+        borderRadius: "18px",
+        padding: "18px",
+        boxShadow: "0 10px 24px rgba(15,23,42,0.04)",
+      }}
+    >
       <button
         type="button"
-        onClick={() => toggleSection(sectionKey)}
-        style={sectionToggleStyle()}
+        onClick={() => setOpen((prev) => !prev)}
+        style={{
+          width: "100%",
+          background: "transparent",
+          border: "none",
+          padding: 0,
+          textAlign: "left",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          gap: "16px",
+          cursor: "pointer",
+        }}
       >
         <div>
-          <div style={sectionHeaderStyle()}>{title}</div>
-          <div style={sectionSubheaderStyle()}>{subtitle}</div>
+          <div style={{ fontSize: "16px", fontWeight: 900, color: COLORS.heading }}>{title}</div>
+          <div style={{ fontSize: "12px", color: COLORS.textSoft, marginTop: "4px", lineHeight: 1.45 }}>{subtitle}</div>
         </div>
-        <span style={sectionChevronStyle(open)}>⌃</span>
+        <div
+          style={{
+            width: "28px",
+            height: "28px",
+            borderRadius: "999px",
+            background: COLORS.primarySoft,
+            color: COLORS.primaryDark,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontWeight: 900,
+            transform: open ? "rotate(0deg)" : "rotate(-90deg)",
+            transition: "transform 160ms ease",
+          }}
+        >
+          ⌃
+        </div>
       </button>
 
-      {open && <div className="collapsible-content">{children}</div>}
+      {open && <div style={{ marginTop: "16px" }}>{children}</div>}
     </div>
   );
 }
@@ -1062,17 +1073,7 @@ function CollapsibleSection({
 export default function App() {
   const [form, setForm] = useState(INITIAL_FORM);
   const [copyStatus, setCopyStatus] = useState("");
-  const [activeTab, setActiveTab] = useState("prevent");
-  const [collapsedSections, setCollapsedSections] = useState({
-    preventInputs: false,
-    statinInputs: true,
-    immunizationInputs: true,
-    chaInputs: true,
-    wellsPeInputs: true,
-    wellsDvtInputs: true,
-    hasBledInputs: true,
-    phq9Inputs: true,
-  });
+  const [activeSummaryTab, setActiveSummaryTab] = useState("plan");
 
   const screeningErrors = useMemo(() => validateScreeningInputs(form), [form]);
   const additionalErrors = useMemo(() => validateAdditionalInputs(form), [form]);
@@ -1088,26 +1089,10 @@ export default function App() {
   const handleReset = () => {
     setForm(INITIAL_FORM);
     setCopyStatus("");
+    setActiveSummaryTab("plan");
   };
 
   const handlePrint = () => window.print();
-
-  const toggleSection = (key) => {
-    setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  const focusPreventInputs = () => {
-    setCollapsedSections({
-      preventInputs: false,
-      statinInputs: true,
-      immunizationInputs: true,
-      chaInputs: true,
-      wellsPeInputs: true,
-      wellsDvtInputs: true,
-      hasBledInputs: true,
-      phq9Inputs: true,
-    });
-  };
 
   const canCalculatePrevent = useMemo(() => hasCompletePreventInputs(form), [form]);
 
@@ -1171,22 +1156,14 @@ export default function App() {
       orders.push("Screening mammogram");
     }
 
-    if (form.sex === "female" && age >= 21 && age <= 65) {
-      screenings.push("Cervical cancer screening");
-    }
+    if (form.sex === "female" && age >= 21 && age <= 65) screenings.push("Cervical cancer screening");
 
     if (form.sex === "male" && age >= 65 && age <= 75 && form.smoking === "Y") {
       screenings.push("AAA one-time screening");
       orders.push("Abdominal ultrasound");
     }
 
-    if (
-      age >= 50 &&
-      age <= 80 &&
-      form.smoking === "Y" &&
-      Number.isFinite(packYears) &&
-      packYears >= 20
-    ) {
+    if (age >= 50 && age <= 80 && form.smoking === "Y" && Number.isFinite(packYears) && packYears >= 20) {
       screenings.push("Annual low-dose CT for lung cancer");
       orders.push("Low-dose CT chest");
     }
@@ -1206,28 +1183,18 @@ export default function App() {
       }
     }
 
-    if (Number.isFinite(sbp) && sbp >= 130) {
-      careGaps.push("Hypertension evaluation needed");
-      orders.push("Repeat BP / home BP monitoring");
-    } else if (Number.isFinite(dbp) && dbp >= 80) {
+    if ((Number.isFinite(sbp) && sbp >= 130) || (Number.isFinite(dbp) && dbp >= 80)) {
       careGaps.push("Hypertension evaluation needed");
       orders.push("Repeat BP / home BP monitoring");
     }
 
-    if (Number.isFinite(bmi) && bmi >= 30) {
-      counseling.push("Obesity management counseling");
-    }
-
-    if (form.smoking === "Y") {
-      counseling.push("Smoking cessation counseling");
-    }
+    if (Number.isFinite(bmi) && bmi >= 30) counseling.push("Obesity management counseling");
+    if (form.smoking === "Y") counseling.push("Smoking cessation counseling");
 
     if (preventRisk != null) {
       careGaps.push(`10-year PREVENT-ASCVD risk: ${preventRisk}% (${preventCategory.label})`);
     } else {
-      careGaps.push(
-        "Screening recommendations can be shown with partial inputs. Official AHA PREVENT risk requires complete base-model inputs within validated ranges."
-      );
+      careGaps.push("Screening recommendations can be shown with partial inputs. Official AHA PREVENT risk requires complete base-model inputs within validated ranges.");
     }
 
     return { screenings, vaccines, counseling, careGaps, orders };
@@ -1260,11 +1227,11 @@ export default function App() {
       calculators.push({
         title: "Statin Pathway",
         lines: [
-          `Pathway: ${statinPlan?.pathway || "Insufficient data"}`,
-          `Recommendation: ${statinPlan?.recommendation || "Insufficient data"}`,
-          `Goal: ${statinPlan?.goal || "Insufficient data"}`,
-          `Risk enhancers: ${statinPlan?.enhancers?.length ? statinPlan.enhancers.join(", ") : "None noted"}`,
-          `Notes: ${statinPlan?.notes?.length ? statinPlan.notes.join(", ") : "None"}`,
+          `Pathway: ${statinPlan.pathway}`,
+          `Recommendation: ${statinPlan.recommendation}`,
+          `Goal: ${statinPlan.goal}`,
+          `Risk enhancers: ${statinPlan.enhancers.length ? statinPlan.enhancers.join(", ") : "None noted"}`,
+          `Notes: ${statinPlan.notes.length ? statinPlan.notes.join(", ") : "None"}`,
         ],
       });
     }
@@ -1284,7 +1251,7 @@ export default function App() {
         lines: [
           `Score: ${chaScore.score}`,
           `Interpretation: ${chaScore.interpretation}`,
-          ...(chaScore.items?.length ? [`Factors: ${chaScore.items.join(", ")}`] : []),
+          ...(chaScore.items.length ? [`Factors: ${chaScore.items.join(", ")}`] : []),
         ],
       });
     }
@@ -1304,7 +1271,7 @@ export default function App() {
         lines: [
           `Score: ${wellsScore.score}`,
           `Interpretation: ${wellsScore.interpretation}`,
-          ...(wellsScore.items?.length ? [`Criteria: ${wellsScore.items.join(", ")}`] : []),
+          ...(wellsScore.items.length ? [`Criteria: ${wellsScore.items.join(", ")}`] : []),
         ],
       });
     }
@@ -1327,7 +1294,7 @@ export default function App() {
         lines: [
           `Score: ${wellsDvtScore.score}`,
           `Interpretation: ${wellsDvtScore.interpretation}`,
-          ...(wellsDvtScore.items?.length ? [`Criteria: ${wellsDvtScore.items.join(", ")}`] : []),
+          ...(wellsDvtScore.items.length ? [`Criteria: ${wellsDvtScore.items.join(", ")}`] : []),
         ],
       });
     }
@@ -1349,7 +1316,7 @@ export default function App() {
         lines: [
           `Score: ${hasBledScore.score}`,
           `Interpretation: ${hasBledScore.interpretation}`,
-          ...(hasBledScore.items?.length ? [`Factors: ${hasBledScore.items.join(", ")}`] : []),
+          ...(hasBledScore.items.length ? [`Factors: ${hasBledScore.items.join(", ")}`] : []),
         ],
       });
     }
@@ -1385,18 +1352,7 @@ export default function App() {
       careGaps: derived.careGaps,
       orders: derived.orders,
     };
-  }, [
-    form,
-    preventRisk,
-    preventCategory.label,
-    statinPlan,
-    chaScore,
-    wellsScore,
-    wellsDvtScore,
-    hasBledScore,
-    phq9Score,
-    derived,
-  ]);
+  }, [form, preventRisk, preventCategory.label, statinPlan, chaScore, wellsScore, wellsDvtScore, hasBledScore, phq9Score, derived]);
 
   const patientSummary = useMemo(() => {
     if (Object.keys(screeningErrors).length > 0) {
@@ -1407,20 +1363,13 @@ export default function App() {
     }
 
     const steps = [];
-
-    if (derived.screenings.length > 0) derived.screenings.forEach((item) => steps.push(`Screening: ${item}`));
-    if (derived.vaccines.length > 0) {
-      derived.vaccines.forEach((item) =>
-        steps.push(
-          form.vaccineMode === "current"
-            ? `Vaccine to review now: ${item}`
-            : `Vaccine/history review: ${item}`
-        )
-      );
-    }
-    if (derived.counseling.length > 0) derived.counseling.forEach((item) => steps.push(`Counseling: ${item}`));
-    if (derived.careGaps.length > 0) derived.careGaps.forEach((item) => steps.push(`Care gap: ${item}`));
-    if (derived.orders.length > 0) derived.orders.forEach((item) => steps.push(`Suggested action: ${item}`));
+    derived.screenings.forEach((item) => steps.push(`Screening: ${item}`));
+    derived.vaccines.forEach((item) =>
+      steps.push(form.vaccineMode === "current" ? `Vaccine to review now: ${item}` : `Vaccine/history review: ${item}`)
+    );
+    derived.counseling.forEach((item) => steps.push(`Counseling: ${item}`));
+    derived.careGaps.forEach((item) => steps.push(`Care gap: ${item}`));
+    derived.orders.forEach((item) => steps.push(`Suggested action: ${item}`));
     if (statinPlan?.recommendation) steps.push(`Statin pathway recommendation: ${statinPlan.recommendation}`);
 
     const intro =
@@ -1457,13 +1406,7 @@ export default function App() {
 
     if (reportData.vaccines.length > 0) {
       lines.push("Vaccines");
-      lines.push(
-        `- View mode: ${
-          form.vaccineMode === "current"
-            ? "Minus childhood vaccines"
-            : "Include childhood vaccines"
-        }`
-      );
+      lines.push(`- View mode: ${form.vaccineMode === "current" ? "Minus childhood vaccines" : "Include childhood vaccines"}`);
       reportData.vaccines.forEach((item) => lines.push(`- ${item}`));
       lines.push("");
     }
@@ -1499,14 +1442,14 @@ export default function App() {
       setCopyStatus("Results copied.");
       setTimeout(() => setCopyStatus(""), 2000);
     } catch {
-      setCopyStatus("Copy failed. Select the text below and copy manually.");
+      setCopyStatus("Copy failed. Select and copy manually.");
     }
   };
 
-  const basicError = (name) =>
-    screeningErrors[name] || additionalErrors[name] || preventRangeErrors[name];
-
+  const basicError = (name) => screeningErrors[name] || additionalErrors[name] || preventRangeErrors[name];
   const riskBadge = getRiskBadgeStyle(preventCategory.label);
+  const patientSnapshot = formatPatientSnapshot(form, preventRisk, preventCategory.label);
+  const todayPlan = getPriorityPlan(derived, statinPlan, phq9Score);
 
   const vaccineOptionFields = [
     ["priorVaccineHistoryKnown", "Prior vaccine history known"],
@@ -1534,10 +1477,10 @@ export default function App() {
     ["phq9_3", "Trouble falling or staying asleep, or sleeping too much"],
     ["phq9_4", "Feeling tired or having little energy"],
     ["phq9_5", "Poor appetite or overeating"],
-    ["phq9_6", "Feeling bad about yourself — or that you are a failure or have let yourself or your family down"],
+    ["phq9_6", "Feeling bad about yourself or that you are a failure"],
     ["phq9_7", "Trouble concentrating on things"],
     ["phq9_8", "Moving or speaking slowly, or being fidgety/restless"],
-    ["phq9_9", "Thoughts that you would be better off dead or of hurting yourself"],
+    ["phq9_9", "Thoughts you would be better off dead or of hurting yourself"],
   ];
 
   return (
@@ -1547,11 +1490,10 @@ export default function App() {
         background: `
           radial-gradient(circle at top left, rgba(97,168,255,0.14), transparent 28%),
           radial-gradient(circle at top right, rgba(13,122,110,0.12), transparent 24%),
-          linear-gradient(180deg, ${COLORS.pageBg} 0%, #eef6ff 45%, #f8fbfe 100%)
+          linear-gradient(180deg, ${COLORS.bg} 0%, ${COLORS.bg2} 45%, #f8fbfe 100%)
         `,
         padding: "24px 16px 32px",
-        fontFamily:
-          '"Avenir Next", "Segoe UI", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif',
+        fontFamily: '"Avenir Next", "Segoe UI", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif',
         color: COLORS.text,
       }}
     >
@@ -1563,58 +1505,57 @@ export default function App() {
           box-shadow: 0 0 0 4px rgba(11,92,171,0.12) !important;
         }
 
-        button:hover { transform: translateY(-1px); }
-        button:active { transform: translateY(0); }
+        @page {
+          size: auto;
+          margin: 10mm;
+        }
 
-        .app-main-grid {
+        .app-grid {
           display: grid;
           grid-template-columns: minmax(0, 1.2fr) minmax(360px, 0.8fr);
-          gap: 18px;
+          gap: 20px;
           align-items: start;
         }
 
-        .input-grid-4 {
+        .core-grid {
           display: grid;
           grid-template-columns: repeat(4, minmax(120px, 1fr));
           gap: 16px;
         }
 
-        .input-grid-3 {
+        .adv-grid-4 {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(140px, 1fr));
+          gap: 16px;
+        }
+
+        .adv-grid-3 {
           display: grid;
           grid-template-columns: repeat(3, minmax(180px, 1fr));
           gap: 16px;
         }
 
-        .input-grid-vax {
-          display: grid;
-          grid-template-columns: repeat(4, minmax(180px, 1fr));
-          gap: 16px;
-        }
-
-        .results-rail {
+        .summary-rail {
           display: grid;
           gap: 18px;
           position: sticky;
           top: 16px;
+          z-index: 1;
         }
 
         .hero-grid {
           display: grid;
-          grid-template-columns: 1.2fr 0.8fr;
+          grid-template-columns: 1.3fr 0.7fr;
           gap: 18px;
           align-items: end;
         }
 
-        .collapsible-content {
-          overflow: hidden;
-        }
-
         @media (max-width: 1180px) {
-          .app-main-grid {
+          .app-grid {
             grid-template-columns: 1fr;
           }
 
-          .results-rail {
+          .summary-rail {
             position: static;
           }
 
@@ -1622,23 +1563,18 @@ export default function App() {
             grid-template-columns: 1fr;
           }
 
-          .input-grid-4,
-          .input-grid-vax {
+          .core-grid,
+          .adv-grid-4 {
             grid-template-columns: repeat(2, minmax(160px, 1fr));
           }
         }
 
         @media (max-width: 760px) {
-          .input-grid-4,
-          .input-grid-3,
-          .input-grid-vax {
+          .core-grid,
+          .adv-grid-4,
+          .adv-grid-3 {
             grid-template-columns: 1fr;
           }
-        }
-
-        @page {
-          size: auto;
-          margin: 10mm;
         }
 
         @media print {
@@ -1657,42 +1593,32 @@ export default function App() {
             margin: 0 !important;
           }
 
-          .app-main-grid {
+          .app-grid {
             display: block !important;
           }
 
-          .results-rail {
+          .summary-rail {
             position: static !important;
             display: block !important;
           }
 
           .print-card {
-            box-shadow: none !important;
-            break-inside: avoid-page;
-            page-break-inside: avoid;
-            border-radius: 10px !important;
-            border: 1px solid #d6dee8 !important;
             background: #fff !important;
+            box-shadow: none !important;
+            border: 1px solid #d6dee8 !important;
+            border-radius: 10px !important;
             margin: 0 0 10px 0 !important;
             padding: 12px !important;
+            break-inside: avoid-page;
+            page-break-inside: avoid;
           }
 
-          .print-report-stack {
+          .print-only-summary {
             display: block !important;
-            gap: 0 !important;
           }
 
-          .print-report-stack > div {
-            margin-bottom: 8px !important;
-          }
-
-          .print-title {
-            font-size: 22px !important;
-          }
-
-          .print-subtle {
-            font-size: 11px !important;
-            color: #334155 !important;
+          .screen-only {
+            display: none !important;
           }
         }
       `}</style>
@@ -1727,13 +1653,12 @@ export default function App() {
                 Clinical Decision Support
               </div>
 
-              <div className="print-title" style={{ fontSize: "34px", fontWeight: 900, marginTop: "14px", letterSpacing: "-0.03em" }}>
+              <div style={{ fontSize: "34px", fontWeight: 900, marginTop: "14px", letterSpacing: "-0.03em" }}>
                 Preventive Health Decision Tool
               </div>
 
-              <div style={{ marginTop: "10px", fontSize: "15px", opacity: 0.9, lineHeight: 1.55, maxWidth: "760px" }}>
-                Integrated prevention, cardiovascular risk, thromboembolic scoring, bleeding-risk support,
-                vaccination review, and PHQ-9 screening in one streamlined workflow.
+              <div style={{ marginTop: "10px", fontSize: "14px", opacity: 0.9, lineHeight: 1.55, maxWidth: "760px" }}>
+                {patientSnapshot}
               </div>
             </div>
 
@@ -1745,7 +1670,7 @@ export default function App() {
                 padding: "16px",
               }}
             >
-              <div className="print-subtle" style={{ fontSize: "11px", opacity: 0.74, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+              <div style={{ fontSize: "11px", opacity: 0.74, textTransform: "uppercase", letterSpacing: "0.1em" }}>
                 Build Metadata
               </div>
               <div style={{ marginTop: "10px", display: "grid", gap: "8px", fontSize: "13px" }}>
@@ -1761,679 +1686,399 @@ export default function App() {
           <button type="button" onClick={handleReset} style={buttonStyle("default")}>Reset Form</button>
           <button type="button" onClick={handlePrint} style={buttonStyle("primary")}>Print / Export Summary</button>
           <button type="button" onClick={handleCopy} style={buttonStyle("accent")}>Copy Results</button>
-          <button type="button" onClick={focusPreventInputs} style={buttonStyle("default")}>Focus PREVENT Inputs</button>
-          {copyStatus && (
-            <span style={{ alignSelf: "center", fontSize: "13px", color: COLORS.primary, fontWeight: 800 }}>
-              {copyStatus}
-            </span>
-          )}
+          {copyStatus && <span style={{ alignSelf: "center", fontSize: "13px", color: COLORS.primary, fontWeight: 800 }}>{copyStatus}</span>}
         </div>
 
-        <div className="app-main-grid">
-          <div className="no-print" style={cardStyle()}>
-            <div style={{ fontSize: "19px", fontWeight: 900, color: COLORS.heading, marginBottom: "16px", letterSpacing: "-0.02em" }}>
-              Patient Inputs
+        <div className="print-only-summary" style={{ display: "none" }}>
+          <div className="print-card">
+            <div style={{ fontSize: "20px", fontWeight: 900, color: COLORS.heading }}>Clinical Summary</div>
+            <div style={{ marginTop: "10px", fontSize: "13px", color: COLORS.textSoft }}>{patientSnapshot}</div>
+            <div style={{ marginTop: "12px", display: "grid", gap: "8px" }}>
+              <div><strong>PREVENT:</strong> {preventRisk != null ? `${preventRisk}% (${preventCategory.label})` : "Not calculated"}</div>
+              <div><strong>Statin pathway:</strong> {statinPlan.recommendation}</div>
+              {todayPlan.length > 0 && <div><strong>Today's plan:</strong> {todayPlan.join(", ")}</div>}
+              {derived.screenings.length > 0 && <div><strong>Screenings:</strong> {derived.screenings.join(", ")}</div>}
+              {derived.vaccines.length > 0 && <div><strong>Vaccines:</strong> {derived.vaccines.join(", ")}</div>}
+              {derived.orders.length > 0 && <div><strong>Suggested actions:</strong> {derived.orders.join(", ")}</div>}
+            </div>
+          </div>
+        </div>
+
+        <div className="app-grid">
+          <div className="screen-only" style={{ position: "relative", zIndex: 2 }}>
+            <div
+              style={{
+                ...cardStyle(),
+                marginBottom: "18px",
+                background: `linear-gradient(180deg, #ffffff 0%, ${COLORS.cardSoft} 100%)`,
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", gap: "16px", alignItems: "start", marginBottom: "14px", flexWrap: "wrap" }}>
+                <div>
+                  <div style={{ fontSize: "20px", fontWeight: 900, color: COLORS.heading, letterSpacing: "-0.02em" }}>
+                    Core Inputs First
+                  </div>
+                  <div style={{ fontSize: "13px", color: COLORS.textSoft, marginTop: "4px", lineHeight: 1.5 }}>
+                    Start here to generate the official PREVENT score and the highest-priority prevention guidance.
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    ...riskBadge,
+                    borderRadius: "999px",
+                    padding: "9px 13px",
+                    fontSize: "12px",
+                    fontWeight: 900,
+                  }}
+                >
+                  {preventCategory.label}
+                </div>
+              </div>
+
+              <div className="core-grid">
+                <Field name="age" label="Age" value={form.age} onChange={handleChange} error={basicError("age")} />
+                <SelectField
+                  name="sex"
+                  label="Sex"
+                  value={form.sex}
+                  onChange={handleChange}
+                  error={basicError("sex")}
+                  options={[
+                    { value: "male", label: "Male" },
+                    { value: "female", label: "Female" },
+                  ]}
+                />
+                <Field name="sbp" label="Systolic BP" value={form.sbp} onChange={handleChange} error={basicError("sbp")} />
+                <Field name="dbp" label="Diastolic BP" value={form.dbp} onChange={handleChange} error={basicError("dbp")} />
+                <Field name="bmi" label="BMI" value={form.bmi} onChange={handleChange} error={basicError("bmi")} step="0.1" />
+                <Field name="egfr" label="eGFR" value={form.egfr} onChange={handleChange} error={basicError("egfr")} />
+                <Field name="totalChol" label="Total cholesterol" value={form.totalChol} onChange={handleChange} error={basicError("totalChol")} />
+                <Field name="hdl" label="HDL cholesterol" value={form.hdl} onChange={handleChange} error={basicError("hdl")} />
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(160px, 1fr))", gap: "16px", marginTop: "16px" }}>
+                <PillToggle name="smoking" label="Smoking" value={form.smoking} onChange={handleChange} />
+                <PillToggle name="diabetes" label="Diabetes" value={form.diabetes} onChange={handleChange} />
+                <PillToggle name="bpTreated" label="BP treatment" value={form.bpTreated} onChange={handleChange} />
+                <PillToggle name="lipidLowering" label="Lipid-lowering therapy" value={form.lipidLowering} onChange={handleChange} />
+              </div>
+
+              {form.smoking === "Y" && (
+                <div style={{ marginTop: "16px", maxWidth: "220px" }}>
+                  <Field name="packYears" label="Pack-years" value={form.packYears} onChange={handleChange} error={basicError("packYears")} />
+                </div>
+              )}
             </div>
 
             <div style={{ display: "grid", gap: "18px" }}>
-              <CollapsibleSection
-                sectionKey="preventInputs"
-                title="PREVENT Score Inputs"
-                subtitle="Required for official AHA PREVENT risk calculation."
-                collapsedSections={collapsedSections}
-                toggleSection={toggleSection}
-                background={COLORS.cardSoft}
+              <Panel
+                title="Statin Details"
+                subtitle="Lipid treatment direction and risk-enhancer interpretation."
+                defaultOpen={false}
               >
-                <div className="input-grid-4">
-                  {[
-                    ["age", "Age"],
-                    ["sbp", "Systolic BP"],
-                    ["dbp", "Diastolic BP"],
-                    ["bmi", "BMI"],
-                    ["egfr", "eGFR"],
-                    ["totalChol", "Total cholesterol"],
-                    ["hdl", "HDL cholesterol"],
-                  ].map(([name, label]) => (
-                    <div key={name}>
-                      <label style={labelStyle()}>{label}</label>
-                      <input
-                        type="number"
-                        min="0"
-                        name={name}
-                        value={form[name]}
-                        onChange={handleChange}
-                        style={fieldStyle(!!basicError(name))}
-                      />
-                      {basicError(name) && <div style={errorStyle()}>{basicError(name)}</div>}
-                    </div>
-                  ))}
+                <div className="adv-grid-4">
+                  <Field name="ldl" label="LDL-C" value={form.ldl} onChange={handleChange} error={basicError("ldl")} />
+                  <Field name="nonHdl" label="Non-HDL-C" value={form.nonHdl} onChange={handleChange} error={basicError("nonHdl")} />
+                  <Field name="triglycerides" label="Triglycerides" value={form.triglycerides} onChange={handleChange} error={basicError("triglycerides")} />
+                  <Field name="apob" label="ApoB" value={form.apob} onChange={handleChange} error={basicError("apob")} />
+                  <Field name="lpa" label="Lp(a)" value={form.lpa} onChange={handleChange} error={basicError("lpa")} />
+                  <Field name="cac" label="CAC" value={form.cac} onChange={handleChange} error={basicError("cac")} />
+                  <PillToggle name="knownAscvd" label="Known ASCVD" value={form.knownAscvd} onChange={handleChange} />
+                  {form.knownAscvd === "Y" && (
+                    <PillToggle name="veryHighRiskAscvd" label="Very-high-risk ASCVD" value={form.veryHighRiskAscvd} onChange={handleChange} />
+                  )}
+                </div>
+              </Panel>
 
-                  <div>
-                    <label style={labelStyle()}>Sex</label>
-                    <select name="sex" value={form.sex} onChange={handleChange} style={fieldStyle(!!basicError("sex"))}>
-                      <option value="">Select</option>
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
-                    </select>
-                    {basicError("sex") && <div style={errorStyle()}>{basicError("sex")}</div>}
-                  </div>
-
-                  <div>
-                    <label style={labelStyle()}>Smoking</label>
-                    <select name="smoking" value={form.smoking} onChange={handleChange} style={fieldStyle(!!basicError("smoking"))}>
-                      <option value="">Select</option>
-                      <option value="Y">Yes</option>
-                      <option value="N">No</option>
-                    </select>
-                    {basicError("smoking") && <div style={errorStyle()}>{basicError("smoking")}</div>}
-                  </div>
-
-                  <div>
-                    <label style={labelStyle()}>Pack-years</label>
-                    <input
-                      type="number"
-                      min="0"
-                      name="packYears"
-                      value={form.packYears}
+              <div style={{ position: "relative", zIndex: 30 }}>
+                <Panel
+                  title="Immunizations"
+                  subtitle="Current-age vaccine review and cumulative history logic."
+                  defaultOpen={false}
+                >
+                  <div className="adv-grid-4">
+                    <SelectField
+                      name="vaccineMode"
+                      label="Vaccine view"
+                      value={form.vaccineMode}
                       onChange={handleChange}
-                      disabled={form.smoking !== "Y"}
-                      style={{
-                        ...fieldStyle(!!basicError("packYears")),
-                        background: form.smoking !== "Y" ? "#f2f6fa" : "#fff",
-                      }}
+                      options={[
+                        { value: "cumulative", label: "Include childhood vaccines" },
+                        { value: "current", label: "Minus childhood vaccines" },
+                      ]}
                     />
-                    {basicError("packYears") && <div style={errorStyle()}>{basicError("packYears")}</div>}
-                  </div>
 
-                  <div>
-                    <label style={labelStyle()}>Diabetes</label>
-                    <select name="diabetes" value={form.diabetes} onChange={handleChange} style={fieldStyle(false)}>
-                      <option value="">Select</option>
-                      <option value="Y">Yes</option>
-                      <option value="N">No</option>
-                    </select>
+                    {vaccineOptionFields.map(([name, label]) => {
+                      if (name === "pregnant" && form.sex !== "female") return null;
+                      return <PillToggle key={name} name={name} label={label} value={form[name]} onChange={handleChange} />;
+                    })}
                   </div>
+                </Panel>
+              </div>
 
-                  <div>
-                    <label style={labelStyle()}>BP treatment</label>
-                    <select name="bpTreated" value={form.bpTreated} onChange={handleChange} style={fieldStyle(false)}>
-                      <option value="">Select</option>
-                      <option value="Y">Yes</option>
-                      <option value="N">No</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label style={labelStyle()}>Lipid-lowering therapy</label>
-                    <select name="lipidLowering" value={form.lipidLowering} onChange={handleChange} style={fieldStyle(false)}>
-                      <option value="">Select</option>
-                      <option value="Y">Yes</option>
-                      <option value="N">No</option>
-                    </select>
-                  </div>
-                </div>
-              </CollapsibleSection>
-
-              <CollapsibleSection
-                sectionKey="statinInputs"
-                title="Statin Pathway Inputs"
-                subtitle="Used for lipid treatment direction and risk-enhancer interpretation."
-                collapsedSections={collapsedSections}
-                toggleSection={toggleSection}
-                background={COLORS.cardMute}
+              <Panel
+                title="Additional Calculators"
+                subtitle="Stroke, thromboembolic, bleeding-risk, and PHQ-9 tools."
+                defaultOpen={false}
               >
-                <div className="input-grid-4">
-                  {[
-                    ["ldl", "LDL-C"],
-                    ["nonHdl", "Non-HDL-C"],
-                    ["triglycerides", "Triglycerides"],
-                    ["apob", "ApoB"],
-                    ["lpa", "Lp(a)"],
-                    ["cac", "CAC"],
-                  ].map(([name, label]) => (
-                    <div key={name}>
-                      <label style={labelStyle()}>{label}</label>
-                      <input
-                        type="number"
-                        min="0"
-                        name={name}
-                        value={form[name]}
+                <div style={{ display: "grid", gap: "18px" }}>
+                  <div>
+                    <div style={{ fontSize: "14px", fontWeight: 900, color: COLORS.heading, marginBottom: "12px" }}>CHA₂DS₂-VASc</div>
+                    <div className="adv-grid-3">
+                      <Field name="chaAge" label="Age" value={form.chaAge} onChange={handleChange} />
+                      <SelectField
+                        name="chaSex"
+                        label="Sex"
+                        value={form.chaSex}
                         onChange={handleChange}
-                        style={fieldStyle(!!basicError(name))}
+                        options={[
+                          { value: "male", label: "Male" },
+                          { value: "female", label: "Female" },
+                        ]}
                       />
-                      {basicError(name) && <div style={errorStyle()}>{basicError(name)}</div>}
+                      <PillToggle name="chaCHF" label="CHF / LV dysfunction" value={form.chaCHF} onChange={handleChange} />
+                      <PillToggle name="chaHTN" label="Hypertension" value={form.chaHTN} onChange={handleChange} />
+                      <PillToggle name="chaDM" label="Diabetes mellitus" value={form.chaDM} onChange={handleChange} />
+                      <PillToggle name="chaStrokeTIA" label="Stroke / TIA / thromboembolism" value={form.chaStrokeTIA} onChange={handleChange} />
+                      <PillToggle name="chaVascular" label="Vascular disease" value={form.chaVascular} onChange={handleChange} />
                     </div>
-                  ))}
-
-                  <YesNoField name="knownAscvd" label="Known ASCVD" value={form.knownAscvd} onChange={handleChange} />
-                  <YesNoField name="veryHighRiskAscvd" label="Very-high-risk ASCVD" value={form.veryHighRiskAscvd} onChange={handleChange} />
-                </div>
-              </CollapsibleSection>
-
-              <CollapsibleSection
-                sectionKey="immunizationInputs"
-                title="Immunization Inputs"
-                subtitle="Toggle between cumulative vaccine history and current-age vaccine needs."
-                collapsedSections={collapsedSections}
-                toggleSection={toggleSection}
-                background="#f7fbfb"
-              >
-                <div className="input-grid-vax">
-                  <div>
-                    <label style={labelStyle()}>Vaccine view</label>
-                    <select name="vaccineMode" value={form.vaccineMode} onChange={handleChange} style={wideFieldStyle(false)}>
-                      <option value="cumulative">Include childhood vaccines</option>
-                      <option value="current">Minus childhood vaccines</option>
-                    </select>
-                  </div>
-
-                  {vaccineOptionFields.map(([name, label]) => (
-                    <YesNoField key={name} name={name} label={label} value={form[name]} onChange={handleChange} />
-                  ))}
-                </div>
-              </CollapsibleSection>
-
-              <CollapsibleSection
-                sectionKey="chaInputs"
-                title="CHA₂DS₂-VASc Inputs"
-                subtitle="Stroke-risk scoring input fields for atrial fibrillation."
-                collapsedSections={collapsedSections}
-                toggleSection={toggleSection}
-                background="#fffdf7"
-              >
-                <div className="input-grid-3">
-                  <div>
-                    <label style={labelStyle()}>Age</label>
-                    <input
-                      type="number"
-                      min="0"
-                      name="chaAge"
-                      value={form.chaAge}
-                      onChange={handleChange}
-                      style={wideFieldStyle(false)}
-                    />
                   </div>
 
                   <div>
-                    <label style={labelStyle()}>Sex</label>
-                    <select name="chaSex" value={form.chaSex} onChange={handleChange} style={wideFieldStyle(false)}>
-                      <option value="">Select</option>
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
-                    </select>
-                  </div>
-
-                  <YesNoField name="chaCHF" label="CHF / LV dysfunction" value={form.chaCHF} onChange={handleChange} />
-                  <YesNoField name="chaHTN" label="Hypertension" value={form.chaHTN} onChange={handleChange} />
-                  <YesNoField name="chaDM" label="Diabetes mellitus" value={form.chaDM} onChange={handleChange} />
-                  <YesNoField name="chaStrokeTIA" label="Stroke / TIA / thromboembolism" value={form.chaStrokeTIA} onChange={handleChange} />
-                  <YesNoField name="chaVascular" label="Vascular disease" value={form.chaVascular} onChange={handleChange} />
-                </div>
-              </CollapsibleSection>
-
-              <CollapsibleSection
-                sectionKey="wellsPeInputs"
-                title="Wells PE Inputs"
-                subtitle="Pretest probability scoring inputs for pulmonary embolism."
-                collapsedSections={collapsedSections}
-                toggleSection={toggleSection}
-                background="#fff9f8"
-              >
-                <div className="input-grid-3">
-                  <YesNoField name="wellsDvtSigns" label="Clinical signs of DVT" value={form.wellsDvtSigns} onChange={handleChange} />
-                  <YesNoField name="wellsPeMostLikely" label="PE more likely than alternative diagnosis" value={form.wellsPeMostLikely} onChange={handleChange} />
-                  <YesNoField name="wellsHrOver100" label="Heart rate >100" value={form.wellsHrOver100} onChange={handleChange} />
-                  <YesNoField name="wellsRecentSurgeryImmobilization" label="Recent surgery / immobilization" value={form.wellsRecentSurgeryImmobilization} onChange={handleChange} />
-                  <YesNoField name="wellsPriorDvtPe" label="Prior DVT or PE" value={form.wellsPriorDvtPe} onChange={handleChange} />
-                  <YesNoField name="wellsHemoptysis" label="Hemoptysis" value={form.wellsHemoptysis} onChange={handleChange} />
-                  <YesNoField name="wellsMalignancy" label="Malignancy" value={form.wellsMalignancy} onChange={handleChange} />
-                </div>
-              </CollapsibleSection>
-
-              <CollapsibleSection
-                sectionKey="wellsDvtInputs"
-                title="Wells DVT Inputs"
-                subtitle="Pretest probability scoring inputs for lower-extremity DVT."
-                collapsedSections={collapsedSections}
-                toggleSection={toggleSection}
-                background="#fff8f5"
-              >
-                <div className="input-grid-3">
-                  <YesNoField name="dvtActiveCancer" label="Active cancer" value={form.dvtActiveCancer} onChange={handleChange} />
-                  <YesNoField name="dvtParalysisOrCast" label="Paralysis / paresis / recent leg cast" value={form.dvtParalysisOrCast} onChange={handleChange} />
-                  <YesNoField name="dvtBedriddenOrSurgery" label="Bedridden >3 days or major surgery within 12 weeks" value={form.dvtBedriddenOrSurgery} onChange={handleChange} />
-                  <YesNoField name="dvtLocalizedTenderness" label="Localized deep venous tenderness" value={form.dvtLocalizedTenderness} onChange={handleChange} />
-                  <YesNoField name="dvtEntireLegSwollen" label="Entire leg swollen" value={form.dvtEntireLegSwollen} onChange={handleChange} />
-                  <YesNoField name="dvtCalfSwelling3cm" label="Calf swelling >3 cm" value={form.dvtCalfSwelling3cm} onChange={handleChange} />
-                  <YesNoField name="dvtPittingEdema" label="Pitting edema confined to symptomatic leg" value={form.dvtPittingEdema} onChange={handleChange} />
-                  <YesNoField name="dvtCollateralVeins" label="Collateral superficial veins" value={form.dvtCollateralVeins} onChange={handleChange} />
-                  <YesNoField name="dvtPriorDvt" label="Previously documented DVT" value={form.dvtPriorDvt} onChange={handleChange} />
-                  <YesNoField name="dvtAlternativeDiagnosisLikely" label="Alternative diagnosis at least as likely as DVT" value={form.dvtAlternativeDiagnosisLikely} onChange={handleChange} />
-                </div>
-              </CollapsibleSection>
-
-              <CollapsibleSection
-                sectionKey="hasBledInputs"
-                title="HAS-BLED Inputs"
-                subtitle="Bleeding-risk scoring inputs for anticoagulated atrial fibrillation patients."
-                collapsedSections={collapsedSections}
-                toggleSection={toggleSection}
-                background="#fff8f2"
-              >
-                <div className="input-grid-3">
-                  <YesNoField name="hasBledHypertension" label="Hypertension (SBP >160)" value={form.hasBledHypertension} onChange={handleChange} />
-                  <YesNoField name="hasBledRenal" label="Abnormal renal function" value={form.hasBledRenal} onChange={handleChange} />
-                  <YesNoField name="hasBledLiver" label="Abnormal liver function" value={form.hasBledLiver} onChange={handleChange} />
-                  <YesNoField name="hasBledStroke" label="Prior stroke" value={form.hasBledStroke} onChange={handleChange} />
-                  <YesNoField name="hasBledBleeding" label="Bleeding history / predisposition" value={form.hasBledBleeding} onChange={handleChange} />
-                  <YesNoField name="hasBledLabileInr" label="Labile INR" value={form.hasBledLabileInr} onChange={handleChange} />
-                  <YesNoField name="hasBledElderly" label="Age >65" value={form.hasBledElderly} onChange={handleChange} />
-                  <YesNoField name="hasBledDrugs" label="Drugs predisposing to bleeding" value={form.hasBledDrugs} onChange={handleChange} />
-                  <YesNoField name="hasBledAlcohol" label="Alcohol excess" value={form.hasBledAlcohol} onChange={handleChange} />
-                </div>
-              </CollapsibleSection>
-
-              <CollapsibleSection
-                sectionKey="phq9Inputs"
-                title="PHQ-9 Inputs"
-                subtitle="Depression symptom severity screening over the past 2 weeks."
-                collapsedSections={collapsedSections}
-                toggleSection={toggleSection}
-                background="#f8f7ff"
-              >
-                <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "12px" }}>
-                  {phqQuestions.map(([name, label]) => (
-                    <div key={name}>
-                      <label style={labelStyle()}>{label}</label>
-                      <select name={name} value={form[name]} onChange={handleChange} style={wideFieldStyle(false)}>
-                        <option value="0">Not at all</option>
-                        <option value="1">Several days</option>
-                        <option value="2">More than half the days</option>
-                        <option value="3">Nearly every day</option>
-                      </select>
+                    <div style={{ fontSize: "14px", fontWeight: 900, color: COLORS.heading, marginBottom: "12px" }}>Wells PE</div>
+                    <div className="adv-grid-3">
+                      <PillToggle name="wellsDvtSigns" label="Clinical signs of DVT" value={form.wellsDvtSigns} onChange={handleChange} />
+                      <PillToggle name="wellsPeMostLikely" label="PE more likely than alternative diagnosis" value={form.wellsPeMostLikely} onChange={handleChange} />
+                      <PillToggle name="wellsHrOver100" label="Heart rate >100" value={form.wellsHrOver100} onChange={handleChange} />
+                      <PillToggle name="wellsRecentSurgeryImmobilization" label="Recent surgery / immobilization" value={form.wellsRecentSurgeryImmobilization} onChange={handleChange} />
+                      <PillToggle name="wellsPriorDvtPe" label="Prior DVT or PE" value={form.wellsPriorDvtPe} onChange={handleChange} />
+                      <PillToggle name="wellsHemoptysis" label="Hemoptysis" value={form.wellsHemoptysis} onChange={handleChange} />
+                      <PillToggle name="wellsMalignancy" label="Malignancy" value={form.wellsMalignancy} onChange={handleChange} />
                     </div>
-                  ))}
+                  </div>
+
+                  <div>
+                    <div style={{ fontSize: "14px", fontWeight: 900, color: COLORS.heading, marginBottom: "12px" }}>Wells DVT</div>
+                    <div className="adv-grid-3">
+                      <PillToggle name="dvtActiveCancer" label="Active cancer" value={form.dvtActiveCancer} onChange={handleChange} />
+                      <PillToggle name="dvtParalysisOrCast" label="Paralysis / cast" value={form.dvtParalysisOrCast} onChange={handleChange} />
+                      <PillToggle name="dvtBedriddenOrSurgery" label="Bedridden / surgery" value={form.dvtBedriddenOrSurgery} onChange={handleChange} />
+                      <PillToggle name="dvtLocalizedTenderness" label="Localized tenderness" value={form.dvtLocalizedTenderness} onChange={handleChange} />
+                      <PillToggle name="dvtEntireLegSwollen" label="Entire leg swollen" value={form.dvtEntireLegSwollen} onChange={handleChange} />
+                      <PillToggle name="dvtCalfSwelling3cm" label="Calf swelling >3 cm" value={form.dvtCalfSwelling3cm} onChange={handleChange} />
+                      <PillToggle name="dvtPittingEdema" label="Pitting edema" value={form.dvtPittingEdema} onChange={handleChange} />
+                      <PillToggle name="dvtCollateralVeins" label="Collateral superficial veins" value={form.dvtCollateralVeins} onChange={handleChange} />
+                      <PillToggle name="dvtPriorDvt" label="Prior DVT" value={form.dvtPriorDvt} onChange={handleChange} />
+                      <PillToggle name="dvtAlternativeDiagnosisLikely" label="Alternative diagnosis likely" value={form.dvtAlternativeDiagnosisLikely} onChange={handleChange} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div style={{ fontSize: "14px", fontWeight: 900, color: COLORS.heading, marginBottom: "12px" }}>HAS-BLED</div>
+                    <div className="adv-grid-3">
+                      <PillToggle name="hasBledHypertension" label="Hypertension" value={form.hasBledHypertension} onChange={handleChange} />
+                      <PillToggle name="hasBledRenal" label="Abnormal renal function" value={form.hasBledRenal} onChange={handleChange} />
+                      <PillToggle name="hasBledLiver" label="Abnormal liver function" value={form.hasBledLiver} onChange={handleChange} />
+                      <PillToggle name="hasBledStroke" label="Prior stroke" value={form.hasBledStroke} onChange={handleChange} />
+                      <PillToggle name="hasBledBleeding" label="Bleeding history" value={form.hasBledBleeding} onChange={handleChange} />
+                      <PillToggle name="hasBledLabileInr" label="Labile INR" value={form.hasBledLabileInr} onChange={handleChange} />
+                      <PillToggle name="hasBledElderly" label="Age >65" value={form.hasBledElderly} onChange={handleChange} />
+                      <PillToggle name="hasBledDrugs" label="Drugs predisposing to bleeding" value={form.hasBledDrugs} onChange={handleChange} />
+                      <PillToggle name="hasBledAlcohol" label="Alcohol excess" value={form.hasBledAlcohol} onChange={handleChange} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div style={{ fontSize: "14px", fontWeight: 900, color: COLORS.heading, marginBottom: "12px" }}>PHQ-9</div>
+                    <div style={{ display: "grid", gap: "12px" }}>
+                      {phqQuestions.map(([name, label]) => (
+                        <SelectField
+                          key={name}
+                          name={name}
+                          label={label}
+                          value={form[name]}
+                          onChange={handleChange}
+                          options={[
+                            { value: "0", label: "Not at all" },
+                            { value: "1", label: "Several days" },
+                            { value: "2", label: "More than half the days" },
+                            { value: "3", label: "Nearly every day" },
+                          ]}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </CollapsibleSection>
+              </Panel>
             </div>
           </div>
 
-          <div className="results-rail">
-            <div className="no-print" style={{ ...cardStyle(), padding: "14px", textAlign: "left" }}>
-              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+          <div className="summary-rail">
+            <div className="print-card" style={cardStyle()}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", marginBottom: "12px", flexWrap: "wrap" }}>
+                <div>
+                  <div style={{ fontSize: "18px", fontWeight: 900, color: COLORS.heading }}>Clinical Summary</div>
+                  <div style={{ marginTop: "4px", fontSize: "12px", color: COLORS.textSoft }}>Highest-priority risk and action guidance.</div>
+                </div>
+                <span
+                  style={{
+                    ...riskBadge,
+                    borderRadius: "999px",
+                    padding: "8px 12px",
+                    fontSize: "12px",
+                    fontWeight: 900,
+                  }}
+                >
+                  {preventCategory.label}
+                </span>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <Stat
+                  label="PREVENT Risk"
+                  value={preventRisk != null ? `${preventRisk}%` : "—"}
+                  tone={
+                    preventCategory.label === "High"
+                      ? "danger"
+                      : preventCategory.label === "Intermediate" || preventCategory.label === "Borderline"
+                        ? "warning"
+                        : "primary"
+                  }
+                />
+                <Stat label="Statin Pathway" value={statinPlan.pathway} tone="primary" />
+                <Stat label="PHQ-9" value={`${phq9Score.score} • ${phq9Score.severity}`} tone={phq9Score.score >= 10 ? "warning" : "default"} />
+                <Stat label="Vaccines Listed" value={String(derived.vaccines.length)} tone="success" />
+              </div>
+
+              <div style={{ marginTop: "14px", padding: "14px", borderRadius: "16px", background: COLORS.primarySoft, border: `1px solid ${COLORS.border}` }}>
+                <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.08em", color: COLORS.primaryDark, fontWeight: 800 }}>
+                  Recommendation
+                </div>
+                <div style={{ marginTop: "8px", fontSize: "15px", fontWeight: 800, color: COLORS.heading, lineHeight: 1.4 }}>
+                  {statinPlan.recommendation}
+                </div>
+                <div style={{ marginTop: "6px", fontSize: "13px", color: COLORS.textSoft }}>
+                  Goal: {statinPlan.goal}
+                </div>
+              </div>
+            </div>
+
+            <div className="print-card" style={cardStyle()}>
+              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "14px" }}>
                 {[
-                  ["prevent", "PREVENT Score"],
-                  ["statin", "Statin Pathway"],
+                  ["plan", "Today's Plan"],
                   ["screenings", "Screenings"],
-                  ["cha2ds2vasc", "CHA₂DS₂-VASc"],
-                  ["wells", "Wells PE"],
-                  ["wellsDvt", "Wells DVT"],
-                  ["hasBled", "HAS-BLED"],
-                  ["phq9", "PHQ-9"],
+                  ["vaccines", "Vaccines"],
+                  ["calculators", "Extra Calculators"],
                 ].map(([key, label]) => (
-                  <button key={key} type="button" onClick={() => setActiveTab(key)} style={tabButtonStyle(activeTab === key)}>
+                  <button key={key} type="button" onClick={() => setActiveSummaryTab(key)} style={tabButtonStyle(activeSummaryTab === key)}>
                     {label}
                   </button>
                 ))}
               </div>
-            </div>
 
-            {activeTab === "prevent" && (
-              <div className="no-print" style={{ ...cardStyle(COLORS.cardSoft), textAlign: "left" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
-                  <div style={{ fontSize: "18px", fontWeight: 900, color: COLORS.heading }}>Risk Overview</div>
-                  <span
-                    style={{
-                      ...riskBadge,
-                      borderRadius: "999px",
-                      padding: "8px 13px",
-                      fontSize: "12px",
-                      fontWeight: 900,
-                    }}
-                  >
-                    {preventCategory.label}
-                  </span>
-                </div>
-
-                <div style={{ fontSize: "40px", fontWeight: 900, color: COLORS.primaryDark, lineHeight: 1, letterSpacing: "-0.03em" }}>
-                  {preventRisk != null ? `${preventRisk}%` : "—"}
-                </div>
-
-                <div style={{ marginTop: "10px", fontWeight: 800, color: COLORS.heading }}>
-                  Official AHA PREVENT-ASCVD 10-Year Risk
-                </div>
-
-                <div style={{ marginTop: "8px", fontSize: "13px", color: COLORS.textSoft, lineHeight: 1.55 }}>
-                  {preventRisk != null
-                    ? `${preventCategory.label} risk (${preventCategory.range})`
-                    : "Complete official base-model inputs within validated ranges are required to calculate PREVENT risk."}
-                </div>
-              </div>
-            )}
-
-            {activeTab === "statin" && (
-              <div className="no-print" style={{ ...cardStyle(COLORS.primarySoft), textAlign: "left" }}>
-                <div style={{ fontSize: "18px", fontWeight: 900, color: COLORS.heading, marginBottom: "12px" }}>
-                  Statin Pathway
-                </div>
-                <div style={{ marginBottom: "8px" }}><strong>Pathway:</strong> {statinPlan?.pathway || "Insufficient data"}</div>
-                <div style={{ marginBottom: "8px" }}><strong>Recommendation:</strong> {statinPlan?.recommendation || "Insufficient data"}</div>
-                <div style={{ marginBottom: "8px" }}><strong>Goal:</strong> {statinPlan?.goal || "Insufficient data"}</div>
-                <div style={{ marginBottom: "8px" }}>
-                  <strong>Risk enhancers:</strong>{" "}
-                  {statinPlan?.enhancers?.length ? statinPlan.enhancers.join(", ") : "None noted"}
-                </div>
-                <div><strong>Notes:</strong> {statinPlan?.notes?.length ? statinPlan.notes.join(", ") : "None"}</div>
-              </div>
-            )}
-
-            {activeTab === "screenings" && (
-              <>
-                <div className="no-print" style={{ ...cardStyle(COLORS.accentSoft), textAlign: "left" }}>
-                  <div style={{ fontSize: "18px", fontWeight: 900, color: COLORS.accent, marginBottom: "10px" }}>
-                    Patient-Friendly Summary
-                  </div>
-                  <p style={{ marginTop: 0, color: COLORS.text, lineHeight: 1.6 }}>{patientSummary.intro}</p>
-                  <ul style={{ paddingLeft: "20px", marginBottom: 0 }}>
-                    {patientSummary.steps.map((item, i) => (
-                      <li key={i} style={{ marginBottom: "6px" }}>{item}</li>
-                    ))}
+              {activeSummaryTab === "plan" && (
+                <div>
+                  <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>Today's Plan</div>
+                  <ul style={{ paddingLeft: "20px", margin: 0 }}>
+                    {todayPlan.length
+                      ? todayPlan.map((item, i) => (
+                          <li key={i} style={{ marginBottom: "8px" }}>
+                            {item}
+                          </li>
+                        ))
+                      : <li>No prioritized actions yet.</li>}
                   </ul>
                 </div>
+              )}
 
-                <div className="no-print" style={{ ...cardStyle(), textAlign: "left" }}>
-                  <div style={{ fontSize: "18px", fontWeight: 900, color: COLORS.heading, marginBottom: "14px" }}>
-                    Clinical Output
+              {activeSummaryTab === "screenings" && (
+                <div>
+                  <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>Screenings Due / Relevant</div>
+                  <ul style={{ paddingLeft: "20px", margin: 0 }}>
+                    {derived.screenings.length
+                      ? derived.screenings.map((item, i) => (
+                          <li key={i} style={{ marginBottom: "8px" }}>
+                            {item}
+                          </li>
+                        ))
+                      : <li>No screening items yet.</li>}
+                  </ul>
+                </div>
+              )}
+
+              {activeSummaryTab === "vaccines" && (
+                <div>
+                  <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>Vaccine Review</div>
+                  <div style={{ marginBottom: "8px", fontSize: "12px", color: COLORS.textSoft }}>
+                    View mode: {form.vaccineMode === "current" ? "Minus childhood vaccines" : "Include childhood vaccines"}
                   </div>
+                  <ul style={{ paddingLeft: "20px", margin: 0 }}>
+                    {derived.vaccines.length
+                      ? derived.vaccines.map((item, i) => (
+                          <li key={i} style={{ marginBottom: "8px" }}>
+                            {item}
+                          </li>
+                        ))
+                      : <li>No vaccine items yet.</li>}
+                  </ul>
+                </div>
+              )}
 
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "16px" }}>
-                    {[
-                      { title: "Screenings", items: derived.screenings, bg: COLORS.primarySoft },
-                      { title: "Vaccines", items: derived.vaccines, bg: COLORS.successSoft },
-                      { title: "Counseling", items: derived.counseling, bg: COLORS.lavenderSoft },
-                      { title: "Care Gaps", items: derived.careGaps, bg: COLORS.warningSoft },
-                    ].map((section) => (
-                      <div
-                        key={section.title}
-                        style={{
-                          background: section.bg,
-                          border: `1px solid ${COLORS.border}`,
-                          borderRadius: "14px",
-                          padding: "16px",
-                        }}
-                      >
-                        <div style={{ fontSize: "15px", fontWeight: 900, color: COLORS.heading, marginBottom: "8px" }}>
-                          {section.title}
+              {activeSummaryTab === "calculators" && (
+                <div style={{ display: "grid", gap: "12px" }}>
+                  {reportData.calculators.length
+                    ? reportData.calculators.map((calc) => (
+                        <div key={calc.title} style={{ border: `1px solid ${COLORS.border}`, borderRadius: "14px", padding: "14px", background: COLORS.cardSoft }}>
+                          <div style={{ fontWeight: 900, color: COLORS.heading }}>{calc.title}</div>
+                          <ul style={{ paddingLeft: "20px", margin: "8px 0 0 0" }}>
+                            {calc.lines.map((line, idx) => (
+                              <li key={idx} style={{ marginBottom: "6px" }}>
+                                {line}
+                              </li>
+                            ))}
+                          </ul>
                         </div>
-                        <ul style={{ paddingLeft: "20px", marginBottom: 0 }}>
-                          {section.items.length
-                            ? section.items.map((item, i) => (
-                                <li key={i} style={{ marginBottom: "6px" }}>{item}</li>
-                              ))
-                            : <li>None yet.</li>}
-                        </ul>
-                      </div>
-                    ))}
+                      ))
+                    : <div style={{ color: COLORS.textSoft }}>Additional calculator outputs will appear here.</div>}
+                </div>
+              )}
+            </div>
 
-                    <div
-                      style={{
-                        background: "#eef8f4",
-                        border: `1px solid ${COLORS.border}`,
-                        borderRadius: "14px",
-                        padding: "16px",
-                      }}
-                    >
-                      <div style={{ fontSize: "15px", fontWeight: 900, color: COLORS.heading, marginBottom: "8px" }}>
-                        Suggested Orders / Actions
-                      </div>
-                      <ul style={{ paddingLeft: "20px", marginBottom: 0 }}>
-                        {derived.orders.length
-                          ? derived.orders.map((item, i) => (
-                              <li key={i} style={{ marginBottom: "6px" }}>{item}</li>
-                            ))
-                          : <li>No actions yet.</li>}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
+            <div className="print-card" style={cardStyle()}>
+              <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>Patient-Friendly Summary</div>
+              <p style={{ marginTop: 0, color: COLORS.text, lineHeight: 1.6 }}>{patientSummary.intro}</p>
+              <ul style={{ paddingLeft: "20px", margin: 0 }}>
+                {patientSummary.steps.slice(0, 12).map((item, i) => (
+                  <li key={i} style={{ marginBottom: "7px" }}>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-            {activeTab === "cha2ds2vasc" && (
-              <div className="no-print" style={{ ...cardStyle("#fffdf7"), textAlign: "left" }}>
-                <div style={{ fontSize: "18px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>
-                  CHA₂DS₂-VASc Score
-                </div>
-                <div style={{ fontSize: "40px", fontWeight: 900, color: COLORS.primaryDark, lineHeight: 1 }}>
-                  {chaScore.score}
-                </div>
-                <div style={{ marginTop: "8px", fontWeight: 800, color: COLORS.heading }}>
-                  {chaScore.interpretation}
-                </div>
-                <ul style={{ paddingLeft: "20px", marginTop: "12px", marginBottom: 0 }}>
-                  {chaScore.items.length ? chaScore.items.map((item, i) => <li key={i}>{item}</li>) : <li>No factors selected yet.</li>}
-                </ul>
-              </div>
-            )}
-
-            {activeTab === "wells" && (
-              <div className="no-print" style={{ ...cardStyle("#fff8f8"), textAlign: "left" }}>
-                <div style={{ fontSize: "18px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>
-                  Wells PE Score
-                </div>
-                <div style={{ fontSize: "40px", fontWeight: 900, color: COLORS.primaryDark, lineHeight: 1 }}>
-                  {wellsScore.score}
-                </div>
-                <div style={{ marginTop: "8px", fontWeight: 800, color: COLORS.heading }}>
-                  {wellsScore.interpretation}
-                </div>
-                <ul style={{ paddingLeft: "20px", marginTop: "12px", marginBottom: 0 }}>
-                  {wellsScore.items.length ? wellsScore.items.map((item, i) => <li key={i}>{item}</li>) : <li>No criteria selected yet.</li>}
-                </ul>
-              </div>
-            )}
-
-            {activeTab === "wellsDvt" && (
-              <div className="no-print" style={{ ...cardStyle("#fff8f5"), textAlign: "left" }}>
-                <div style={{ fontSize: "18px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>
-                  Wells DVT Score
-                </div>
-                <div style={{ fontSize: "40px", fontWeight: 900, color: COLORS.primaryDark, lineHeight: 1 }}>
-                  {wellsDvtScore.score}
-                </div>
-                <div style={{ marginTop: "8px", fontWeight: 800, color: COLORS.heading }}>
-                  {wellsDvtScore.interpretation}
-                </div>
-                <ul style={{ paddingLeft: "20px", marginTop: "12px", marginBottom: 0 }}>
-                  {wellsDvtScore.items.length ? wellsDvtScore.items.map((item, i) => <li key={i}>{item}</li>) : <li>No criteria selected yet.</li>}
-                </ul>
-              </div>
-            )}
-
-            {activeTab === "hasBled" && (
-              <div className="no-print" style={{ ...cardStyle("#fff8f2"), textAlign: "left" }}>
-                <div style={{ fontSize: "18px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>
-                  HAS-BLED Score
-                </div>
-                <div style={{ fontSize: "40px", fontWeight: 900, color: COLORS.primaryDark, lineHeight: 1 }}>
-                  {hasBledScore.score}
-                </div>
-                <div style={{ marginTop: "8px", fontWeight: 800, color: COLORS.heading }}>
-                  {hasBledScore.interpretation}
-                </div>
-                <ul style={{ paddingLeft: "20px", marginTop: "12px", marginBottom: 0 }}>
-                  {hasBledScore.items.length ? hasBledScore.items.map((item, i) => <li key={i}>{item}</li>) : <li>No factors selected yet.</li>}
-                </ul>
-              </div>
-            )}
-
-            {activeTab === "phq9" && (
-              <div className="no-print" style={{ ...cardStyle("#f8f7ff"), textAlign: "left" }}>
-                <div style={{ fontSize: "18px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>
-                  PHQ-9 Score
-                </div>
-                <div style={{ fontSize: "40px", fontWeight: 900, color: COLORS.primaryDark, lineHeight: 1 }}>
-                  {phq9Score.score}
-                </div>
-                <div style={{ marginTop: "8px", fontWeight: 800, color: COLORS.heading }}>
-                  {phq9Score.severity}
-                </div>
-                <div style={{ marginTop: "10px", fontSize: "13px", color: COLORS.text }}>
-                  <strong>Item 9:</strong>{" "}
-                  {phq9Score.positiveSuicideItem
-                    ? "Positive response present — follow clinic suicide safety protocol."
-                    : "No positive response on item 9."}
-                </div>
-              </div>
-            )}
-
-            <div className="print-card" style={{ ...cardStyle(), textAlign: "left" }}>
-              <div style={{ fontSize: "18px", fontWeight: 900, color: COLORS.heading, marginBottom: "14px" }}>
-                Printable Report
-              </div>
-
-              <div className="print-report-stack" style={{ display: "grid", gap: "12px" }}>
-                {reportData.calculators.length > 0 && (
-                  <div
-                    style={{
-                      background: COLORS.cardSoft,
-                      border: `1px solid ${COLORS.border}`,
-                      borderRadius: "14px",
-                      padding: "14px",
-                    }}
-                  >
-                    <div style={{ fontWeight: 900, color: COLORS.heading, marginBottom: "8px" }}>
-                      Calculators
-                    </div>
-                    {reportData.calculators.map((calc) => (
-                      <div key={calc.title} style={{ marginBottom: "10px" }}>
-                        <div style={{ fontWeight: 800 }}>{calc.title}</div>
-                        <ul style={{ paddingLeft: "20px", margin: "6px 0 0 0" }}>
-                          {calc.lines.map((line, idx) => (
-                            <li key={idx}>{line}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {reportData.screenings.length > 0 && (
-                  <div
-                    style={{
-                      background: COLORS.primarySoft,
-                      border: `1px solid ${COLORS.border}`,
-                      borderRadius: "14px",
-                      padding: "14px",
-                    }}
-                  >
-                    <div style={{ fontWeight: 900, color: COLORS.heading, marginBottom: "8px" }}>
-                      Screenings
-                    </div>
+            <div className="print-card" style={cardStyle()}>
+              <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "12px" }}>Printable Report</div>
+              <div style={{ display: "grid", gap: "10px" }}>
+                {[
+                  ["Care Gaps", derived.careGaps, COLORS.warningSoft],
+                  ["Counseling", derived.counseling, COLORS.lavenderSoft],
+                  ["Suggested Orders / Actions", derived.orders, COLORS.successSoft],
+                ].map(([title, items, bg]) => (
+                  <div key={title} style={{ background: bg, border: `1px solid ${COLORS.border}`, borderRadius: "14px", padding: "14px" }}>
+                    <div style={{ fontWeight: 900, color: COLORS.heading, marginBottom: "8px" }}>{title}</div>
                     <ul style={{ paddingLeft: "20px", margin: 0 }}>
-                      {reportData.screenings.map((item, i) => (
-                        <li key={i}>{item}</li>
-                      ))}
+                      {items.length
+                        ? items.map((item, i) => (
+                            <li key={i} style={{ marginBottom: "6px" }}>
+                              {item}
+                            </li>
+                          ))
+                        : <li>None.</li>}
                     </ul>
                   </div>
-                )}
-
-                {reportData.vaccines.length > 0 && (
-                  <div
-                    style={{
-                      background: COLORS.successSoft,
-                      border: `1px solid ${COLORS.border}`,
-                      borderRadius: "14px",
-                      padding: "14px",
-                    }}
-                  >
-                    <div style={{ fontWeight: 900, color: COLORS.heading, marginBottom: "8px" }}>
-                      Vaccines
-                    </div>
-                    <div style={{ marginBottom: "8px", fontSize: "13px", color: COLORS.textSoft }}>
-                      View mode:{" "}
-                      {form.vaccineMode === "current"
-                        ? "Minus childhood vaccines"
-                        : "Include childhood vaccines"}
-                    </div>
-                    <ul style={{ paddingLeft: "20px", margin: 0 }}>
-                      {reportData.vaccines.map((item, i) => (
-                        <li key={i}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {reportData.counseling.length > 0 && (
-                  <div
-                    style={{
-                      background: COLORS.lavenderSoft,
-                      border: `1px solid ${COLORS.border}`,
-                      borderRadius: "14px",
-                      padding: "14px",
-                    }}
-                  >
-                    <div style={{ fontWeight: 900, color: COLORS.heading, marginBottom: "8px" }}>
-                      Counseling
-                    </div>
-                    <ul style={{ paddingLeft: "20px", margin: 0 }}>
-                      {reportData.counseling.map((item, i) => (
-                        <li key={i}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {reportData.careGaps.length > 0 && (
-                  <div
-                    style={{
-                      background: COLORS.warningSoft,
-                      border: `1px solid ${COLORS.border}`,
-                      borderRadius: "14px",
-                      padding: "14px",
-                    }}
-                  >
-                    <div style={{ fontWeight: 900, color: COLORS.heading, marginBottom: "8px" }}>
-                      Care Gaps
-                    </div>
-                    <ul style={{ paddingLeft: "20px", margin: 0 }}>
-                      {reportData.careGaps.map((item, i) => (
-                        <li key={i}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {reportData.orders.length > 0 && (
-                  <div
-                    style={{
-                      background: "#eef8f4",
-                      border: `1px solid ${COLORS.border}`,
-                      borderRadius: "14px",
-                      padding: "14px",
-                    }}
-                  >
-                    <div style={{ fontWeight: 900, color: COLORS.heading, marginBottom: "8px" }}>
-                      Suggested Orders / Actions
-                    </div>
-                    <ul style={{ paddingLeft: "20px", margin: 0 }}>
-                      {reportData.orders.map((item, i) => (
-                        <li key={i}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {reportData.calculators.length === 0 &&
-                  reportData.screenings.length === 0 &&
-                  reportData.vaccines.length === 0 &&
-                  reportData.counseling.length === 0 &&
-                  reportData.careGaps.length === 0 &&
-                  reportData.orders.length === 0 && (
-                    <div style={{ color: COLORS.textSoft, fontSize: "13px" }}>
-                      Results will appear here for copying and printing once inputs are entered.
-                    </div>
-                  )}
+                ))}
               </div>
             </div>
           </div>
@@ -2456,28 +2101,21 @@ export default function App() {
           <div style={{ fontWeight: 800, marginBottom: "8px", color: "#7dd3fc", letterSpacing: "0.02em" }}>
             Clinical Disclaimer
           </div>
-
           <div>
-            This tool is intended for <strong>educational and informational purposes only</strong> and does not replace
-            clinical judgment, professional medical advice, diagnosis, or treatment.
+            This tool is intended for <strong>educational and informational purposes only</strong> and does not replace clinical judgment, professional medical advice, diagnosis, or treatment.
           </div>
-
           <div style={{ marginTop: "6px" }}>
             Clinicians should independently verify all recommendations and consult official guidelines prior to making patient care decisions.
           </div>
-
           <div style={{ marginTop: "6px" }}>
             No patient-specific medical decisions should be made solely based on this tool.
           </div>
-
           <div style={{ marginTop: "6px" }}>
             Recommendations reflect guideline logic last reviewed on {APP_LAST_REVIEWED} and may change as guidance is updated.
           </div>
-
           <div style={{ marginTop: "6px" }}>
             This application does not store, transmit, or retain any patient data. All inputs are processed locally within the browser session.
           </div>
-
           <div style={{ marginTop: "10px", fontSize: "11px", color: "#a7bbcf" }}>
             © {new Date().getFullYear()} Daniel Bevington. All rights reserved. Version {APP_VERSION} | Last reviewed: {APP_LAST_REVIEWED}
           </div>
