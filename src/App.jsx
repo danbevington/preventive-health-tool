@@ -288,15 +288,7 @@ function calcPreventAscvd({
   egfr,
   bmi,
 }) {
-  if (
-    !age ||
-    !sbp ||
-    !totalC ||
-    !hdlC ||
-    !egfr ||
-    !bmi ||
-    !["female", "male"].includes(sex)
-  ) {
+  if (!age || !sbp || !totalC || !hdlC || !egfr || !bmi || !["female", "male"].includes(sex)) {
     return null;
   }
 
@@ -685,7 +677,6 @@ function hasCompletePreventInputs(form) {
 function getCumulativeVaccinesByAgeAndRisk(form) {
   const age = Number(form.age || 0);
   const sex = form.sex;
-
   const pregnant = form.pregnant === "Y";
   const immunocompromised = form.immunocompromised === "Y";
   const chronicLiverDisease = form.chronicLiverDisease === "Y";
@@ -700,7 +691,6 @@ function getCumulativeVaccinesByAgeAndRisk(form) {
   const military = form.military === "Y";
   const travelRisk = form.travelRisk === "Y";
   const residenceRisk = form.residenceRisk === "Y";
-
   const priorVaccineHistoryKnown = form.priorVaccineHistoryKnown === "Y";
   const evidenceOfImmunityMMR = form.evidenceOfImmunityMMR === "Y";
   const evidenceOfImmunityVaricella = form.evidenceOfImmunityVaricella === "Y";
@@ -737,7 +727,6 @@ function getCumulativeVaccinesByAgeAndRisk(form) {
     addUnique(vaccines, "MenACWY first dose");
   }
   if (age >= 16) addUnique(vaccines, "MenACWY booster");
-
   if (age >= 19) {
     addUnique(vaccines, "COVID-19 per current adult CDC schedule");
     addUnique(vaccines, "Td or Tdap booster every 10 years after Tdap");
@@ -757,39 +746,31 @@ function getCumulativeVaccinesByAgeAndRisk(form) {
     addUnique(vaccines, "Pneumococcal vaccine per current CDC adult age/risk schedule");
     addUnique(vaccines, "Influenza annually (higher-dose/adjuvanted product may be preferred)");
   }
-
   if (sex === "female" && pregnant) {
     addUnique(vaccines, "Tdap during each pregnancy");
     addUnique(vaccines, "RSV vaccine during pregnancy when seasonally indicated");
   }
-
   if (!evidenceOfImmunityMMR && age >= 19) addUnique(vaccines, "MMR if lacking evidence of immunity");
   if (!evidenceOfImmunityVaricella && age >= 19) addUnique(vaccines, "Varicella if lacking evidence of immunity");
   if (!priorVaccineHistoryKnown && age >= 19) addUnique(vaccines, "Review prior vaccine history / registry and assess catch-up needs");
-
   if (immunocompromised || asplenia || cochlearImplant || csfLeak || chronicHeartDisease || chronicLungDisease || chronicKidneyDisease) {
     addUnique(vaccines, "Pneumococcal vaccine based on risk condition");
   }
-
   if (asplenia) {
     addUnique(vaccines, "Meningococcal vaccines based on asplenia risk");
     addUnique(vaccines, "Hib if indicated");
   }
-
   if (chronicLiverDisease) {
     addUnique(vaccines, "Hepatitis A vaccine");
     addUnique(vaccines, "Hepatitis B vaccine");
   }
-
   if (healthcareWorker) {
     addUnique(vaccines, "Hepatitis B if not immune");
     addUnique(vaccines, "MMR if lacking evidence of immunity");
     addUnique(vaccines, "Varicella if lacking evidence of immunity");
     addUnique(vaccines, "Annual influenza");
   }
-
   if (collegeDormResident || military) addUnique(vaccines, "Meningococcal vaccination if indicated");
-
   if (travelRisk || residenceRisk) {
     addUnique(vaccines, "Travel/residence-based vaccines as indicated");
     addUnique(vaccines, "Meningococcal / Hepatitis A / other destination-specific vaccines if indicated");
@@ -801,7 +782,6 @@ function getCumulativeVaccinesByAgeAndRisk(form) {
 function getCurrentAgeVaccinesNeeded(form) {
   const age = Number(form.age || 0);
   const sex = form.sex;
-
   const pregnant = form.pregnant === "Y";
   const immunocompromised = form.immunocompromised === "Y";
   const chronicLiverDisease = form.chronicLiverDisease === "Y";
@@ -816,7 +796,6 @@ function getCurrentAgeVaccinesNeeded(form) {
   const military = form.military === "Y";
   const travelRisk = form.travelRisk === "Y";
   const residenceRisk = form.residenceRisk === "Y";
-
   const priorVaccineHistoryKnown = form.priorVaccineHistoryKnown === "Y";
   const evidenceOfImmunityMMR = form.evidenceOfImmunityMMR === "Y";
   const evidenceOfImmunityVaricella = form.evidenceOfImmunityVaricella === "Y";
@@ -840,12 +819,10 @@ function getCurrentAgeVaccinesNeeded(form) {
   if (age >= 27 && age <= 45) addUnique(vaccines, "HPV may be considered by shared decision-making if not fully vaccinated");
   if (!evidenceOfImmunityMMR && age >= 19) addUnique(vaccines, "MMR if lacking evidence of immunity");
   if (!evidenceOfImmunityVaricella && age >= 19) addUnique(vaccines, "Varicella if lacking evidence of immunity");
-
   if (sex === "female" && pregnant) {
     addUnique(vaccines, "Tdap during current pregnancy");
     addUnique(vaccines, "RSV vaccine during pregnancy when seasonally indicated");
   }
-
   if (immunocompromised || asplenia || cochlearImplant || csfLeak || chronicHeartDisease || chronicLungDisease || chronicKidneyDisease) {
     addUnique(vaccines, "Pneumococcal vaccine based on risk condition");
   }
@@ -1031,18 +1008,20 @@ function PillToggle({ name, label, value, onChange }) {
   const pillStyle = (active) => ({
     flex: 1,
     minWidth: 0,
-    padding: "9px 10px",
+    padding: "9px 8px",
     borderRadius: "999px",
     border: `1px solid ${active ? COLORS.primaryDark : COLORS.border}`,
     background: active ? COLORS.primarySoft : "#fff",
     color: active ? COLORS.primaryDark : COLORS.textSoft,
     fontWeight: 800,
-    fontSize: "12px",
+    fontSize: "11px",
     cursor: "pointer",
+    whiteSpace: "nowrap",
+    textAlign: "center",
   });
 
   return (
-    <div>
+    <div style={{ minWidth: 0 }}>
       <div
         style={{
           display: "block",
@@ -1059,11 +1038,13 @@ function PillToggle({ name, label, value, onChange }) {
       <div
         style={{
           display: "flex",
-          gap: "8px",
+          gap: "6px",
           padding: "4px",
           borderRadius: "999px",
           background: "#f4f8fc",
           border: `1px solid ${COLORS.border}`,
+          width: "100%",
+          minWidth: 0,
         }}
       >
         <button type="button" style={pillStyle(value === "Y")} onClick={() => setValue("Y")}>
@@ -1083,19 +1064,22 @@ function ModeToggle({ name, label, value, onChange }) {
   const pillStyle = (active) => ({
     flex: 1,
     minWidth: 0,
-    padding: "9px 10px",
+    padding: "10px 8px",
     borderRadius: "999px",
     border: `1px solid ${active ? COLORS.primaryDark : COLORS.border}`,
     background: active ? COLORS.primarySoft : "#fff",
     color: active ? COLORS.primaryDark : COLORS.textSoft,
     fontWeight: 800,
-    fontSize: "12px",
+    fontSize: "11px",
     cursor: "pointer",
     lineHeight: 1.2,
+    whiteSpace: "normal",
+    wordBreak: "break-word",
+    textAlign: "center",
   });
 
   return (
-    <div>
+    <div style={{ minWidth: 0 }}>
       <div
         style={{
           display: "block",
@@ -1112,11 +1096,14 @@ function ModeToggle({ name, label, value, onChange }) {
       <div
         style={{
           display: "flex",
-          gap: "8px",
+          gap: "6px",
           padding: "4px",
-          borderRadius: "999px",
+          borderRadius: "18px",
           background: "#f4f8fc",
           border: `1px solid ${COLORS.border}`,
+          width: "100%",
+          minWidth: 0,
+          alignItems: "stretch",
         }}
       >
         <button type="button" style={pillStyle(value === "cumulative")} onClick={() => setValue("cumulative")}>
@@ -1874,7 +1861,15 @@ export default function App() {
                 <Field name="hdl" label="HDL cholesterol" value={form.hdl} onChange={handleChange} error={basicError("hdl")} />
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(160px, 1fr))", gap: "16px", marginTop: "16px" }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
+                  gap: "16px",
+                  marginTop: "16px",
+                  alignItems: "start",
+                }}
+              >
                 <PillToggle name="smoking" label="Smoking" value={form.smoking} onChange={handleChange} />
                 <PillToggle name="diabetes" label="Diabetes" value={form.diabetes} onChange={handleChange} />
                 <PillToggle name="bpTreated" label="BP treatment" value={form.bpTreated} onChange={handleChange} />
