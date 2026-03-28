@@ -2436,28 +2436,6 @@ export default function App() {
                   )}
               </div>
             </div>
-
-            <div className="no-print" style={{ ...cardStyle(), textAlign: "left" }}>
-              <div style={{ fontSize: "18px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>
-                Copy / Paste Text
-              </div>
-              <textarea
-                readOnly
-                value={copyText}
-                style={{
-                  width: "100%",
-                  minHeight: "220px",
-                  padding: "14px",
-                  borderRadius: "14px",
-                  border: `1px solid ${COLORS.border}`,
-                  boxSizing: "border-box",
-                  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
-                  fontSize: "13px",
-                  background: "#f8fafc",
-                  color: COLORS.text,
-                }}
-              />
-            </div>
           </div>
         </div>
 
