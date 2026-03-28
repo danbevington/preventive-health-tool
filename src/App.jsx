@@ -1,10 +1,4 @@
 import { useMemo, useState } from "react";
-import { calcPreventAscvd, riskCat } from "./lib/prevent";
-import { buildStatinPathway } from "./lib/statinPathway";
-import { calcCha2ds2Vasc, calcWellsPE } from "./lib/clinicalScores";
-import { calcWellsDvt } from "./lib/wellsDvt";
-import { calcHasBled } from "./lib/hasBled";
-import { calcPhq9 } from "./lib/phq9";
 
 const APP_VERSION = "v3.0.0";
 const APP_LAST_REVIEWED = "2026-03-27";
@@ -129,6 +123,368 @@ const COLORS = {
   successSoft: "#f0fdf4",
   purpleSoft: "#faf5ff",
 };
+
+const PREVENT = {
+  female: {
+    age: 0.719883,
+    nonHdlC: 0.1176967,
+    hdlC: -0.151185,
+    sbpLt110: -0.0835358,
+    sbpGte110: 0.3592852,
+    dm: 0.8348585,
+    smoking: 0.4831078,
+    bmiLt30: 0.0,
+    bmiGte30: 0.0,
+    egfrLt60: 0.4864619,
+    egfrGte60: 0.0397779,
+    bpTx: 0.2265309,
+    statin: -0.0592374,
+    bpTxSbpGte110: -0.0395762,
+    statinNonHdlC: 0.0844423,
+    ageNonHdlC: -0.0567839,
+    ageHdlC: 0.0325692,
+    ageSbpGte110: -0.1035985,
+    ageDm: -0.2417542,
+    ageSmoking: -0.0791142,
+    ageBmiGte30: 0.0,
+    ageEgfrLt60: -0.1671492,
+    constant: -3.819975,
+  },
+  male: {
+    age: 0.7099847,
+    nonHdlC: 0.1658663,
+    hdlC: -0.1144285,
+    sbpLt110: -0.2837212,
+    sbpGte110: 0.3239977,
+    dm: 0.7189597,
+    smoking: 0.3956973,
+    bmiLt30: 0.0,
+    bmiGte30: 0.0,
+    egfrLt60: 0.3690075,
+    egfrGte60: 0.0203619,
+    bpTx: 0.2036522,
+    statin: -0.0865581,
+    bpTxSbpGte110: -0.0322916,
+    statinNonHdlC: 0.114563,
+    ageNonHdlC: -0.0300005,
+    ageHdlC: 0.0232747,
+    ageSbpGte110: -0.0927024,
+    ageDm: -0.2018525,
+    ageSmoking: -0.0970527,
+    ageBmiGte30: 0.0,
+    ageEgfrLt60: -0.1217081,
+    constant: -3.500655,
+  },
+};
+
+function calcPreventAscvd({
+  age,
+  sex,
+  sbp,
+  bpTx,
+  totalC,
+  hdlC,
+  statin,
+  dm,
+  smoking,
+  egfr,
+  bmi,
+}) {
+  if (
+    !age ||
+    !sbp ||
+    !totalC ||
+    !hdlC ||
+    !egfr ||
+    !bmi ||
+    !["female", "male"].includes(sex)
+  ) {
+    return null;
+  }
+
+  const c = PREVENT[sex];
+  const toMmol = (mg) => mg / 38.67;
+
+  const a = (age - 55) / 10;
+  const nh = toMmol(totalC - hdlC) - 3.5;
+  const hd = (toMmol(hdlC) - 1.3) / 0.3;
+  const sl = (Math.min(sbp, 110) - 110) / 20;
+  const sh = (Math.max(sbp, 110) - 130) / 20;
+
+  const d = dm ? 1 : 0;
+  const sm = smoking ? 1 : 0;
+  const bp = bpTx ? 1 : 0;
+  const st = statin ? 1 : 0;
+
+  const bl = (Math.min(bmi, 30) - 25) / 5;
+  const bh = (Math.max(bmi, 30) - 30) / 5;
+  const el = (Math.min(egfr, 60) - 60) / -15;
+  const eh = (Math.max(egfr, 60) - 90) / -15;
+
+  const x =
+    c.age * a +
+    c.nonHdlC * nh +
+    c.hdlC * hd +
+    c.sbpLt110 * sl +
+    c.sbpGte110 * sh +
+    c.dm * d +
+    c.smoking * sm +
+    c.bmiLt30 * bl +
+    c.bmiGte30 * bh +
+    c.egfrLt60 * el +
+    c.egfrGte60 * eh +
+    c.bpTx * bp +
+    c.statin * st +
+    c.bpTxSbpGte110 * (bp * sh) +
+    c.statinNonHdlC * (st * nh) +
+    c.ageNonHdlC * (a * nh) +
+    c.ageHdlC * (a * hd) +
+    c.ageSbpGte110 * (a * sh) +
+    c.ageDm * (a * d) +
+    c.ageSmoking * (a * sm) +
+    c.ageBmiGte30 * (a * bh) +
+    c.ageEgfrLt60 * (a * el) +
+    c.constant;
+
+  return Math.round((Math.exp(x) / (1 + Math.exp(x))) * 1000) / 10;
+}
+
+function riskCat(r) {
+  if (r == null) return { label: "Not calculated", range: "" };
+  if (r < 3) return { label: "Low", range: "<3%" };
+  if (r < 5) return { label: "Borderline", range: "3–<5%" };
+  if (r < 10) return { label: "Intermediate", range: "5–<10%" };
+  return { label: "High", range: "≥10%" };
+}
+
+function buildStatinPathway(form, preventRisk) {
+  const ldl = Number(form.ldl || 0);
+  const knownAscvd = form.knownAscvd === "Y";
+  const veryHighRisk = form.veryHighRiskAscvd === "Y";
+  const diabetes = form.diabetes === "Y";
+  const tg = Number(form.triglycerides || 0);
+  const apob = Number(form.apob || 0);
+  const lpa = Number(form.lpa || 0);
+  const cac = Number(form.cac || 0);
+
+  let pathway = "Primary prevention";
+  let recommendation = "Lifestyle optimization";
+  let goal = "Individualized";
+  const enhancers = [];
+  const notes = [];
+
+  if (knownAscvd) {
+    pathway = "Secondary prevention";
+    recommendation = "High-intensity statin unless contraindicated";
+    goal = veryHighRisk ? "LDL-C <55 mg/dL" : "LDL-C <70 mg/dL";
+  } else if (ldl >= 190) {
+    pathway = "Severe hypercholesterolemia";
+    recommendation = "High-intensity statin";
+    goal = "At least 50% LDL-C reduction";
+  } else if (diabetes) {
+    pathway = "Diabetes pathway";
+    recommendation =
+      preventRisk >= 7.5
+        ? "High-intensity statin is reasonable"
+        : "At least moderate-intensity statin";
+    goal = "Usually LDL-C <70 mg/dL if higher risk";
+  } else {
+    if (preventRisk == null) {
+      recommendation = "Need complete PREVENT inputs";
+      goal = "Pending risk calculation";
+    } else if (preventRisk >= 10) {
+      recommendation = "Moderate- to high-intensity statin is reasonable";
+      goal = "Risk-based LDL-C reduction";
+    } else if (preventRisk >= 5) {
+      recommendation = "Shared decision-making for statin initiation";
+      goal = "Risk-based LDL-C reduction";
+    } else {
+      recommendation = "Lifestyle-first management may be reasonable";
+      goal = "Risk-based LDL-C reduction";
+    }
+  }
+
+  if (ldl >= 160) enhancers.push("LDL-C ≥160 mg/dL");
+  if (tg >= 175) enhancers.push("Triglycerides ≥175 mg/dL");
+  if (apob >= 130) enhancers.push("ApoB ≥130 mg/dL");
+  if (lpa >= 50) enhancers.push("Lp(a) elevated");
+  if (cac > 0) enhancers.push(`CAC present (${cac})`);
+
+  if (cac === 0) notes.push("CAC = 0 may support deferring statin in selected primary-prevention cases.");
+  if (cac >= 100) notes.push("CAC supports stronger statin consideration.");
+  if (tg >= 500) notes.push("Evaluate severe hypertriglyceridemia management.");
+
+  return { pathway, recommendation, goal, enhancers, notes };
+}
+
+function calcCha2ds2Vasc(form) {
+  const age = Number(form.chaAge || 0);
+  let score = 0;
+  const items = [];
+
+  if (form.chaCHF === "Y") {
+    score += 1;
+    items.push("Congestive heart failure / LV dysfunction");
+  }
+  if (form.chaHTN === "Y") {
+    score += 1;
+    items.push("Hypertension");
+  }
+  if (age >= 75) {
+    score += 2;
+    items.push("Age ≥75");
+  } else if (age >= 65) {
+    score += 1;
+    items.push("Age 65–74");
+  }
+  if (form.chaDM === "Y") {
+    score += 1;
+    items.push("Diabetes mellitus");
+  }
+  if (form.chaStrokeTIA === "Y") {
+    score += 2;
+    items.push("Stroke / TIA / thromboembolism history");
+  }
+  if (form.chaVascular === "Y") {
+    score += 1;
+    items.push("Vascular disease");
+  }
+  if (form.chaSex === "female") {
+    score += 1;
+    items.push("Female sex");
+  }
+
+  let interpretation = "Low stroke-risk profile";
+  if (score >= 2) interpretation = "Elevated stroke-risk profile";
+  else if (score === 1) interpretation = "Intermediate stroke-risk profile";
+
+  return { score, items, interpretation };
+}
+
+function calcWellsPE(form) {
+  let score = 0;
+  const items = [];
+
+  if (form.wellsDvtSigns === "Y") {
+    score += 3;
+    items.push("Clinical signs/symptoms of DVT (+3)");
+  }
+  if (form.wellsPeMostLikely === "Y") {
+    score += 3;
+    items.push("PE more likely than alternative diagnosis (+3)");
+  }
+  if (form.wellsHrOver100 === "Y") {
+    score += 1.5;
+    items.push("Heart rate >100 (+1.5)");
+  }
+  if (form.wellsRecentSurgeryImmobilization === "Y") {
+    score += 1.5;
+    items.push("Recent surgery / immobilization (+1.5)");
+  }
+  if (form.wellsPriorDvtPe === "Y") {
+    score += 1.5;
+    items.push("Prior DVT/PE (+1.5)");
+  }
+  if (form.wellsHemoptysis === "Y") {
+    score += 1;
+    items.push("Hemoptysis (+1)");
+  }
+  if (form.wellsMalignancy === "Y") {
+    score += 1;
+    items.push("Malignancy (+1)");
+  }
+
+  return {
+    score,
+    items,
+    interpretation: score >= 4.5 ? "PE likely" : "PE unlikely",
+  };
+}
+
+function calcWellsDvt(form) {
+  let score = 0;
+  const items = [];
+
+  const add = (condition, points, label) => {
+    if (condition) {
+      score += points;
+      items.push(`${label} (${points > 0 ? "+" : ""}${points})`);
+    }
+  };
+
+  add(form.dvtActiveCancer === "Y", 1, "Active cancer");
+  add(form.dvtParalysisOrCast === "Y", 1, "Paralysis, paresis, or recent lower-extremity cast");
+  add(form.dvtBedriddenOrSurgery === "Y", 1, "Bedridden >3 days recently or major surgery within 12 weeks");
+  add(form.dvtLocalizedTenderness === "Y", 1, "Localized tenderness along deep venous system");
+  add(form.dvtEntireLegSwollen === "Y", 1, "Entire leg swollen");
+  add(form.dvtCalfSwelling3cm === "Y", 1, "Calf swelling >3 cm");
+  add(form.dvtPittingEdema === "Y", 1, "Pitting edema confined to symptomatic leg");
+  add(form.dvtCollateralVeins === "Y", 1, "Collateral superficial veins");
+  add(form.dvtPriorDvt === "Y", 1, "Previously documented DVT");
+  add(form.dvtAlternativeDiagnosisLikely === "Y", -2, "Alternative diagnosis at least as likely as DVT");
+
+  return {
+    score,
+    interpretation: score >= 2 ? "DVT likely" : "DVT unlikely",
+    items,
+  };
+}
+
+function calcHasBled(form) {
+  let score = 0;
+  const items = [];
+
+  const add = (condition, label) => {
+    if (condition) {
+      score += 1;
+      items.push(label);
+    }
+  };
+
+  add(form.hasBledHypertension === "Y", "Hypertension (SBP >160 mmHg)");
+  add(form.hasBledRenal === "Y", "Abnormal renal function");
+  add(form.hasBledLiver === "Y", "Abnormal liver function");
+  add(form.hasBledStroke === "Y", "Prior stroke");
+  add(form.hasBledBleeding === "Y", "Bleeding history or predisposition");
+  add(form.hasBledLabileInr === "Y", "Labile INR");
+  add(form.hasBledElderly === "Y", "Age >65");
+  add(form.hasBledDrugs === "Y", "Drugs predisposing to bleeding");
+  add(form.hasBledAlcohol === "Y", "Alcohol excess");
+
+  let interpretation = "Lower bleeding-risk profile";
+  if (score >= 3) interpretation = "Higher bleeding-risk profile";
+  else if (score === 2) interpretation = "Moderate bleeding-risk profile";
+
+  return { score, interpretation, items };
+}
+
+function calcPhq9(form) {
+  const responses = [
+    Number(form.phq9_1 || 0),
+    Number(form.phq9_2 || 0),
+    Number(form.phq9_3 || 0),
+    Number(form.phq9_4 || 0),
+    Number(form.phq9_5 || 0),
+    Number(form.phq9_6 || 0),
+    Number(form.phq9_7 || 0),
+    Number(form.phq9_8 || 0),
+    Number(form.phq9_9 || 0),
+  ];
+
+  const score = responses.reduce((sum, n) => sum + n, 0);
+
+  let severity = "None / minimal";
+  if (score >= 20) severity = "Severe";
+  else if (score >= 15) severity = "Moderately severe";
+  else if (score >= 10) severity = "Moderate";
+  else if (score >= 5) severity = "Mild";
+
+  return {
+    score,
+    severity,
+    positiveSuicideItem: Number(form.phq9_9 || 0) > 0,
+  };
+}
 
 function parseNum(value) {
   return value === "" ? null : Number(value);
