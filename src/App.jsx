@@ -211,6 +211,70 @@ function addUnique(list, text) {
   if (!list.includes(text)) list.push(text);
 }
 
+function buttonStyle(kind = "default") {
+  const base = {
+    padding: "11px 16px",
+    borderRadius: "999px",
+    cursor: "pointer",
+    fontWeight: 800,
+    fontSize: "13px",
+    letterSpacing: "0.01em",
+    transition: "transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease",
+    boxShadow: "0 8px 18px rgba(15,23,42,0.08)",
+  };
+
+  if (kind === "primary") {
+    return {
+      ...base,
+      border: "1px solid #0b4f8a",
+      background: `linear-gradient(180deg, ${COLORS.primary}, ${COLORS.primaryDark})`,
+      color: "#fff",
+    };
+  }
+
+  if (kind === "accent") {
+    return {
+      ...base,
+      border: "1px solid #9fe5d9",
+      background: `linear-gradient(180deg, #f4fffc, ${COLORS.accentSoft})`,
+      color: COLORS.accent,
+    };
+  }
+
+  return {
+    ...base,
+    border: `1px solid ${COLORS.borderStrong}`,
+    background: "#fff",
+    color: COLORS.text,
+  };
+}
+
+function tabButtonStyle(active) {
+  return {
+    padding: "10px 14px",
+    borderRadius: "999px",
+    border: `1px solid ${active ? COLORS.primaryDark : COLORS.border}`,
+    background: active
+      ? `linear-gradient(180deg, ${COLORS.primarySoft}, #ffffff)`
+      : "rgba(255,255,255,0.88)",
+    color: active ? COLORS.primaryDark : COLORS.text,
+    cursor: "pointer",
+    fontWeight: 800,
+    fontSize: "13px",
+    boxShadow: active ? "0 8px 18px rgba(11,92,171,0.12)" : "none",
+  };
+}
+
+function cardStyle(background = COLORS.card) {
+  return {
+    background,
+    border: `1px solid ${COLORS.border}`,
+    borderRadius: "20px",
+    padding: "20px",
+    boxShadow: "0 18px 45px rgba(15,23,42,0.08)",
+  };
+}
+
 function calcPreventAscvd({
   age,
   sex,
@@ -535,11 +599,7 @@ function validateScreeningInputs(form) {
     errors.dbp = "Diastolic must be lower than systolic.";
   }
   if (form.smoking !== "" && !["Y", "N"].includes(form.smoking)) errors.smoking = "Smoking must be Y or N.";
-  if (
-    form.smoking === "Y" &&
-    form.packYears !== "" &&
-    (!Number.isFinite(packYears) || packYears < 0 || packYears > 200)
-  ) {
+  if (form.smoking === "Y" && form.packYears !== "" && (!Number.isFinite(packYears) || packYears < 0 || packYears > 200)) {
     errors.packYears = "Pack-years must be 0–200.";
   }
 
@@ -1829,11 +1889,7 @@ export default function App() {
             </div>
 
             <div style={{ display: "grid", gap: "18px" }}>
-              <Panel
-                title="Statin Details"
-                subtitle="Lipid treatment direction and risk-enhancer interpretation."
-                defaultOpen={false}
-              >
+              <Panel title="Statin Details" subtitle="Lipid treatment direction and risk-enhancer interpretation." defaultOpen={false}>
                 <div className="adv-grid-4">
                   <Field name="ldl" label="LDL-C" value={form.ldl} onChange={handleChange} error={basicError("ldl")} />
                   <Field name="nonHdl" label="Non-HDL-C" value={form.nonHdl} onChange={handleChange} error={basicError("nonHdl")} />
@@ -1849,19 +1905,9 @@ export default function App() {
               </Panel>
 
               <div style={{ position: "relative", zIndex: 30 }}>
-                <Panel
-                  title="Immunizations"
-                  subtitle="Current-age vaccine review and cumulative history logic."
-                  defaultOpen={false}
-                >
+                <Panel title="Immunizations" subtitle="Current-age vaccine review and cumulative history logic." defaultOpen={false}>
                   <div className="adv-grid-4">
-                    <ModeToggle
-                      name="vaccineMode"
-                      label="Vaccine view"
-                      value={form.vaccineMode}
-                      onChange={handleChange}
-                    />
-
+                    <ModeToggle name="vaccineMode" label="Vaccine view" value={form.vaccineMode} onChange={handleChange} />
                     {vaccineOptionFields.map(([name, label]) => {
                       if (name === "pregnant" && form.sex !== "female") return null;
                       return <PillToggle key={name} name={name} label={label} value={form[name]} onChange={handleChange} />;
@@ -1870,11 +1916,7 @@ export default function App() {
                 </Panel>
               </div>
 
-              <Panel
-                title="Additional Calculators"
-                subtitle="Stroke, thromboembolic, bleeding-risk, and PHQ-9 tools."
-                defaultOpen={false}
-              >
+              <Panel title="Additional Calculators" subtitle="Stroke, thromboembolic, bleeding-risk, and PHQ-9 tools." defaultOpen={false}>
                 <div style={{ display: "grid", gap: "18px" }}>
                   <div>
                     <div style={{ fontSize: "14px", fontWeight: 900, color: COLORS.heading, marginBottom: "12px" }}>CHA₂DS₂-VASc</div>
