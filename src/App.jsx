@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
 
-const APP_VERSION = "v3.2.0";
+const APP_VERSION = "v3.3.0";
 const APP_LAST_REVIEWED = "2026-03-28";
 const RISK_ENGINE_LABEL = "Official AHA PREVENT 10-Year ASCVD Base Model";
 
 const INITIAL_FORM = {
+  visitType: "awv",
   age: "",
   sex: "",
   sbp: "",
@@ -17,33 +18,29 @@ const INITIAL_FORM = {
   lipidLowering: "",
   totalChol: "",
   hdl: "",
-  ldl: "",
   nonHdl: "",
+  ldl: "",
   triglycerides: "",
+  packYears: "",
+  chronicLiverDisease: "",
+  immunocompromised: "",
+  priorVaccineHistoryKnown: "",
+  evidenceOfImmunityMMR: "",
+  evidenceOfImmunityVaricella: "",
   knownAscvd: "",
   veryHighRiskAscvd: "",
   apob: "",
   lpa: "",
   cac: "",
-  packYears: "",
-  vaccineMode: "current",
-  priorVaccineHistoryKnown: "",
-  evidenceOfImmunityMMR: "",
-  evidenceOfImmunityVaricella: "",
-  pregnant: "",
-  immunocompromised: "",
-  chronicLiverDisease: "",
-  chronicKidneyDisease: "",
-  chronicHeartDisease: "",
-  chronicLungDisease: "",
-  asplenia: "",
-  cochlearImplant: "",
-  csfLeak: "",
-  healthcareWorker: "",
-  collegeDormResident: "",
-  military: "",
-  travelRisk: "",
-  residenceRisk: "",
+  needsADLReview: "",
+  needsFallReview: "",
+  needsCognitiveReview: "",
+  needsAdvanceCarePlanning: "",
+  alcoholRisk: "",
+  drugUseRisk: "",
+  anxietyConcern: "",
+  depressionConcern: "",
+  sleepConcern: "",
 };
 
 const COLORS = {
@@ -69,7 +66,6 @@ const COLORS = {
   dangerSoft: "#fff4f3",
   success: "#166534",
   successSoft: "#eefcf3",
-  lavenderSoft: "#f7f5ff",
 };
 
 const PREVENT = {
@@ -133,16 +129,16 @@ const NON_NEGATIVE_FIELDS = new Set([
   "egfr",
   "totalChol",
   "hdl",
-  "ldl",
   "nonHdl",
+  "ldl",
   "triglycerides",
+  "packYears",
   "apob",
   "lpa",
   "cac",
-  "packYears",
 ]);
 
-const CORE_PREVENT_FIELDS = [
+const PREVENT_REQUIRED_FIELDS = [
   ["age", "Age"],
   ["sex", "Sex"],
   ["sbp", "Systolic BP"],
@@ -175,6 +171,10 @@ function addUnique(list, text) {
   if (!list.includes(text)) list.push(text);
 }
 
+function addRec(list, text, strength, action) {
+  if (!list.some((item) => item.text === text)) list.push({ text, strength, action });
+}
+
 function cardStyle(background = COLORS.card) {
   return {
     background,
@@ -182,24 +182,6 @@ function cardStyle(background = COLORS.card) {
     borderRadius: "20px",
     padding: "20px",
     boxShadow: "0 18px 45px rgba(15,23,42,0.08)",
-  };
-}
-
-function tabButtonStyle(active) {
-  return {
-    padding: "10px 14px",
-    borderRadius: "999px",
-    border: `1px solid ${active ? COLORS.primaryDark : COLORS.border}`,
-    background: active ? `linear-gradient(180deg, ${COLORS.primarySoft}, #ffffff)` : "rgba(255,255,255,0.88)",
-    color: active ? COLORS.primaryDark : COLORS.text,
-    cursor: "pointer",
-    fontWeight: 800,
-    fontSize: "13px",
-    boxShadow: active ? "0 8px 18px rgba(11,92,171,0.12)" : "none",
-    textAlign: "left",
-    justifyContent: "flex-start",
-    display: "inline-flex",
-    alignItems: "center",
   };
 }
 
@@ -227,6 +209,23 @@ function buttonStyle(kind = "default") {
     border: `1px solid ${COLORS.borderStrong}`,
     background: "#fff",
     color: COLORS.text,
+  };
+}
+
+function tabButtonStyle(active) {
+  return {
+    padding: "10px 14px",
+    borderRadius: "999px",
+    border: `1px solid ${active ? COLORS.primaryDark : COLORS.border}`,
+    background: active ? `linear-gradient(180deg, ${COLORS.primarySoft}, #ffffff)` : "rgba(255,255,255,0.88)",
+    color: active ? COLORS.primaryDark : COLORS.text,
+    cursor: "pointer",
+    fontWeight: 800,
+    fontSize: "13px",
+    textAlign: "left",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "flex-start",
   };
 }
 
@@ -351,7 +350,6 @@ function validatePreventInputs(form) {
   if (form.totalChol !== "" && (!Number.isFinite(totalChol) || totalChol < 130 || totalChol > 320)) errors.totalChol = "For official PREVENT, total cholesterol must be 130-320.";
   if (form.hdl !== "" && (!Number.isFinite(hdl) || hdl < 20 || hdl > 100)) errors.hdl = "For official PREVENT, HDL must be 20-100.";
   if (Number.isFinite(totalChol) && Number.isFinite(hdl) && hdl >= totalChol) errors.hdl = "HDL must be lower than total cholesterol.";
-
   return errors;
 }
 
@@ -371,99 +369,116 @@ function getMissingPreventItems(form) {
     hdl: form.hdl !== "",
   };
 
-  CORE_PREVENT_FIELDS.forEach(([key, label]) => {
+  PREVENT_REQUIRED_FIELDS.forEach(([key, label]) => {
     if (!checks[key]) missing.push(label);
   });
 
   return missing;
 }
 
-function getCurrentAgeVaccinesNeeded(form) {
-  const age = Number(form.age || 0);
+function buildCareGaps(form) {
+  const age = parseNum(form.age) ?? 0;
+  const bmi = parseNum(form.bmi);
+  const packYears = parseNum(form.packYears);
+  const screenings = [];
   const vaccines = [];
-  if (!Number.isFinite(age) || age < 0) return vaccines;
+  const counseling = [];
+  const meds = [];
+  const behavioral = [];
 
-  if (age >= 6 / 12) addUnique(vaccines, "Influenza annually");
-  if (age >= 19) addUnique(vaccines, "COVID-19 per current CDC adult schedule");
-  if (age >= 19) addUnique(vaccines, "Td or Tdap booster if due (every 10 years after prior Tdap)");
-  if (age >= 50 || form.immunocompromised === "Y") addUnique(vaccines, "Recombinant zoster (RZV) if not completed");
-  if (age >= 60 && age < 75) addUnique(vaccines, "RSV vaccine if indicated / shared clinical decision-making");
-  if (age >= 75) addUnique(vaccines, "RSV vaccine");
-  if (age >= 65) addUnique(vaccines, "Pneumococcal vaccine per current adult age/risk schedule");
-  if (form.priorVaccineHistoryKnown !== "Y" && age >= 19) addUnique(vaccines, "Review vaccine registry/history to determine catch-up needs");
-  if (form.evidenceOfImmunityMMR !== "Y" && age >= 19) addUnique(vaccines, "MMR if lacking evidence of immunity");
-  if (form.evidenceOfImmunityVaricella !== "Y" && age >= 19) addUnique(vaccines, "Varicella if lacking evidence of immunity");
-  if (form.chronicLiverDisease === "Y") {
-    addUnique(vaccines, "Hepatitis A vaccine");
-    addUnique(vaccines, "Hepatitis B vaccine");
+  if (age >= 45 && age <= 75) screenings.push("Colorectal cancer screening");
+  if (form.sex === "female" && age >= 50 && age <= 74) screenings.push("Breast cancer screening");
+  if (form.sex === "female" && age >= 21 && age <= 65) screenings.push("Cervical cancer screening");
+  if (form.sex === "male" && age >= 65 && age <= 75 && form.smoking === "Y") screenings.push("AAA one-time screening");
+  if (age >= 50 && age <= 80 && form.smoking === "Y" && Number.isFinite(packYears) && packYears >= 20) screenings.push("Annual low-dose CT lung screening");
+  if (age >= 18) {
+    screenings.push("Depression screening");
+    screenings.push("HIV screening");
+    screenings.push("Hepatitis C screening");
   }
+  if (age < 65) screenings.push("Anxiety screening");
+  screenings.push("Unhealthy alcohol use counseling if indicated");
+  screenings.push("Unhealthy drug use screening if indicated");
 
-  return vaccines;
+  if (form.depressionConcern !== "N") behavioral.push("Depression symptom review / PHQ-based follow-up");
+  if (form.anxietyConcern !== "N" && age < 65) behavioral.push("Anxiety symptom review / GAD-based follow-up");
+  if (form.alcoholRisk !== "N") behavioral.push("Alcohol use assessment and brief intervention");
+  if (form.drugUseRisk !== "N") behavioral.push("Substance use assessment and risk-reduction counseling");
+  if (form.sleepConcern !== "N") behavioral.push("Sleep concern review and contributing factor assessment");
+
+  if (age >= 19) vaccines.push("COVID-19 vaccine review");
+  if (age >= 0.5) vaccines.push("Annual influenza vaccine");
+  if (age >= 50 || form.immunocompromised === "Y") vaccines.push("Recombinant zoster (RZV)");
+  if (age >= 65) vaccines.push("Age/risk-based pneumococcal review");
+  if (form.priorVaccineHistoryKnown !== "Y") vaccines.push("Reconcile vaccine registry / outside records");
+  if (form.evidenceOfImmunityMMR !== "Y" && age >= 19) vaccines.push("MMR immunity review");
+  if (form.evidenceOfImmunityVaricella !== "Y" && age >= 19) vaccines.push("Varicella immunity review");
+
+  if (Number.isFinite(bmi) && bmi >= 30) counseling.push("Weight management / nutrition counseling");
+  if (form.smoking === "Y") counseling.push("Smoking cessation counseling");
+  counseling.push("Exercise and diet review");
+
+  if (form.knownAscvd === "Y") meds.push("Secondary prevention lipid review");
+
+  return { screenings, vaccines, counseling, meds, behavioral };
 }
 
-function getVaccinesForDisplay(form) {
-  return getCurrentAgeVaccinesNeeded(form);
+function buildAwvChecklist(form) {
+  const checklist = [];
+  checklist.push("Health risk assessment reviewed");
+  checklist.push("Medication list reconciled");
+  checklist.push("Problem list updated");
+  checklist.push("Preventive screening schedule updated");
+  if (form.needsCognitiveReview !== "N") checklist.push("Cognitive review performed or documented");
+  if (form.needsFallReview !== "N") checklist.push("Fall risk review completed");
+  if (form.needsADLReview !== "N") checklist.push("ADL / IADL functional review completed");
+  if (form.needsAdvanceCarePlanning !== "N") checklist.push("Advance care planning offered / reviewed");
+  checklist.push("Personalized prevention plan documented");
+  return checklist;
 }
 
-function buildRecommendationBuckets({
-  form,
-  preventRisk,
-  statinPlan,
-  screenings,
-  vaccines,
-  counseling,
-  errors,
-  missingPreventItems,
-}) {
+function buildActionPlan({ form, preventRisk, statinPlan, careGaps, missingPreventItems, preventErrors }) {
   const dueNow = [];
   const consider = [];
   const discuss = [];
 
-  if (Object.keys(errors).length > 0) {
-    dueNow.push("Correct the highlighted core inputs before relying on the summary.");
+  if (Object.keys(preventErrors).length > 0) addRec(dueNow, "Correct highlighted PREVENT fields.", "Recommended", "review");
+  if (missingPreventItems.length > 0) addRec(dueNow, `Complete missing PREVENT items: ${missingPreventItems.join(", ")}.`, "Recommended", "review");
+
+  careGaps.screenings.forEach((x) => addRec(dueNow, x, "Recommended", "order"));
+  careGaps.vaccines.slice(0, 5).forEach((x) => addRec(consider, x, "Recommended", "review"));
+  careGaps.counseling.forEach((x) => addRec(discuss, x, "Recommended", "counsel"));
+  careGaps.meds.forEach((x) => addRec(discuss, x, "Recommended", "review"));
+  careGaps.behavioral.forEach((x) => addRec(dueNow, x, "Recommended", "screen"));
+
+  if (statinPlan.recommendation && statinPlan.recommendation !== "Lifestyle optimization" && statinPlan.recommendation !== "Need complete PREVENT inputs") {
+    if (preventRisk != null && preventRisk >= 10) addRec(dueNow, statinPlan.recommendation, "Reasonable", "prescribe");
+    else addRec(discuss, statinPlan.recommendation, "Shared decision-making", "discuss");
   }
 
-  if (missingPreventItems.length > 0) {
-    dueNow.push(`Complete missing PREVENT inputs: ${missingPreventItems.join(", ")}.`);
-  }
+  if (form.visitType === "awv") addRec(dueNow, "Finalize written preventive screening schedule.", "Recommended", "document");
+  if (form.smoking === "Y") addRec(dueNow, "Offer cessation medication and quit support.", "Recommended", "counsel");
+  if (preventRisk != null && preventRisk < 5) addRec(discuss, "Reinforce lifestyle prevention and periodic reassessment.", "Recommended", "counsel");
+  if (statinPlan.enhancers.length > 0) addRec(consider, `Risk enhancers present: ${statinPlan.enhancers.join(", ")}.`, "Reasonable", "review");
 
-  screenings.forEach((item) => dueNow.push(item));
-  vaccines.slice(0, 5).forEach((item) => consider.push(item));
-  counseling.forEach((item) => discuss.push(item));
+  return { dueNow, consider, discuss };
+}
 
-  if (
-    statinPlan.recommendation &&
-    statinPlan.recommendation !== "Lifestyle optimization" &&
-    statinPlan.recommendation !== "Need complete PREVENT inputs"
-  ) {
-    if (preventRisk != null && preventRisk >= 10) {
-      dueNow.push(statinPlan.recommendation);
-    } else {
-      discuss.push(statinPlan.recommendation);
-    }
-  }
-
-  if (form.smoking === "Y") dueNow.push("Offer smoking cessation treatment options.");
-  if (preventRisk != null && preventRisk < 5) discuss.push("Reinforce lifestyle measures and repeat risk review at follow-up.");
-  if (statinPlan.enhancers.length > 0) consider.push(`Risk enhancers present: ${statinPlan.enhancers.join(", ")}.`);
-
-  return {
-    dueNow: Array.from(new Set(dueNow)),
-    consider: Array.from(new Set(consider)),
-    discuss: Array.from(new Set(discuss)),
-  };
+function renderRecommendation(rec) {
+  return `${rec.action.toUpperCase()} • ${rec.strength}: ${rec.text}`;
 }
 
 function formatPatientSnapshot(form, risk, riskLabel) {
   const bits = [];
+  if (form.visitType === "awv") bits.push("Medicare-style AWV workflow");
+  if (form.visitType === "adult_prevention") bits.push("Adult prevention visit");
+  if (form.visitType === "chronic_followup") bits.push("Chronic follow-up prevention review");
   if (form.age) bits.push(`${form.age} y/o`);
   if (form.sex) bits.push(form.sex === "female" ? "female" : "male");
-  if (form.smoking === "Y") bits.push("smoker");
-  else if (form.smoking === "N") bits.push("non-smoker");
   if (form.sbp && form.dbp) bits.push(`BP ${form.sbp}/${form.dbp}`);
   if (form.bmi) bits.push(`BMI ${form.bmi}`);
   if (risk != null) bits.push(`PREVENT ${risk}% ${riskLabel.toLowerCase()}`);
-  return bits.length ? bits.join(" • ") : "Enter core inputs to generate a patient snapshot.";
+  return bits.join(" • ");
 }
 
 function Stat({ label, value, tone = "default" }) {
@@ -513,11 +528,7 @@ function Field({ name, label, value, onChange, error, unit, requiredForPrevent =
         <span>{label}</span>
         <span style={{ display: "inline-flex", gap: "6px", alignItems: "center" }}>
           {unit && <span style={{ color: COLORS.textSoft, fontWeight: 700 }}>{unit}</span>}
-          {requiredForPrevent && (
-            <span style={{ color: COLORS.primaryDark, background: COLORS.primarySoft, borderRadius: "999px", padding: "2px 6px" }}>
-              PREVENT
-            </span>
-          )}
+          {requiredForPrevent && <span style={{ color: COLORS.primaryDark, background: COLORS.primarySoft, borderRadius: "999px", padding: "2px 6px" }}>PREVENT</span>}
         </span>
       </label>
       <input
@@ -561,11 +572,7 @@ function SelectField({ name, label, value, onChange, options, error, requiredFor
         }}
       >
         <span>{label}</span>
-        {requiredForPrevent && (
-          <span style={{ color: COLORS.primaryDark, background: COLORS.primarySoft, borderRadius: "999px", padding: "2px 6px" }}>
-            PREVENT
-          </span>
-        )}
+        {requiredForPrevent && <span style={{ color: COLORS.primaryDark, background: COLORS.primarySoft, borderRadius: "999px", padding: "2px 6px" }}>PREVENT</span>}
       </label>
       <select
         name={name}
@@ -628,11 +635,7 @@ function PillToggle({ name, label, value, onChange, requiredForPrevent = false }
         }}
       >
         <span>{label}</span>
-        {requiredForPrevent && (
-          <span style={{ color: COLORS.primaryDark, background: COLORS.primarySoft, borderRadius: "999px", padding: "2px 6px" }}>
-            PREVENT
-          </span>
-        )}
+        {requiredForPrevent && <span style={{ color: COLORS.primaryDark, background: COLORS.primarySoft, borderRadius: "999px", padding: "2px 6px" }}>PREVENT</span>}
       </div>
       <div style={{ display: "flex", gap: "6px", padding: "4px", borderRadius: "999px", background: "#f4f8fc", border: `1px solid ${COLORS.border}` }}>
         <button type="button" style={pillStyle(value === "Y")} onClick={() => setValue("Y")}>Yes</button>
@@ -645,10 +648,11 @@ function PillToggle({ name, label, value, onChange, requiredForPrevent = false }
 export default function App() {
   const [form, setForm] = useState(INITIAL_FORM);
   const [copyStatus, setCopyStatus] = useState("");
-  const [activeSummaryTab, setActiveSummaryTab] = useState("dueNow");
+  const [activeSummaryTab, setActiveSummaryTab] = useState("careGaps");
 
   const preventErrors = useMemo(() => validatePreventInputs(form), [form]);
   const missingPreventItems = useMemo(() => getMissingPreventItems(form), [form]);
+  const canCalculatePrevent = missingPreventItems.length === 0 && Object.keys(preventErrors).length === 0;
 
   const handleChange = (e) => {
     const { name } = e.target;
@@ -672,11 +676,9 @@ export default function App() {
 
   const handleReset = () => {
     setForm(INITIAL_FORM);
+    setActiveSummaryTab("careGaps");
     setCopyStatus("");
-    setActiveSummaryTab("dueNow");
   };
-
-  const canCalculatePrevent = missingPreventItems.length === 0 && Object.keys(preventErrors).length === 0;
 
   const preventRisk = useMemo(() => {
     if (!canCalculatePrevent) return null;
@@ -697,49 +699,11 @@ export default function App() {
 
   const preventCategory = riskCat(preventRisk);
   const statinPlan = useMemo(() => buildStatinPathway(form, preventRisk), [form, preventRisk]);
-
-  const screenings = useMemo(() => {
-    const age = parseNum(form.age) ?? 0;
-    const bmi = parseNum(form.bmi);
-    const packYears = parseNum(form.packYears);
-    const items = [];
-    if (age >= 45 && age <= 75) items.push("Colorectal cancer screening");
-    if (form.sex === "female" && age >= 50 && age <= 74) items.push("Mammogram every 2 years");
-    if (form.sex === "female" && age >= 21 && age <= 65) items.push("Cervical cancer screening");
-    if (form.sex === "male" && age >= 65 && age <= 75 && form.smoking === "Y") items.push("AAA one-time screening");
-    if (age >= 50 && age <= 80 && form.smoking === "Y" && Number.isFinite(packYears) && packYears >= 20) items.push("Annual low-dose CT for lung cancer");
-    if (age >= 18) {
-      items.push("Depression screening");
-      items.push("HIV screening");
-      items.push("Hepatitis C screening");
-    }
-    if (age >= 35 && Number.isFinite(bmi) && bmi >= 25) items.push("Diabetes screening");
-    return items;
-  }, [form]);
-
-  const vaccines = useMemo(() => getVaccinesForDisplay(form), [form]);
-
-  const counseling = useMemo(() => {
-    const bmi = parseNum(form.bmi);
-    const items = [];
-    if (Number.isFinite(bmi) && bmi >= 30) items.push("Obesity management counseling");
-    if (form.smoking === "Y") items.push("Smoking cessation counseling");
-    return items;
-  }, [form]);
-
-  const planBuckets = useMemo(
-    () =>
-      buildRecommendationBuckets({
-        form,
-        preventRisk,
-        statinPlan,
-        screenings,
-        vaccines,
-        counseling,
-        errors: preventErrors,
-        missingPreventItems,
-      }),
-    [form, preventRisk, statinPlan, screenings, vaccines, counseling, preventErrors, missingPreventItems]
+  const careGaps = useMemo(() => buildCareGaps(form), [form]);
+  const awvChecklist = useMemo(() => buildAwvChecklist(form), [form]);
+  const actionPlan = useMemo(
+    () => buildActionPlan({ form, preventRisk, statinPlan, careGaps, missingPreventItems, preventErrors }),
+    [form, preventRisk, statinPlan, careGaps, missingPreventItems, preventErrors]
   );
 
   const patientSnapshot = formatPatientSnapshot(form, preventRisk, preventCategory.label);
@@ -754,20 +718,23 @@ export default function App() {
     lines.push(`- PREVENT: ${preventRisk != null ? `${preventRisk}% (${preventCategory.label})` : "Not calculated"}`);
     lines.push(`- Statin pathway: ${statinPlan.recommendation}`);
     lines.push("");
-    lines.push("Due Now");
-    planBuckets.dueNow.forEach((item) => lines.push(`- ${item}`));
+    lines.push("Care Gaps");
+    careGaps.screenings.forEach((item) => lines.push(`- Screening: ${item}`));
+    careGaps.vaccines.forEach((item) => lines.push(`- Vaccine: ${item}`));
+    careGaps.counseling.forEach((item) => lines.push(`- Counseling: ${item}`));
+    careGaps.behavioral.forEach((item) => lines.push(`- Behavioral health: ${item}`));
     lines.push("");
-    lines.push("Consider");
-    planBuckets.consider.forEach((item) => lines.push(`- ${item}`));
-    lines.push("");
-    lines.push("Discuss");
-    planBuckets.discuss.forEach((item) => lines.push(`- ${item}`));
-    lines.push("");
-    lines.push("Patient Talking Points");
-    screenings.slice(0, 4).forEach((item) => lines.push(`- Screening: ${item}`));
-    vaccines.slice(0, 4).forEach((item) => lines.push(`- Vaccine: ${item}`));
+    lines.push("Action Plan");
+    actionPlan.dueNow.forEach((item) => lines.push(`- Due now: ${renderRecommendation(item)}`));
+    actionPlan.consider.forEach((item) => lines.push(`- Consider: ${renderRecommendation(item)}`));
+    actionPlan.discuss.forEach((item) => lines.push(`- Discuss: ${renderRecommendation(item)}`));
+    if (form.visitType === "awv") {
+      lines.push("");
+      lines.push("AWV Checklist");
+      awvChecklist.forEach((item) => lines.push(`- ${item}`));
+    }
     return lines.join("\n");
-  }, [preventRisk, preventCategory.label, statinPlan.recommendation, planBuckets, screenings, vaccines]);
+  }, [preventRisk, preventCategory.label, statinPlan.recommendation, careGaps, actionPlan, awvChecklist, form.visitType]);
 
   const handleCopy = async () => {
     try {
@@ -796,7 +763,7 @@ export default function App() {
         .summary-left, .summary-left * { text-align: left; }
         .summary-left ul { padding-left: 20px; margin: 0; list-style-position: outside; }
         .summary-left li { line-height: 1.5; }
-        .app-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(360px, 0.8fr); gap: 20px; align-items: start; }
+        .app-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.85fr); gap: 20px; align-items: start; }
         .core-grid { display: grid; grid-template-columns: repeat(4, minmax(120px, 1fr)); gap: 16px; }
         .summary-rail { display: grid; gap: 18px; position: sticky; top: 16px; }
         .hero-grid { display: grid; grid-template-columns: 1.3fr 0.7fr; gap: 18px; align-items: end; }
@@ -839,13 +806,13 @@ export default function App() {
           <div className="hero-grid">
             <div>
               <div style={{ display: "inline-flex", padding: "7px 12px", borderRadius: "999px", background: "rgba(255,255,255,0.1)", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 800 }}>
-                Clinical Decision Support
+                Primary Care Workflow
               </div>
               <div style={{ fontSize: "34px", fontWeight: 900, marginTop: "14px", letterSpacing: "-0.03em" }}>
                 Preventive Health Decision Tool
               </div>
               <div style={{ marginTop: "10px", fontSize: "14px", opacity: 0.9, lineHeight: 1.55, maxWidth: "760px" }}>
-                {patientSnapshot}
+                {patientSnapshot || "Choose a visit type and enter core prevention data to build a primary-care action plan."}
               </div>
             </div>
             <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: "18px", padding: "16px" }}>
@@ -870,7 +837,7 @@ export default function App() {
 
         <div className="print-only-summary" style={{ display: "none" }}>
           <div className="print-card summary-left" style={cardStyle()}>
-            <div style={{ fontSize: "20px", fontWeight: 900, color: COLORS.heading }}>Clinical Summary</div>
+            <div style={{ fontSize: "20px", fontWeight: 900, color: COLORS.heading }}>Primary Care Summary</div>
             <div style={{ marginTop: "10px", fontSize: "13px", color: COLORS.textSoft }}>{patientSnapshot}</div>
             <div style={{ marginTop: "14px", display: "grid", gap: "14px" }}>
               <div>
@@ -881,24 +848,28 @@ export default function App() {
                 </ul>
               </div>
               <div>
-                <div style={{ fontWeight: 900, color: COLORS.heading, marginBottom: "6px" }}>Due Now</div>
-                <ul>{planBuckets.dueNow.map((item, i) => <li key={i}>{item}</li>)}</ul>
-              </div>
-              <div>
-                <div style={{ fontWeight: 900, color: COLORS.heading, marginBottom: "6px" }}>Consider</div>
-                <ul>{planBuckets.consider.map((item, i) => <li key={i}>{item}</li>)}</ul>
-              </div>
-              <div>
-                <div style={{ fontWeight: 900, color: COLORS.heading, marginBottom: "6px" }}>Discuss</div>
-                <ul>{planBuckets.discuss.map((item, i) => <li key={i}>{item}</li>)}</ul>
-              </div>
-              <div>
-                <div style={{ fontWeight: 900, color: COLORS.heading, marginBottom: "6px" }}>Patient Talking Points</div>
+                <div style={{ fontWeight: 900, color: COLORS.heading, marginBottom: "6px" }}>Care Gaps</div>
                 <ul>
-                  {screenings.slice(0, 4).map((item, i) => <li key={`s-${i}`}>Screening: {item}</li>)}
-                  {vaccines.slice(0, 4).map((item, i) => <li key={`v-${i}`}>Vaccine: {item}</li>)}
+                  {careGaps.screenings.map((item, i) => <li key={`sg-${i}`}>Screening: {item}</li>)}
+                  {careGaps.vaccines.map((item, i) => <li key={`vg-${i}`}>Vaccine: {item}</li>)}
+                  {careGaps.counseling.map((item, i) => <li key={`cg-${i}`}>Counseling: {item}</li>)}
+                  {careGaps.behavioral.map((item, i) => <li key={`bg-${i}`}>Behavioral health: {item}</li>)}
                 </ul>
               </div>
+              <div>
+                <div style={{ fontWeight: 900, color: COLORS.heading, marginBottom: "6px" }}>Action Plan</div>
+                <ul>
+                  {actionPlan.dueNow.map((item, i) => <li key={`dn-${i}`}>Due now: {renderRecommendation(item)}</li>)}
+                  {actionPlan.consider.map((item, i) => <li key={`co-${i}`}>Consider: {renderRecommendation(item)}</li>)}
+                  {actionPlan.discuss.map((item, i) => <li key={`di-${i}`}>Discuss: {renderRecommendation(item)}</li>)}
+                </ul>
+              </div>
+              {form.visitType === "awv" && (
+                <div>
+                  <div style={{ fontWeight: 900, color: COLORS.heading, marginBottom: "6px" }}>AWV Checklist</div>
+                  <ul>{awvChecklist.map((item, i) => <li key={i}>{item}</li>)}</ul>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -908,14 +879,28 @@ export default function App() {
             <div style={{ ...cardStyle(), marginBottom: "18px", background: `linear-gradient(180deg, #ffffff 0%, ${COLORS.cardSoft} 100%)` }}>
               <div style={{ display: "flex", justifyContent: "space-between", gap: "16px", alignItems: "start", marginBottom: "14px", flexWrap: "wrap" }}>
                 <div>
-                  <div style={{ fontSize: "20px", fontWeight: 900, color: COLORS.heading }}>Core Inputs First</div>
+                  <div style={{ fontSize: "20px", fontWeight: 900, color: COLORS.heading }}>Visit Setup</div>
                   <div style={{ fontSize: "13px", color: COLORS.textSoft, marginTop: "4px", lineHeight: 1.5 }}>
-                    Required PREVENT fields are marked so clinicians can see immediately what drives the official risk score.
+                    V3 is organized around AWV, adult prevention, and care-gap closure instead of calculator-first output.
                   </div>
                 </div>
                 <div style={{ background: COLORS.primarySoft, color: COLORS.primaryDark, borderRadius: "999px", padding: "9px 13px", fontSize: "12px", fontWeight: 900 }}>
                   {preventCategory.label}
                 </div>
+              </div>
+
+              <div style={{ maxWidth: "260px", marginBottom: "16px" }}>
+                <SelectField
+                  name="visitType"
+                  label="Visit Type"
+                  value={form.visitType}
+                  onChange={handleChange}
+                  options={[
+                    { value: "awv", label: "Annual wellness visit" },
+                    { value: "adult_prevention", label: "Adult prevention visit" },
+                    { value: "chronic_followup", label: "Chronic follow-up" },
+                  ]}
+                />
               </div>
 
               {missingPreventItems.length > 0 && (
@@ -951,7 +936,28 @@ export default function App() {
                 <PillToggle name="lipidLowering" label="Lipid-lowering therapy" value={form.lipidLowering} onChange={handleChange} requiredForPrevent />
                 <PillToggle name="knownAscvd" label="Known ASCVD" value={form.knownAscvd} onChange={handleChange} />
                 <PillToggle name="immunocompromised" label="Immunocompromised" value={form.immunocompromised} onChange={handleChange} />
+                <PillToggle name="chronicLiverDisease" label="Chronic liver disease" value={form.chronicLiverDisease} onChange={handleChange} />
+                <PillToggle name="priorVaccineHistoryKnown" label="Vaccine history known" value={form.priorVaccineHistoryKnown} onChange={handleChange} />
+                <PillToggle name="evidenceOfImmunityMMR" label="MMR immunity" value={form.evidenceOfImmunityMMR} onChange={handleChange} />
+                <PillToggle name="evidenceOfImmunityVaricella" label="Varicella immunity" value={form.evidenceOfImmunityVaricella} onChange={handleChange} />
+                <PillToggle name="depressionConcern" label="Depression concern" value={form.depressionConcern} onChange={handleChange} />
+                <PillToggle name="anxietyConcern" label="Anxiety concern" value={form.anxietyConcern} onChange={handleChange} />
+                <PillToggle name="alcoholRisk" label="Alcohol risk" value={form.alcoholRisk} onChange={handleChange} />
+                <PillToggle name="drugUseRisk" label="Drug use risk" value={form.drugUseRisk} onChange={handleChange} />
+                <PillToggle name="sleepConcern" label="Sleep concern" value={form.sleepConcern} onChange={handleChange} />
               </div>
+
+              {form.visitType === "awv" && (
+                <div style={{ marginTop: "18px" }}>
+                  <div style={{ fontSize: "15px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>AWV Workflow Inputs</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "16px" }}>
+                    <PillToggle name="needsADLReview" label="ADL / IADL review completed" value={form.needsADLReview} onChange={handleChange} />
+                    <PillToggle name="needsFallReview" label="Fall risk review completed" value={form.needsFallReview} onChange={handleChange} />
+                    <PillToggle name="needsCognitiveReview" label="Cognitive review completed" value={form.needsCognitiveReview} onChange={handleChange} />
+                    <PillToggle name="needsAdvanceCarePlanning" label="Advance care planning addressed" value={form.needsAdvanceCarePlanning} onChange={handleChange} />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -959,8 +965,8 @@ export default function App() {
             <div className="print-card" style={cardStyle()}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", marginBottom: "12px", flexWrap: "wrap" }}>
                 <div>
-                  <div style={{ fontSize: "18px", fontWeight: 900, color: COLORS.heading }}>Clinical Summary</div>
-                  <div style={{ marginTop: "4px", fontSize: "12px", color: COLORS.textSoft }}>V2 prioritizes what to do now versus what to discuss.</div>
+                  <div style={{ fontSize: "18px", fontWeight: 900, color: COLORS.heading }}>Primary Care Summary</div>
+                  <div style={{ marginTop: "4px", fontSize: "12px", color: COLORS.textSoft }}>Care gaps and visit-action planning come first; calculators support the workflow.</div>
                 </div>
                 <span style={{ background: COLORS.primarySoft, color: COLORS.primaryDark, borderRadius: "999px", padding: "8px 12px", fontSize: "12px", fontWeight: 900 }}>
                   {preventCategory.label}
@@ -969,16 +975,30 @@ export default function App() {
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                 <Stat label="PREVENT Risk" value={preventRisk != null ? `${preventRisk}%` : "—"} tone="primary" />
-                <Stat label="Statin Pathway" value={statinPlan.pathway} tone="primary" />
+                <Stat label="Visit Type" value={form.visitType === "awv" ? "AWV" : form.visitType === "adult_prevention" ? "Prevention" : "Follow-up"} tone="success" />
+                <Stat label="Screening Gaps" value={String(careGaps.screenings.length)} tone="warning" />
+                <Stat label="Vaccine Gaps" value={String(careGaps.vaccines.length)} tone="default" />
+              </div>
+
+              <div style={{ marginTop: "14px", padding: "14px", borderRadius: "16px", background: COLORS.primarySoft, border: `1px solid ${COLORS.border}` }}>
+                <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.08em", color: COLORS.primaryDark, fontWeight: 800 }}>
+                  Medication Prevention
+                </div>
+                <div style={{ marginTop: "8px", fontSize: "15px", fontWeight: 800, color: COLORS.heading, lineHeight: 1.4 }}>
+                  {statinPlan.recommendation}
+                </div>
+                <div style={{ marginTop: "6px", fontSize: "13px", color: COLORS.textSoft }}>
+                  Goal: {statinPlan.goal}
+                </div>
               </div>
             </div>
 
             <div className="print-card summary-left" style={{ ...cardStyle(), textAlign: "left" }}>
               <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "14px", justifyContent: "flex-start" }}>
                 {[
-                  ["dueNow", "Due Now"],
-                  ["consider", "Consider"],
-                  ["discuss", "Discuss"],
+                  ["careGaps", "Care Gaps"],
+                  ["actionPlan", "Action Plan"],
+                  ["awv", "AWV Checklist"],
                   ["export", "Export View"],
                 ].map(([key, label]) => (
                   <button key={key} type="button" onClick={() => setActiveSummaryTab(key)} style={tabButtonStyle(activeSummaryTab === key)}>
@@ -987,24 +1007,39 @@ export default function App() {
                 ))}
               </div>
 
-              {activeSummaryTab === "dueNow" && (
+              {activeSummaryTab === "careGaps" && (
                 <div>
-                  <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>Due Now</div>
-                  <ul>{planBuckets.dueNow.map((item, i) => <li key={i} style={{ marginBottom: "8px" }}>{item}</li>)}</ul>
+                  <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>Care Gaps</div>
+                  <ul>
+                    {careGaps.screenings.map((item, i) => <li key={`s-${i}`}>Screening: {item}</li>)}
+                    {careGaps.vaccines.map((item, i) => <li key={`v-${i}`}>Vaccine: {item}</li>)}
+                    {careGaps.counseling.map((item, i) => <li key={`c-${i}`}>Counseling: {item}</li>)}
+                    {careGaps.behavioral.map((item, i) => <li key={`b-${i}`}>Behavioral health: {item}</li>)}
+                    {careGaps.meds.map((item, i) => <li key={`m-${i}`}>Medication: {item}</li>)}
+                  </ul>
                 </div>
               )}
 
-              {activeSummaryTab === "consider" && (
+              {activeSummaryTab === "actionPlan" && (
                 <div>
-                  <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>Consider</div>
-                  <ul>{planBuckets.consider.map((item, i) => <li key={i} style={{ marginBottom: "8px" }}>{item}</li>)}</ul>
+                  <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>Action Plan</div>
+                  <div style={{ fontWeight: 800, color: COLORS.heading, marginBottom: "6px" }}>Due Now</div>
+                  <ul>{actionPlan.dueNow.map((item, i) => <li key={`dn-${i}`}>{renderRecommendation(item)}</li>)}</ul>
+                  <div style={{ fontWeight: 800, color: COLORS.heading, margin: "12px 0 6px" }}>Consider</div>
+                  <ul>{actionPlan.consider.map((item, i) => <li key={`co-${i}`}>{renderRecommendation(item)}</li>)}</ul>
+                  <div style={{ fontWeight: 800, color: COLORS.heading, margin: "12px 0 6px" }}>Discuss</div>
+                  <ul>{actionPlan.discuss.map((item, i) => <li key={`di-${i}`}>{renderRecommendation(item)}</li>)}</ul>
                 </div>
               )}
 
-              {activeSummaryTab === "discuss" && (
+              {activeSummaryTab === "awv" && (
                 <div>
-                  <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>Discuss</div>
-                  <ul>{planBuckets.discuss.map((item, i) => <li key={i} style={{ marginBottom: "8px" }}>{item}</li>)}</ul>
+                  <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>AWV Checklist</div>
+                  {form.visitType === "awv" ? (
+                    <ul>{awvChecklist.map((item, i) => <li key={i}>{item}</li>)}</ul>
+                  ) : (
+                    <div style={{ color: COLORS.textSoft }}>Switch the visit type to Annual wellness visit to show AWV workflow tasks.</div>
+                  )}
                 </div>
               )}
 
@@ -1012,10 +1047,9 @@ export default function App() {
                 <div>
                   <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>Export Preview</div>
                   <ul>
-                    <li>Risk block separated from action plan</li>
-                    <li>Dedicated sections for Due Now, Consider, Discuss</li>
-                    <li>Print summary uses true bullet lists instead of paragraph joins</li>
-                    <li>Copy summary mirrors the same hierarchy</li>
+                    <li>Structured around Risk, Care Gaps, Action Plan, and AWV checklist</li>
+                    <li>Bullet-list formatting in print and copy output</li>
+                    <li>Primary-care framing replaces calculator-first framing</li>
                   </ul>
                 </div>
               )}
