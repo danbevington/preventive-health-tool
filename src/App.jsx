@@ -7,6 +7,8 @@ const RISK_ENGINE_LABEL = "Official AHA PREVENT 10-Year ASCVD Base Model";
 const INITIAL_FORM = {
   visitType: "awv",
   age: "",
+  weightLb: "",
+  heightIn: "",
   sex: "",
   sbp: "",
   dbp: "",
@@ -166,6 +168,8 @@ const PREVENT = {
 
 const NON_NEGATIVE_FIELDS = new Set([
   "age",
+  "weightLb",
+  "heightIn",
   "sbp",
   "dbp",
   "bmi",
@@ -210,39 +214,32 @@ const PHQ_ITEMS = [
 
 const CALCULATOR_META = {
   prevent: {
-    label: "PREVENT",
-    title: "PREVENT-ASCVD",
+    label: "PREVENT Score",
     description: "Official 10-year ASCVD risk",
   },
   statin: {
-    label: "Statin",
-    title: "Statin Pathway",
+    label: "Lipid Pathway",
     description: "Lipid treatment decision support",
-  },
-  cha: {
-    label: "CHA2DS2-VASc",
-    title: "CHA2DS2-VASc",
-    description: "AF stroke-risk profile",
   },
   pe: {
     label: "Wells PE",
-    title: "Wells PE",
     description: "Pulmonary embolism pretest tool",
   },
   dvt: {
     label: "Wells DVT",
-    title: "Wells DVT",
     description: "DVT pretest tool",
-  },
-  hasbled: {
-    label: "HAS-BLED",
-    title: "HAS-BLED",
-    description: "Bleeding-risk profile",
   },
   phq9: {
     label: "PHQ-9",
-    title: "PHQ-9",
     description: "Depression severity screen",
+  },
+  hasbled: {
+    label: "HAS-BLED",
+    description: "Bleeding-risk profile",
+  },
+  cha: {
+    label: "CHA2DS2-VASc",
+    description: "AF stroke-risk profile",
   },
 };
 
@@ -322,19 +319,6 @@ function tabButtonStyle(active) {
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "flex-start",
-  };
-}
-
-function calculatorPickerStyle(active) {
-  return {
-    width: "100%",
-    padding: "11px 12px",
-    borderRadius: "14px",
-    border: `1px solid ${active ? COLORS.primaryDark : COLORS.border}`,
-    background: active ? `linear-gradient(180deg, ${COLORS.primarySoft}, #ffffff)` : "#fff",
-    color: active ? COLORS.primaryDark : COLORS.text,
-    cursor: "pointer",
-    textAlign: "left",
   };
 }
 
@@ -913,7 +897,7 @@ function Stat({ label, value, tone = "default" }) {
   );
 }
 
-function Field({ name, label, value, onChange, error, unit, requiredForPrevent = false, step }) {
+function Field({ name, label, value, onChange, error, unit, requiredForPrevent = false, step, disabled = false }) {
   return (
     <div>
       <label
@@ -941,17 +925,19 @@ function Field({ name, label, value, onChange, error, unit, requiredForPrevent =
         name={name}
         value={value}
         onChange={onChange}
+        disabled={disabled}
         style={{
           width: "100%",
           padding: "11px 12px",
           minHeight: "44px",
           borderRadius: "12px",
           border: `1px solid ${error ? COLORS.danger : COLORS.border}`,
-          background: "#fff",
+          background: disabled ? COLORS.cardSoft : "#fff",
           boxSizing: "border-box",
           fontSize: "13px",
-          color: COLORS.text,
+          color: disabled ? COLORS.textSoft : COLORS.text,
           outline: "none",
+          cursor: disabled ? "not-allowed" : "text",
         }}
       />
       {error && <div style={{ color: COLORS.danger, fontSize: "12px", marginTop: "6px", fontWeight: 700 }}>{error}</div>}
@@ -1090,6 +1076,17 @@ export default function App() {
         if (Number.isFinite(total) && Number.isFinite(hdl) && total > hdl) next.nonHdl = String(total - hdl);
       }
 
+      if (name === "weightLb" || name === "heightIn") {
+        const weightLb = Number(next.weightLb);
+        const heightIn = Number(next.heightIn);
+        if (Number.isFinite(weightLb) && weightLb > 0 && Number.isFinite(heightIn) && heightIn > 0) {
+          const bmi = (weightLb / (heightIn * heightIn)) * 703;
+          next.bmi = String(Math.round(bmi * 10) / 10);
+        } else {
+          next.bmi = "";
+        }
+      }
+
       return next;
     });
 
@@ -1148,19 +1145,10 @@ export default function App() {
       }),
     [form, preventRisk, preventCategory, statinPlan, chaScore, wellsPeScore, wellsDvtScore, hasBledScore, phq9Score]
   );
-
-  const availableCalculatorIds = useMemo(() => calculatorCards.map((card) => card.id), [calculatorCards]);
-
-  const selectedCalculatorCard = useMemo(() => {
-    const found = calculatorCards.find((card) => card.id === selectedCalculatorId);
-    return found || calculatorCards[0] || null;
-  }, [calculatorCards, selectedCalculatorId]);
-
-  useMemo(() => {
-    if (selectedCalculatorId && availableCalculatorIds.includes(selectedCalculatorId)) return;
-    if (availableCalculatorIds.length === 0) return;
-    setSelectedCalculatorId(availableCalculatorIds[0]);
-  }, [availableCalculatorIds, selectedCalculatorId]);
+  const selectedCalculatorCard = useMemo(
+    () => calculatorCards.find((card) => card.id === selectedCalculatorId) || calculatorCards[0] || null,
+    [calculatorCards, selectedCalculatorId]
+  );
 
   const patientSnapshot = formatPatientSnapshot(form, preventRisk, preventCategory.label);
 
@@ -1174,33 +1162,26 @@ export default function App() {
     lines.push(`- PREVENT: ${preventRisk != null ? `${preventRisk}% (${preventCategory.label})` : "Not calculated"}`);
     lines.push(`- Statin pathway: ${statinPlan.recommendation}`);
     lines.push("");
-    lines.push("Screenings");
-    careGaps.screenings.forEach((item) => lines.push(`- ${item}`));
-    lines.push("");
-    lines.push("Vaccines");
-    careGaps.vaccines.forEach((item) => lines.push(`- ${item}`));
-    lines.push("");
-    lines.push("Counseling");
-    careGaps.counseling.forEach((item) => lines.push(`- ${item}`));
+    lines.push("Care Gaps");
+    careGaps.screenings.forEach((item) => lines.push(`- Screening: ${item}`));
+    careGaps.vaccines.forEach((item) => lines.push(`- Vaccine: ${item}`));
+    careGaps.counseling.forEach((item) => lines.push(`- Counseling: ${item}`));
     careGaps.behavioral.forEach((item) => lines.push(`- Behavioral health: ${item}`));
     lines.push("");
     lines.push("Action Plan");
     actionPlan.dueNow.forEach((item) => lines.push(`- Due now: ${renderRecommendation(item)}`));
     actionPlan.consider.forEach((item) => lines.push(`- Consider: ${renderRecommendation(item)}`));
     actionPlan.discuss.forEach((item) => lines.push(`- Discuss: ${renderRecommendation(item)}`));
-
     if (selectedCalculatorCard) {
       lines.push("");
       lines.push(`Selected Calculator: ${selectedCalculatorCard.title}`);
       selectedCalculatorCard.lines.forEach((line) => lines.push(`- ${line}`));
     }
-
     if (form.visitType === "awv") {
       lines.push("");
       lines.push("AWV Checklist");
       awvChecklist.forEach((item) => lines.push(`- ${item}`));
     }
-
     return lines.join("\n");
   }, [preventRisk, preventCategory.label, statinPlan.recommendation, careGaps, actionPlan, selectedCalculatorCard, awvChecklist, form.visitType]);
 
@@ -1364,7 +1345,7 @@ export default function App() {
           <div className="screen-only">
             <Panel
               title="Visit Setup"
-              subtitle="Prevention workflow stays in the main column. Calculator details can be projected into the main screen from the side rail."
+              subtitle="V3 keeps the primary-care workflow first, then layers in calculators and more detailed risk tools below."
             >
               <div style={{ maxWidth: "260px", marginBottom: "16px" }}>
                 <SelectField
@@ -1392,7 +1373,6 @@ export default function App() {
               )}
 
               <div className="core-grid">
-                <Field name="age" label="Age" unit="years" value={form.age} onChange={handleChange} error={preventErrors.age} requiredForPrevent />
                 <SelectField
                   name="sex"
                   label="Sex"
@@ -1407,31 +1387,23 @@ export default function App() {
                 />
                 <Field name="sbp" label="Systolic BP" unit="mmHg" value={form.sbp} onChange={handleChange} error={preventErrors.sbp} requiredForPrevent />
                 <Field name="dbp" label="Diastolic BP" unit="mmHg" value={form.dbp} onChange={handleChange} />
-                <Field name="bmi" label="BMI" value={form.bmi} onChange={handleChange} error={preventErrors.bmi} requiredForPrevent step="0.1" />
                 <Field name="egfr" label="eGFR" value={form.egfr} onChange={handleChange} error={preventErrors.egfr} requiredForPrevent />
                 <Field name="totalChol" label="Total cholesterol" unit="mg/dL" value={form.totalChol} onChange={handleChange} error={preventErrors.totalChol} requiredForPrevent />
                 <Field name="hdl" label="HDL cholesterol" unit="mg/dL" value={form.hdl} onChange={handleChange} error={preventErrors.hdl} requiredForPrevent />
                 <Field name="nonHdl" label="Non-HDL cholesterol" unit="mg/dL" value={form.nonHdl} onChange={handleChange} />
                 <Field name="ldl" label="LDL cholesterol" unit="mg/dL" value={form.ldl} onChange={handleChange} />
                 <Field name="triglycerides" label="Triglycerides" unit="mg/dL" value={form.triglycerides} onChange={handleChange} />
-                <Field name="packYears" label="Pack-years" value={form.packYears} onChange={handleChange} />
                 <Field name="apob" label="ApoB" unit="mg/dL" value={form.apob} onChange={handleChange} />
                 <Field name="lpa" label="Lp(a)" unit="mg/dL" value={form.lpa} onChange={handleChange} />
                 <Field name="cac" label="CAC" value={form.cac} onChange={handleChange} />
               </div>
 
               <div className="toggle-grid" style={{ marginTop: "16px" }}>
-                <PillToggle name="smoking" label="Smoking" value={form.smoking} onChange={handleChange} requiredForPrevent />
                 <PillToggle name="diabetes" label="Diabetes" value={form.diabetes} onChange={handleChange} requiredForPrevent />
                 <PillToggle name="bpTreated" label="BP treatment" value={form.bpTreated} onChange={handleChange} requiredForPrevent />
                 <PillToggle name="lipidLowering" label="Lipid-lowering therapy" value={form.lipidLowering} onChange={handleChange} requiredForPrevent />
                 <PillToggle name="knownAscvd" label="Known ASCVD" value={form.knownAscvd} onChange={handleChange} />
                 <PillToggle name="veryHighRiskAscvd" label="Very-high-risk ASCVD" value={form.veryHighRiskAscvd} onChange={handleChange} />
-                <PillToggle name="immunocompromised" label="Immunocompromised" value={form.immunocompromised} onChange={handleChange} />
-                <PillToggle name="chronicLiverDisease" label="Chronic liver disease" value={form.chronicLiverDisease} onChange={handleChange} />
-                <PillToggle name="priorVaccineHistoryKnown" label="Vaccine history known" value={form.priorVaccineHistoryKnown} onChange={handleChange} />
-                <PillToggle name="evidenceOfImmunityMMR" label="MMR immunity" value={form.evidenceOfImmunityMMR} onChange={handleChange} />
-                <PillToggle name="evidenceOfImmunityVaricella" label="Varicella immunity" value={form.evidenceOfImmunityVaricella} onChange={handleChange} />
                 <PillToggle name="depressionConcern" label="Depression concern" value={form.depressionConcern} onChange={handleChange} />
                 <PillToggle name="anxietyConcern" label="Anxiety concern" value={form.anxietyConcern} onChange={handleChange} />
                 <PillToggle name="alcoholRisk" label="Alcohol risk" value={form.alcoholRisk} onChange={handleChange} />
@@ -1453,8 +1425,39 @@ export default function App() {
             </Panel>
 
             <Panel
+              title="Quick Prevention Inputs"
+              subtitle="Keep age, height, weight, auto-calculated BMI, and smoking status together above the immunization section for faster preventive review."
+            >
+              <div className="three-grid">
+                <Field name="age" label="Age" unit="years" value={form.age} onChange={handleChange} error={preventErrors.age} requiredForPrevent />
+                <Field name="weightLb" label="Weight" unit="lb" value={form.weightLb} onChange={handleChange} step="0.1" />
+                <Field name="heightIn" label="Height" unit="in" value={form.heightIn} onChange={handleChange} step="0.1" />
+                <Field name="bmi" label="BMI (auto)" value={form.bmi} onChange={handleChange} error={preventErrors.bmi} requiredForPrevent step="0.1" disabled />
+                <PillToggle name="smoking" label="Smoking" value={form.smoking} onChange={handleChange} requiredForPrevent />
+              </div>
+              {form.smoking === "Y" && (
+                <div style={{ marginTop: "16px", maxWidth: "220px" }}>
+                  <Field name="packYears" label="Pack-years" value={form.packYears} onChange={handleChange} />
+                </div>
+              )}
+            </Panel>
+
+            <Panel
+              title="Immunization Inputs"
+              subtitle="Vaccine-related toggle options are grouped here in their own main-section card."
+            >
+              <div className="toggle-grid">
+                <PillToggle name="immunocompromised" label="Immunocompromised" value={form.immunocompromised} onChange={handleChange} />
+                <PillToggle name="chronicLiverDisease" label="Chronic liver disease" value={form.chronicLiverDisease} onChange={handleChange} />
+                <PillToggle name="priorVaccineHistoryKnown" label="Vaccine history known" value={form.priorVaccineHistoryKnown} onChange={handleChange} />
+                <PillToggle name="evidenceOfImmunityMMR" label="MMR immunity" value={form.evidenceOfImmunityMMR} onChange={handleChange} />
+                <PillToggle name="evidenceOfImmunityVaricella" label="Varicella immunity" value={form.evidenceOfImmunityVaricella} onChange={handleChange} />
+              </div>
+            </Panel>
+
+            <Panel
               title="Priority Prevention"
-              subtitle="Screenings, vaccines, and counseling stay visible on the main screen at all times."
+              subtitle="Screenings, vaccines, and counseling stay visible on the main screen regardless of which calculator is selected."
             >
               <div style={{ display: "grid", gap: "12px" }}>
                 <div style={{ background: COLORS.warningSoft, border: `1px solid ${COLORS.border}`, borderRadius: "14px", padding: "14px" }}>
@@ -1489,7 +1492,7 @@ export default function App() {
             {selectedCalculatorCard && (
               <Panel
                 title={selectedCalculatorCard.title}
-                subtitle="This calculator was selected from the side rail and is now part of the main screen plus copy/print output."
+                subtitle="This calculator was selected from the side toggles and is now shown in the main section and included in copy/print output."
               >
                 <ul>
                   {selectedCalculatorCard.lines.map((line, idx) => (
@@ -1500,8 +1503,8 @@ export default function App() {
             )}
 
             <Panel
-              title="Additional Calculator Inputs"
-              subtitle="Enter optional calculator details here, then use the side rail to choose which calculator is displayed in the main section."
+              title="Additional Calculators"
+              subtitle="These prior calculators remain available, and whichever side toggle you choose will appear in the main column."
             >
               <div style={{ display: "grid", gap: "18px" }}>
                 <div>
@@ -1600,7 +1603,7 @@ export default function App() {
                 <div>
                   <div style={{ fontSize: "18px", fontWeight: 900, color: COLORS.heading }}>Primary Care Summary</div>
                   <div style={{ marginTop: "4px", fontSize: "12px", color: COLORS.textSoft }}>
-                    Preventive priorities stay visible here; calculators can be chosen below and projected into the main column.
+                    Care gaps and visit-action planning come first; calculators stay available in the same workflow.
                   </div>
                 </div>
                 <span style={{ background: COLORS.primarySoft, color: COLORS.primaryDark, borderRadius: "999px", padding: "8px 12px", fontSize: "12px", fontWeight: 900 }}>
@@ -1611,8 +1614,20 @@ export default function App() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                 <Stat label="PREVENT Risk" value={preventRisk != null ? `${preventRisk}%` : "—"} tone="primary" />
                 <Stat label="Visit Type" value={form.visitType === "awv" ? "AWV" : form.visitType === "adult_prevention" ? "Prevention" : "Follow-up"} tone="success" />
-                <Stat label="Screening Items" value={String(careGaps.screenings.length)} tone="warning" />
-                <Stat label="Selected Calc" value={selectedCalculatorCard ? selectedCalculatorCard.title : "None"} tone="default" />
+                <Stat label="Screening Gaps" value={String(careGaps.screenings.length)} tone="warning" />
+                <Stat label="Selected Calculator" value={selectedCalculatorCard ? selectedCalculatorCard.title : "None"} tone="default" />
+              </div>
+
+              <div style={{ marginTop: "14px", padding: "14px", borderRadius: "16px", background: COLORS.primarySoft, border: `1px solid ${COLORS.border}` }}>
+                <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.08em", color: COLORS.primaryDark, fontWeight: 800 }}>
+                  Medication Prevention
+                </div>
+                <div style={{ marginTop: "8px", fontSize: "15px", fontWeight: 800, color: COLORS.heading, lineHeight: 1.4 }}>
+                  {statinPlan.recommendation}
+                </div>
+                <div style={{ marginTop: "6px", fontSize: "13px", color: COLORS.textSoft }}>
+                  Goal: {statinPlan.goal}
+                </div>
               </div>
             </div>
 
@@ -1656,8 +1671,8 @@ export default function App() {
                 <div>
                   <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>Export Preview</div>
                   <ul>
-                    <li>Screenings, vaccines, and counseling stay on the main screen</li>
-                    <li>Only the selected calculator is projected into the main section and print/copy output</li>
+                    <li>Screenings, vaccines, and counseling stay on the main screen at all times</li>
+                    <li>Only the selected side-toggle calculator is projected into the main section and export output</li>
                     <li>Bullet-list formatting remains intact for print and copy</li>
                   </ul>
                 </div>
@@ -1666,9 +1681,16 @@ export default function App() {
 
             <div className="print-card summary-left" style={{ ...cardStyle(), textAlign: "left" }}>
               <div style={{ fontSize: "17px", fontWeight: 900, color: COLORS.heading, marginBottom: "10px" }}>
-                Calculator Picker
+                Calculator Toggles
               </div>
-              <div style={{ display: "grid", gap: "8px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "8px",
+                  alignItems: "flex-start",
+                }}
+              >
                 {calculatorCards.map((card) => {
                   const meta = CALCULATOR_META[card.id] || { label: card.title, description: "" };
                   const active = selectedCalculatorCard?.id === card.id;
@@ -1677,10 +1699,21 @@ export default function App() {
                       key={card.id}
                       type="button"
                       onClick={() => setSelectedCalculatorId(card.id)}
-                      style={calculatorPickerStyle(active)}
+                      style={{
+                        minWidth: "112px",
+                        maxWidth: "160px",
+                        padding: "9px 11px",
+                        borderRadius: "999px",
+                        border: `1px solid ${active ? COLORS.primaryDark : COLORS.border}`,
+                        background: active ? `linear-gradient(180deg, ${COLORS.primarySoft}, #ffffff)` : "#fff",
+                        color: active ? COLORS.primaryDark : COLORS.text,
+                        cursor: "pointer",
+                        textAlign: "left",
+                        boxShadow: active ? "0 8px 18px rgba(11,92,171,0.12)" : "none",
+                      }}
                     >
-                      <div style={{ fontWeight: 900 }}>{meta.label}</div>
-                      <div style={{ fontSize: "12px", color: active ? COLORS.primaryDark : COLORS.textSoft, marginTop: "4px" }}>
+                      <div style={{ fontWeight: 900, fontSize: "12px", lineHeight: 1.2 }}>{meta.label}</div>
+                      <div style={{ fontSize: "10px", color: active ? COLORS.primaryDark : COLORS.textSoft, marginTop: "3px", lineHeight: 1.2 }}>
                         {meta.description}
                       </div>
                     </button>
